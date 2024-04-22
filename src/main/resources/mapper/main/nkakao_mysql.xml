@@ -163,7 +163,7 @@
 		    'M' as smskind,
 		    'D' as pcom,
 		    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') as curr_date,
-		    COALESCE(DATE_FORMAT(RSRT_DDTI, '%Y%m%d%H%i%s'), '00000000000000') as snd_dttm
+		    COALESCE(DATE_FORMAT(RSRT_DDTI, '%Y%m%d%H%i%s'), '00000000000000') as snd_dttm,
 		    mms_image_key 
 		  from ${msg_table} 
 		 where MSG_SNDG_STTS_CD = '1'
