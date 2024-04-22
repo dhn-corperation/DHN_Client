@@ -52,7 +52,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-		param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setMsg_type("S");
 		
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
@@ -77,7 +76,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		}
 	}
 	
-	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
@@ -143,6 +141,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 		}
 	}
-	*/
+	
 
 }

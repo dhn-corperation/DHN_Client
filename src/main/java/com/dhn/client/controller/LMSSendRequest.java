@@ -51,8 +51,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table") );
-		param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
+		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table") ); 
 		param.setMsg_type("L");
 		
 
@@ -79,7 +78,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		
 	}
 	
-	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
@@ -149,6 +147,5 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			isProc = false;
 		}
 	}
-	*/
 
 }

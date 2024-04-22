@@ -34,7 +34,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private static int procCnt = 0;
 	private String msgTable = "";
 	private String logTable = "";
-	private String dbtype = "";
 	
 	@Autowired
 	private RequestService reqService;
@@ -47,7 +46,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
-		dbtype = appContext.getEnvironment().getProperty("dhnclient.database");
 		
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -55,7 +53,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		isStart = true;
 	}
 	
-	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc && procCnt < 10) {
@@ -99,13 +96,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		}
 	}
 	
-	
 	private void ResultProc(JSONArray json, int _pc) {
 		
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
 			
-			Msg_Log _ml = new Msg_Log(msgTable, logTable, dbtype);
+			Msg_Log _ml = new Msg_Log(msgTable, logTable);
 			_ml.setMsgid(ent.getString("msgid"));
 			
 			String rscode = "";
@@ -170,6 +166,5 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		procCnt--;
 		
 	}
-	*/
 
 }
