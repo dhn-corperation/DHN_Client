@@ -127,12 +127,19 @@
             <artifactId>jasypt-spring-boot-starter</artifactId>
             <version>3.0.5</version>
         </dependency>
-        
+<!--        
 		<dependency>
 		    <groupId>org.json</groupId>
 		    <artifactId>json</artifactId>
 		    <version>20230618</version>
+		</dependency>-->
+		
+		<dependency>
+		    <groupId>org.json</groupId>
+		    <artifactId>json</artifactId>
+		    <version>20240303</version>
 		</dependency>
+
 		
 		<!-- https://mvnrepository.com/artifact/com.ibm.db2.jcc/db2jcc -->
 		<dependency>
