@@ -32,6 +32,9 @@ public class RequestImpl implements RequestDAO{
 		case "mysql":
 			cnt = sqlSession.selectOne("com.dhn.client.kakao_mysql.mapper.SendRequest.req_kao_count",param);
 			break;
+		case "mssql":
+			cnt = sqlSession.selectOne("com.dhn.client.kakao_mssql.mapper.SendRequest.req_kao_count",param);
+			break;
 		default:
 			cnt = 0;
 		}
@@ -52,6 +55,9 @@ public class RequestImpl implements RequestDAO{
 		case "mysql":
 			sqlSession.update("com.dhn.client.kakao_mysql.mapper.SendRequest.req_kao_group_update",param);
 			break;
+		case "mssql":
+			sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.req_kao_group_update",param);
+			break;
 		}
 	}
 
@@ -65,6 +71,8 @@ public class RequestImpl implements RequestDAO{
 			return sqlSession.selectList("com.dhn.client.kakao_oracle.mapper.SendRequest.req_kao_select", param);
 		case "mysql":
 			return sqlSession.selectList("com.dhn.client.kakao_mysql.mapper.SendRequest.req_kao_select", param);
+		case "mssql":
+			return sqlSession.selectList("com.dhn.client.kakao_mssql.mapper.SendRequest.req_kao_select", param);
 		default:
 			return null;
 		}
@@ -83,6 +91,9 @@ public class RequestImpl implements RequestDAO{
 		case "mysql":
 			sqlSession.update("com.dhn.client.kakao_mysql.mapper.SendRequest.req_sent_complete", param); 
 			break;
+		case "mssql":
+			sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.req_sent_complete", param); 
+			break;
 		}
 	}
 
@@ -98,6 +109,9 @@ public class RequestImpl implements RequestDAO{
 			break;
 		case "mysql":
 			sqlSession.update("com.dhn.client.kakao_mysql.mapper.SendRequest.req_sent_init", param);
+			break;
+		case "mssql":
+			sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.req_sent_init", param);
 			break;
 		}
 	}
@@ -115,6 +129,9 @@ public class RequestImpl implements RequestDAO{
 			break;
 		case "mysql":
 			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sms_count",param);
+			break;
+		case "mssql":
+			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sms_count",param);
 			break;
 		default:
 			cnt = 0;
@@ -136,6 +153,9 @@ public class RequestImpl implements RequestDAO{
 		case "mysql":
 			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sms_group_update",param);
 			break;
+		case "mssql":
+			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sms_group_update",param);
+			break;
 		}
 	}
 
@@ -149,6 +169,8 @@ public class RequestImpl implements RequestDAO{
 			return sqlSession.selectList("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_sms_select", param);
 		case "mysql":
 			return sqlSession.selectList("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sms_select", param);
+		case "mssql":
+			return sqlSession.selectList("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sms_select", param);
 		default:
 			return null;
 		}
@@ -167,6 +189,9 @@ public class RequestImpl implements RequestDAO{
 		case "mysql":
 			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sent_complete",param);
 			break;
+		case "mssql":
+			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sent_complete",param);
+			break;
 		}
 	}
 
@@ -182,6 +207,9 @@ public class RequestImpl implements RequestDAO{
 			break;
 		case "mysql":
 			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sent_init", param); 
+			break;
+		case "mssql":
+			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sent_init", param); 
 			break;
 		}
 
@@ -200,6 +228,9 @@ public class RequestImpl implements RequestDAO{
 			break;
 		case "mysql":
 			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_lms_count", param);
+			break;
+		case "mssql":
+			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_lms_count", param);
 			break;
 		default:
 			cnt = 0;
@@ -222,6 +253,9 @@ public class RequestImpl implements RequestDAO{
 		case "mysql":
 			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_lms_group_update", param); 
 			break;
+		case "mssql":
+			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_lms_group_update", param); 
+			break;
 		}
 		
 	}
@@ -236,6 +270,8 @@ public class RequestImpl implements RequestDAO{
 			return sqlSession.selectList("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_lms_select", param);
 		case "mysql":
 			return sqlSession.selectList("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_lms_select", param);
+		case "mssql":
+			return sqlSession.selectList("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_lms_select", param);
 		default:
 			return null;
 		}
@@ -254,6 +290,9 @@ public class RequestImpl implements RequestDAO{
 			break;
 		case "mysql":
 			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_count", param); 
+			break;
+		case "mssql":
+			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_count", param); 
 			break;
 		default:
 			cnt = 0;
@@ -276,6 +315,9 @@ public class RequestImpl implements RequestDAO{
 		case "mysql":
 			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_group_update", param);
 			break;
+		case "mssql":
+			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_group_update", param);
+			break;
 		}
 	}
 
@@ -289,6 +331,8 @@ public class RequestImpl implements RequestDAO{
 			return sqlSession.selectList("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_mms_select", param);
 		case "mysql":
 			return sqlSession.selectList("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_select", param);
+		case "mssql":
+			return sqlSession.selectList("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_select", param);
 		default:
 			return null;
 		}
@@ -304,6 +348,8 @@ public class RequestImpl implements RequestDAO{
 			return sqlSession.selectList("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_mms_image", param);
 		case "mysql":
 			return sqlSession.selectList("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_image", param);
+		case "mssql":
+			return sqlSession.selectList("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_image", param);
 		default:
 			return null;
 		}
@@ -321,6 +367,9 @@ public class RequestImpl implements RequestDAO{
 			break;
 		case "mysql":
 			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_key_update", param);
+			break;
+		case "mssql":
+			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_key_update", param);
 			break;
 		}
 	}
@@ -362,7 +411,19 @@ public class RequestImpl implements RequestDAO{
 				sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.result_log_insert3", _ml);
 			}
 			break;
+		case "mssql":
+			if(_ml.getMsg_type().equals("AT") || _ml.getAgan_code().length()>1) {
+				sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.result_log_insert1", _ml);
+				sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.result_log_insert2", _ml);
+				sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.result_log_insert3", _ml);
+			}else {
+				sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.result_log_insert1", _ml);
+				sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.result_log_insert2", _ml);
+				sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.result_log_insert3", _ml);
+			}
+			break;
 		}
+		
 		
 		/*
 		 switch(ml.getDBType())
