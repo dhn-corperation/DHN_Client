@@ -90,6 +90,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		}
 	}
 	
+	
 	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
@@ -236,5 +237,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		isProc = false;
 	}
 	*/
+	
 
 }

@@ -55,6 +55,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		isStart = true;
 	}
 	
+	
 	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
@@ -98,6 +99,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			isProc = false;
 		}
 	}
+	*/
 	
 	
 	private void ResultProc(JSONArray json, int _pc) {
@@ -170,6 +172,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		procCnt--;
 		
 	}
-	*/
+	
 
 }
