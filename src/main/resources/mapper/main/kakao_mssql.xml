@@ -16,7 +16,7 @@
 	
 	<update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		WITH CTE AS (
-		    SELECT TOP (5000) *
+		    SELECT TOP (1000) *
 		    FROM ${msg_table}
 		    WHERE MSG_SNDG_STTS_CD = '0'
 		      AND COALESCE(RSRT_DDTI, GETDATE()) &lt;= GETDATE()
