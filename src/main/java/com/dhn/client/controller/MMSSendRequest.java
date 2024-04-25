@@ -207,7 +207,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							OkHttpClient client = new OkHttpClient();
 							Response response = client.newCall(request).execute();
 							
-							log.info(""+response.code());
+							//log.info(""+response.code());
 							if(response.code() == 200) {
 								ObjectMapper mapper = new ObjectMapper();
 								Map<String, String> res = mapper.readValue(response.body().string(), Map.class);
