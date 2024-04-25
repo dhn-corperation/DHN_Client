@@ -79,7 +79,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		
 	}
 	
-	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
@@ -104,7 +103,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						
 						for (RequestBean requestBean : _list) {
 							requestBean = smsService.encryption(requestBean,crypto);
-							log.info(requestBean.toString());
 						}
 						
 						StringWriter sw = new StringWriter();
@@ -121,6 +119,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+							//ResponseEntity<String> response = rt.postForEntity(dhnServer + "testyyw", entity, String.class);
 							//log.info(response.getStatusCode() + " / " + response.getBody());
 													
 							if(response.getStatusCode() == HttpStatus.OK)
@@ -149,7 +148,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			isProc = false;
 		}
 	}
-	*/
+	
 	
 
 }
