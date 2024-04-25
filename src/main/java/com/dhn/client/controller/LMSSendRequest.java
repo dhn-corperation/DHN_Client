@@ -118,8 +118,8 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 						
 						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							//ResponseEntity<String> response = rt.postForEntity(dhnServer + "testyyw", entity, String.class);
+							//ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+							ResponseEntity<String> response = rt.postForEntity(dhnServer + "testyyw", entity, String.class);
 							//log.info(response.getStatusCode() + " / " + response.getBody());
 													
 							if(response.getStatusCode() == HttpStatus.OK)

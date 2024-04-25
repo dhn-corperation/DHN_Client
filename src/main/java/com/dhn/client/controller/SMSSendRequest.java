@@ -115,8 +115,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 						
 						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							//ResponseEntity<String> response = rt.postForEntity(dhnServer + "testyyw", entity, String.class);
+							//ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+							ResponseEntity<String> response = rt.postForEntity(dhnServer + "testyyw", entity, String.class);
 							
 							if(response.getStatusCode() ==  HttpStatus.OK)
 							{
