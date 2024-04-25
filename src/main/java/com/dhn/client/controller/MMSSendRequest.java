@@ -91,7 +91,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	}
 	
 	
-	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
@@ -117,7 +116,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						
 						for (RequestBean requestBean : _list) {
 							requestBean = smsService.encryption(requestBean,crypto);
-							log.info(requestBean.toString());
 						}
 						
 						StringWriter sw = new StringWriter();
@@ -212,7 +210,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							OkHttpClient client = new OkHttpClient();
 							Response response = client.newCall(request).execute();
 							
-							log.info(""+response.code());
 							if(response.code() == 200) {
 								ObjectMapper mapper = new ObjectMapper();
 								Map<String, String> res = mapper.readValue(response.body().string(), Map.class);
@@ -236,7 +233,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		}
 		isProc = false;
 	}
-	*/
 	
 
 }
