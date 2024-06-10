@@ -43,7 +43,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String crypto = "";
 	
 	@Autowired
-	private RequestService reqService;
+	private RequestService requestService;
 	
 	@Autowired
 	private SMSService smsService;
@@ -98,14 +98,14 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			if(!group_no.equals(preGroupNo)) {
 				try {
-					int cnt = reqService.selectSMSReqeustCount(param);
+					int cnt = requestService.selectSMSReqeustCount(param);
 					
 					if(cnt > 0) {
 						param.setGroup_no(group_no);
 						
-						reqService.updateSMSGroupNo(param);
+						requestService.updateSMSGroupNo(param);
 						
-						List<RequestBean> _list = reqService.selectSMSRequests(param);
+						List<RequestBean> _list = requestService.selectSMSRequests(param);
 						
 						for (RequestBean requestBean : _list) {
 							requestBean = smsService.encryption(requestBean,crypto);
@@ -129,17 +129,17 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							
 							if(response.getStatusCode() ==  HttpStatus.OK)
 							{
-								reqService.updateSMSSendComplete(param);
+								requestService.updateSMSSendComplete(param);
 								log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
 								log.info("SMS 메세지 전송오류 : " + res.get("message"));
-								reqService.updateSMSSendInit(param);
+								requestService.updateSMSSendInit(param);
 							}
 						}catch (Exception e) {
 							log.info("SMS 메세지 전송 오류 : " + e.toString());
 							
-							reqService.updateSMSSendInit(param);
+							requestService.updateSMSSendInit(param);
 						}
 
 					}

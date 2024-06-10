@@ -37,7 +37,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String dbtype = "";
 	
 	@Autowired
-	private RequestService reqService;
+	private RequestService requestService;
 	
 	@Autowired
 	private ApplicationContext appContext;
@@ -103,7 +103,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	
 	
 	private void ResultProc(JSONArray json, int _pc) {
-		
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
 			
@@ -143,7 +142,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					if(ent.getString("code").equals("0000")) { // 문자 성공 여부
 						_ml.setStatus("2");		
 					}else {
-						_ml.setStatus("4");							
+						_ml.setStatus("4");
 					}
 					_ml.setSndg_cpee_dt(ent.getString("remark2")); // 단말기 수신 시각
 					
@@ -163,7 +162,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			
 			
 			try {
-				reqService.Insert_msg_log(_ml);
+				requestService.Insert_msg_log(_ml);
 			}catch (Exception e) {
 				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
 			}

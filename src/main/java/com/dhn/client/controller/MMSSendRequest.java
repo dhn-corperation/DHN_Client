@@ -51,7 +51,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String crypto = "";
 	
 	@Autowired
-	private RequestService reqService;
+	private RequestService requestService;
 	
 	@Autowired
 	private SMSService smsService;
@@ -99,7 +99,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		}
 	}
 	
-	
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
@@ -113,15 +112,15 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				
 				try {
 					
-					int cnt = reqService.selectMMSReqeustCount(param);
+					int cnt = requestService.selectMMSReqeustCount(param);
 					
 					if(cnt > 0) {
 						
 						param.setGroup_no(group_no);
 						
-						reqService.updateMMSGroupNo(param);
+						requestService.updateMMSGroupNo(param);
 						
-						List<RequestBean> _list = reqService.selectMMSRequests(param);
+						List<RequestBean> _list = requestService.selectMMSRequests(param);
 						
 						for (RequestBean requestBean : _list) {
 							requestBean = smsService.encryption(requestBean,crypto);
@@ -146,17 +145,17 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 													
 							if(response.getStatusCode() == HttpStatus.OK)
 							{
-								reqService.updateSMSSendComplete(param);
+								requestService.updateSMSSendComplete(param);
 								log.info("MMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
 								log.info("MMS 메세지 전송오류 : " + res.get("message"));
-								reqService.updateSMSSendInit(param);
+								requestService.updateSMSSendInit(param);
 							}
 						} catch(Exception ex) {
 							log.info("MMS 메세지 전송 오류 : " + ex.toString());
 							
-							reqService.updateSMSSendInit(param);
+							requestService.updateSMSSendInit(param);
 						}
 						
 					}
@@ -178,7 +177,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			isProc = true;
 			
 			try {
-				List<MMSImageBean> imgList = reqService.selectMMSImage(param);
+				List<MMSImageBean> imgList = requestService.selectMMSImage(param);
 				
 				if(imgList.size() > 0) {
 					for (MMSImageBean mmsImageBean : imgList) {
@@ -223,7 +222,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 								log.info("MMS Image Key : " + res.get("image group"));
 								if(res.get("image group") != null && res.get("image group").length() > 0) {
 									param.setMms_key(res.get("image group"));
-									reqService.updateMMSImageGroup(param);
+									requestService.updateMMSImageGroup(param);
 								}
 							}
 							response.close();

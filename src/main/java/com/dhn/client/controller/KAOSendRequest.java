@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -43,8 +44,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String preGroupNo = "";
 	private String crypto = "";
 
-	@Autowired
-	private RequestService reqService;
+    @Autowired
+	private RequestService requestService;
 
 	@Autowired
 	private ApplicationContext appContext;
@@ -110,7 +111,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			if(!group_no.equals(preGroupNo)) {
 				
 				try {
-					int cnt = reqService.selectKAORequestCount(param);
+					int cnt = requestService.selectKAORequestCount(param);
 					
 					if(cnt > 0) {
 						
@@ -123,9 +124,9 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						HttpEntity<String> centity = new HttpEntity<String>(cheader);
 						param.setGroup_no(group_no);
 
-						reqService.updateKAOGroupNo(param);
+						requestService.updateKAOGroupNo(param);
 
-						List<KAORequestBean> _list = reqService.selectKAORequests(param);
+						List<KAORequestBean> _list = requestService.selectKAORequests(param);
 
 
 						for (KAORequestBean kaoRequestBean : _list) {
@@ -148,20 +149,19 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
 						try {
-							//ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "testyyw",entity, String.class);
+							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 
 							if (response.getStatusCode() == HttpStatus.OK) {
-								reqService.updateKAOSendComplete(param);
+								requestService.updateKAOSendComplete(param);
 								log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
 								log.info("KAO 메세지 전송오류 : " + res.get("message"));
-								reqService.updateKAOSendInit(param);
+								requestService.updateKAOSendInit(param);
 							}
 						} catch (Exception e) {
 							log.info("KAO 메세지 전송 오류 : " + e.toString());
-							reqService.updateKAOSendInit(param);
+							requestService.updateKAOSendInit(param);
 						}
 
 					}
