@@ -62,7 +62,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table") );
-		param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setMsg_type("M");
 		
 
@@ -139,8 +138,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 						
 						try {
-							//ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "testyyw", entity, String.class);
+							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 							//log.info(response.getStatusCode() + " / " + response.getBody());
 													
 							if(response.getStatusCode() == HttpStatus.OK)
