@@ -56,7 +56,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setKakao(appContext.getEnvironment().getProperty("dhnclient.kakao"));
-		param.setMsg_type("T");
+		param.setMsg_type("A");
 
 		if (param.getKakao() != null && param.getKakao().toUpperCase().equals("Y")) {
 			log.info("KAO 초기화 완료");

@@ -113,4 +113,9 @@ public class RequestServiceImpl implements RequestService {
 		requestDAO.Insert_msg_log(_ml);
 	}
 
+	@Override
+	public int selectMMSImageCount(SQLParameter param) throws Exception {
+		return requestDAO.selectMMSImageCount(param);
+	}
+
 }

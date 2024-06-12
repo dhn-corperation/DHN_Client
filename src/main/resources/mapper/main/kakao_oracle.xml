@@ -38,11 +38,8 @@
 		<result column="smskind" property="smskind"/>
 		<result column="msg_txt_title" property="smslmstit"/>
 		<result column="curr_date" property="regdt"/>
-		<result column="btn_1" property="button1"/>
-		<result column="btn_2" property="button2"/>
-		<result column="btn_3" property="button3"/>
-		<result column="btn_4" property="button4"/>
-		<result column="btn_5" property="button5"/>
+		<result column="btn_name" property="btn_name"/>
+		<result column="btn_url" property="btn_url"/>
 		<result column="template_cd" property="tmplid"/>
 		<result column="profile_key" property="profile"/> 
 		<result column="snd_dttm" property="reservedt"/>

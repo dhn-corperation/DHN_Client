@@ -107,6 +107,11 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
+	public int selectMMSImageCount(SQLParameter param) throws Exception {
+		return sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_mms_image_count",param);
+	}
+
+	@Override
 	public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception {
 		return sqlSession.selectList("com.dhn.client.nkakao.mapper.SendRequest.req_mms_image", param);
 	}

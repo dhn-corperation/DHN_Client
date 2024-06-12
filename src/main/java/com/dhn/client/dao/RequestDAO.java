@@ -48,4 +48,5 @@ public interface RequestDAO {
 
 	public void Insert_msg_log(Msg_Log _ml) throws Exception;
 
+    public int selectMMSImageCount(SQLParameter param) throws Exception;
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 public class SQLParameter {
 	private String msg_table;
 	private String log_table;
+	private String img_table;
 	private String kakao;
 	private String group_no;
 	private String msg_type;
@@ -18,5 +19,6 @@ public class SQLParameter {
 	private String file2;
 	private String file3;
 	private String mms_key;
+	private String fkContent;
 
 }
