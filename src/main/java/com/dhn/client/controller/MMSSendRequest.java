@@ -48,7 +48,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String userid;
 	private String basepath;
 	private String preGroupNo = "";
-	private String crypto = "";
 	
 	@Autowired
 	private RequestService requestService;
@@ -70,32 +69,10 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		
 		// 풀 경로를 DB에 담는듯.
 		basepath = appContext.getEnvironment().getProperty("dhnclient.file_base_path")==null?"":appContext.getEnvironment().getProperty("dhnclient.file_base_path");
-		
-		
-		HttpHeaders cheader = new HttpHeaders();
-		
-		cheader.setContentType(MediaType.APPLICATION_JSON);
-		cheader.set("userid", userid);
-		
-		RestTemplate crt = new RestTemplate();
-		HttpEntity<String> centity = new HttpEntity<String>(cheader);
-		
-		try {
-			ResponseEntity<String> cresponse = crt.exchange( dhnServer + "get_crypto",HttpMethod.GET, centity, String.class );
-			
-			if(cresponse.getStatusCode()==HttpStatus.OK) {
-				crypto = cresponse.getBody()!=null? cresponse.getBody().toString():"";
-				log.info("MMS 초기화 완료");
-				isStart = true;
-			}else {
-				log.info("암호화 컬럼 가져오기 오류 ");			
-			}
-			
-		}catch (HttpClientErrorException e) {
-			log.error("crypto 가져오기 오류 : " + e.getStatusCode() + ", " + e.toString());
-		}catch (RestClientException e) {
-			log.error("기타 오류 : " + dhnServer + ", " + e.toString());
-		}
+
+		isStart = true;
+
+		log.info("MMS 초기화 완료");
 	}
 	
 	@Scheduled(fixedDelay = 100)
@@ -120,10 +97,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						requestService.updateMMSGroupNo(param);
 						
 						List<RequestBean> _list = requestService.selectMMSRequests(param);
-						
-						for (RequestBean requestBean : _list) {
-							requestBean = smsService.encryption(requestBean,crypto);
-						}
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();

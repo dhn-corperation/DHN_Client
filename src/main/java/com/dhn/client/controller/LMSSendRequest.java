@@ -40,13 +40,9 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
-	private String crypto = "";
 	
 	@Autowired
 	private RequestService requestService;
-	
-	@Autowired
-	private SMSService smsService;
 	
 	@Autowired
 	private ApplicationContext appContext;
@@ -55,35 +51,14 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table") );
 		param.setMsg_type("L");
-		
+
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-		
-		HttpHeaders cheader = new HttpHeaders();
-		
-		cheader.setContentType(MediaType.APPLICATION_JSON);
-		cheader.set("userid", userid);
-		
-		RestTemplate crt = new RestTemplate();
-		HttpEntity<String> centity = new HttpEntity<String>(cheader);
-		
-		try {
-			ResponseEntity<String> cresponse = crt.exchange( dhnServer + "get_crypto",HttpMethod.GET, centity, String.class );
-			
-			if(cresponse.getStatusCode()==HttpStatus.OK) {
-				crypto = cresponse.getBody()!=null? cresponse.getBody().toString():"";
-				log.info("LMS 초기화 완료");
-				isStart = true;
-			}else {
-				log.info("암호화 컬럼 가져오기 오류 ");			
-			}
-			
-		}catch (HttpClientErrorException e) {
-			log.error("crypto 가져오기 오류 : " + e.getStatusCode() + ", " + e.toString());
-		}catch (RestClientException e) {
-			log.error("기타 오류 : " + dhnServer + ", " + e.toString());
-		}
+
+		isStart = true;
+
+		log.info("LMS 초기화 완료");
 		
 	}
 	
@@ -109,10 +84,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						
 						List<RequestBean> _list = requestService.selectLMSRequests(param);
 						
-						for (RequestBean requestBean : _list) {
-							requestBean = smsService.encryption(requestBean,crypto);
-						}
-						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
 						om.writeValue(sw, _list);
@@ -127,7 +98,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							//log.info(response.getStatusCode() + " / " + response.getBody());
 													
 							if(response.getStatusCode() == HttpStatus.OK)
 							{

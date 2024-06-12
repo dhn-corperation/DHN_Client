@@ -40,7 +40,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
-	private String crypto = "";
 	
 	@Autowired
 	private RequestService requestService;
@@ -58,31 +57,10 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+
+		isStart = true;
 		
-		HttpHeaders cheader = new HttpHeaders();
-		
-		cheader.setContentType(MediaType.APPLICATION_JSON);
-		cheader.set("userid", userid);
-		
-		RestTemplate crt = new RestTemplate();
-		HttpEntity<String> centity = new HttpEntity<String>(cheader);
-	
-		try {
-			ResponseEntity<String> cresponse = crt.exchange( dhnServer + "get_crypto",HttpMethod.GET, centity, String.class );
-			
-			if(cresponse.getStatusCode()==HttpStatus.OK) {
-				crypto = cresponse.getBody()!=null? cresponse.getBody().toString():"";
-				log.info("SMS 초기화 완료");
-				isStart = true;
-			}else {
-				log.info("암호화 컬럼 가져오기 오류 ");			
-			}
-			
-		}catch (HttpClientErrorException e) {
-			log.error("crypto 가져오기 오류 : " + e.getStatusCode() + ", " + e.toString());
-		}catch (RestClientException e) {
-			log.error("기타 오류 : " + dhnServer + ", " + e.toString());
-		}
+		log.info("SMS 초기화 완료");
 	}
 	
 	
@@ -105,10 +83,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						requestService.updateSMSGroupNo(param);
 						
 						List<RequestBean> _list = requestService.selectSMSRequests(param);
-						
-						for (RequestBean requestBean : _list) {
-							requestBean = smsService.encryption(requestBean,crypto);
-						}
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
