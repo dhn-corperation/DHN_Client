@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 import javax.crypto.spec.GCMParameterSpec;
 
@@ -86,12 +87,12 @@ public class KAOService {
 		try{
 			ObjectMapper mapper = new ObjectMapper();
 			String json = kaoRequestBean.getButton();
-			List<ButtonJsonBean> buttons;
+			List<Map<String, Object>> buttons;
 
 			if (json.trim().startsWith("[")) {
-				buttons = mapper.readValue(json, new TypeReference<List<ButtonJsonBean>>() {});
+				buttons = mapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
 			} else {
-				ButtonJsonBean singleButton = mapper.readValue(json, ButtonJsonBean.class);
+				Map<String, Object> singleButton = mapper.readValue(json, new TypeReference<Map<String, Object>>() {});
 				buttons = Arrays.asList(singleButton);
 			}
 

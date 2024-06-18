@@ -279,7 +279,7 @@
 
     <update id = "result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
         update ${msg_table}
-            set RECVTIME = '${result_time}',
+            set RECVTIME = TO_CHAR(TO_DATE('${result_time}', 'YYYY-MM-DD HH24:MI:SS'), 'YYYYMMDDHH24MISS'),
                 ERRCODE = '${result}',
                 RESULT = '${status}'
         where SEQNO = '${msgid}'
