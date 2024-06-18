@@ -9,18 +9,18 @@
             and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
             and SENTTIME is NULL
             and KIND in ('A','F')
-            and GROUP_NO is NULL
+            and RETRY = '0'
     </select>
 
     <update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
-        set GROUP_NO = '${group_no}'
+        set RETRY = '${group_no}'
         where RESULT in ('0','R')
             and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
             and SENTTIME is NULL
             and KIND in ('A','F')
-            and GROUP_NO is NULL
-            and ROWNUM &lt; 1000
+            and RETRY = '0'
+            and ROWNUM &lt;= 1000
     </update>
 
     <resultMap id="RequestTable" type="com.dhn.client.bean.KAORequestBean">
@@ -32,14 +32,10 @@
         <result column="call_from" property="smssender"/>
         <result column="pcom" property="pcom"/>
         <result column="userdata" property="pinvoice"/>
-        <result column="smskind" property="smskind"/>
         <result column="msg_txt_title" property="smslmstit"/>
+        <result column="crypto" property="crypto"/>
         <result column="curr_date" property="regdt"/>
-        <result column="btn_1" property="button1"/>
-        <result column="btn_2" property="button2"/>
-        <result column="btn_3" property="button3"/>
-        <result column="btn_4" property="button4"/>
-        <result column="btn_5" property="button5"/>
+        <result column="button" property="button"/>
         <result column="template_cd" property="tmplid"/>
         <result column="profile_key" property="profile"/>
         <result column="snd_dttm" property="reservedt"/>
@@ -54,7 +50,7 @@
                 else 'PH'
             end) as message_type,
             MSG as msg_txt,
-            RETEXT as sms_txt,
+            null as sms_txt,
             (case
                 when CALLPHONE like '82%' then CALLPHONE
                 when CALLPHONE like '010%' then '82' || substr(CALLPHONE,2,15)
@@ -63,16 +59,17 @@
             REQPHONE as call_from,
             SUBJECT as msg_txt_title,
             'D' as pcom,
-            '' as smskind,
+            'N' as crypto,
+            K_ATTACH as button,
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
             BUTTON_NAME as btn_name,
             BUTTON_URL as btn_url,
-            TEMPLATECODE as template_cd,
+            trim(TEMPLATECODE) as template_cd,
             YELLOWID_KEY AS profile_key,
-            NVL(TO_CHAR(REQTIME, 'YYYYMMDDHH24MISS'), '00000000000000') AS snd_dttm
+            NVL(REQTIME, '00000000000000') AS snd_dttm
         from ${msg_table}
         where RESULT = '0'
-          and GROUP_NO = '${group_no}'
+          and RETRY = '${group_no}'
           and KIND in ('A','F')
     </select>
 
@@ -81,16 +78,16 @@
         set RESULT = '1',
             SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
         where RESULT = '0'
-            and GROUP_NO = '${group_no}'
+            and RETRY = '${group_no}'
             and KIND in ('A','F')
     </update>
 
     <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
         set RESULT = '0',
-            GROUP_NO = NULL,
+            RETRY = '0',
             SENTTIME = NULL
-        where GROUP_NO = '${group_no}'
+        where RETRY = '${group_no}'
             and KIND in ('A','F')
     </update>
 </mapper>

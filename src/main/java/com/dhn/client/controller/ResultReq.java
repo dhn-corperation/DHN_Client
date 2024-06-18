@@ -1,5 +1,6 @@
 package com.dhn.client.controller;
 
+import com.dhn.client.bean.LMSTableBean;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
 @Component
 @Slf4j
 public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
@@ -33,8 +37,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	//private Map<String, String> _rsltCode = new HashMap<String, String>();
 	private static int procCnt = 0;
 	private String msgTable = "";
-	private String logTable = "";
-	private String dbtype = "";
+	private String tableseq = "";
 	
 	@Autowired
 	private RequestService requestService;
@@ -46,15 +49,14 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
-		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
+		tableseq = appContext.getEnvironment().getProperty("dhnclient.table_seq");
 		
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		
 		isStart = true;
 	}
-	
-/*
+
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc && procCnt < 10) {
@@ -97,67 +99,54 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			isProc = false;
 		}
 	}
-	*/
 	
 	private void ResultProc(JSONArray json, int _pc) {
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
 			
-			Msg_Log _ml = new Msg_Log(msgTable, logTable);
+			Msg_Log _ml = new Msg_Log();
 			_ml.setMsgid(ent.getString("msgid"));
-			
-			String rscode = "";
-			
-			_ml.setMsg_type(ent.getString("message_type").toUpperCase());
-			
-			if(ent.getString("message_type").equalsIgnoreCase("AT")) { // message_type = AT 즉, 1차 알림톡 성공
-				_ml.setMsg_err_code(ent.getString("code")); // 알림톡 코드
-				rscode = "K"; // 재발송된 문자 결과값 (K : 알림톡 성공)
-				_ml.setSndg_cpee_dt(ent.getString("res_dt")); // 단말기 수신 시각 (알림톡이 성공하면 remark2가 없어 Center에서 AT테이블에 넣는 시각)
-				
-				if(ent.getString("code").equals("0000")) { // 알림톡 성공 여부
-					_ml.setStatus("2");		
-				}else {
-					_ml.setStatus("4");							
+			_ml.setMsg_table(msgTable);
+
+			String rscode = "0000";
+			_ml.setStatus("2");
+
+			if(ent.getString("message_type").toUpperCase().equals("PH")){
+				rscode = ent.getString("code");
+				_ml.setResult(rscode);
+				_ml.setResult_time(ent.getString("remark2"));
+
+				if (!rscode.equals("0000")){
+					_ml.setStatus("3");
 				}
-			}else { // message_type = PH
-				if (ent.has("s_code") && !ent.isNull("s_code") && ent.getString("s_code").length() > 1){// 알림톡 실패 -> 문자처리
-					_ml.setMsg_err_code(ent.getString("s_code")); // 알림톡 실패 코드
-					rscode = ent.getString("code").substring(2); // 문자 코드
-					_ml.setAgan_sms_type(ent.getString("sms_kind")); // 재발송된 문자 타입
-					
-					if(ent.getString("remark1").equalsIgnoreCase("SKT")) {// 재발송된 문자 통신사값
-						_ml.setAgan_tel_info("1");
-					}else if(ent.getString("remark1").equalsIgnoreCase("KTF")) {
-						_ml.setAgan_tel_info("2");
-					}else if(ent.getString("remark1").equalsIgnoreCase("LGT")) {
-						_ml.setAgan_tel_info("3");
-					}else if(ent.getString("remark1").equalsIgnoreCase("ETC")) {
-						_ml.setAgan_tel_info("4");
+			}else{
+				_ml.setResult(ent.getString("code"));
+				_ml.setResult_time(ent.getString("res_dt"));
+
+				if(!_ml.getResult().equals("0000")){
+					_ml.setStatus("3");
+					try{
+						LMSTableBean lmsBean = requestService.kakao_to_sms_select(_ml);
+						if(lmsBean != null){
+
+							lmsBean.setTable(msgTable);
+							lmsBean.setTable_seq(tableseq);
+
+							// SMS가 90자 초과일 경우 LMS로 변경
+							if(lmsBean.getSmskind().equals("S")){
+								if(lmsBean.getMsgsms().length()>90){
+									lmsBean.setSmskind("M");
+								}
+							}
+
+							requestService.insert_sms(lmsBean);
+						}
+
+					}catch (Exception e){
+						e.printStackTrace();
 					}
-					
-					if(ent.getString("code").equals("0000")) { // 문자 성공 여부
-						_ml.setStatus("2");		
-					}else {
-						_ml.setStatus("4");
-					}
-					_ml.setSndg_cpee_dt(ent.getString("remark2")); // 단말기 수신 시각
-					
-				}else { // 일반 문자
-					_ml.setMsg_err_code(ent.getString("code").substring(2)); // 문자 코드
-					_ml.setAgan_sms_type(ent.getString("sms_kind")); // 문자 타입
-					if(ent.getString("code").equals("0000")) {
-						_ml.setStatus("2");		
-					}else {
-						_ml.setStatus("4");							
-					}
-					_ml.setSndg_cpee_dt(ent.getString("remark2")); // 단말기 수신 시각
 				}
 			}
-			
-			_ml.setAgan_code(rscode);
-			
-			
 			try {
 				requestService.Insert_msg_log(_ml);
 			}catch (Exception e) {

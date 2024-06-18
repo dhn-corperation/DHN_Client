@@ -2,11 +2,7 @@ package com.dhn.client.dao;
 
 import java.util.List;
 
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.MMSImageBean;
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.RequestBean;
-import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.bean.*;
 
 public interface RequestDAO {
 
@@ -49,4 +45,8 @@ public interface RequestDAO {
 	public void Insert_msg_log(Msg_Log _ml) throws Exception;
 
     public int selectMMSImageCount(SQLParameter param) throws Exception;
+
+    public LMSTableBean kakao_to_sms_select(Msg_Log ml) throws Exception;
+
+	public void insert_sms(LMSTableBean lmsBean) throws Exception;
 }

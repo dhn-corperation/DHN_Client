@@ -1,15 +1,12 @@
 package com.dhn.client.service;
 
+import java.util.Collections;
 import java.util.List;
 
+import com.dhn.client.bean.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.MMSImageBean;
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.RequestBean;
-import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.dao.RequestDAO;
 
 @Service
@@ -116,6 +113,16 @@ public class RequestServiceImpl implements RequestService {
 	@Override
 	public int selectMMSImageCount(SQLParameter param) throws Exception {
 		return requestDAO.selectMMSImageCount(param);
+	}
+
+	@Override
+	public LMSTableBean kakao_to_sms_select(Msg_Log ml) throws Exception {
+		return requestDAO.kakao_to_sms_select(ml);
+	}
+
+	@Override
+	public void insert_sms(LMSTableBean lmsBean) throws Exception {
+		requestDAO.insert_sms(lmsBean);
 	}
 
 }

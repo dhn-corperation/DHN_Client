@@ -1,10 +1,14 @@
 package com.dhn.client.service;
 
+import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 import javax.crypto.spec.GCMParameterSpec;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,55 +83,38 @@ public class KAOService {
 	}
 
 	public KAORequestBean Btn_form(KAORequestBean kaoRequestBean) {
+		try{
+			ObjectMapper mapper = new ObjectMapper();
+			String json = kaoRequestBean.getButton();
+			List<ButtonJsonBean> buttons;
 
-		String[] buttons = kaoRequestBean.getButton1().split("\\|");
+			if (json.trim().startsWith("[")) {
+				buttons = mapper.readValue(json, new TypeReference<List<ButtonJsonBean>>() {});
+			} else {
+				ButtonJsonBean singleButton = mapper.readValue(json, ButtonJsonBean.class);
+				buttons = Arrays.asList(singleButton);
+			}
 
-		if (buttons.length > 0) {
-			kaoRequestBean.setButton1(Btn_json(buttons[0]));
-		}
-		if (buttons.length > 1) {
-			kaoRequestBean.setButton2(Btn_json(buttons[1]));
-		}
-		if (buttons.length > 2) {
-			kaoRequestBean.setButton3(Btn_json(buttons[2]));
-		}
-		if (buttons.length > 3) {
-			kaoRequestBean.setButton4(Btn_json(buttons[3]));
-		}
-		if (buttons.length > 4) {
-			kaoRequestBean.setButton5(Btn_json(buttons[4]));
+			// 버튼 정보를 각각의 변수에 저장
+			kaoRequestBean.setButton1(buttons.size() > 0 ? mapper.writeValueAsString(buttons.get(0)) : null);
+			kaoRequestBean.setButton2(buttons.size() > 1 ? mapper.writeValueAsString(buttons.get(1)) : null);
+			kaoRequestBean.setButton3(buttons.size() > 2 ? mapper.writeValueAsString(buttons.get(2)) : null);
+			kaoRequestBean.setButton4(buttons.size() > 3 ? mapper.writeValueAsString(buttons.get(3)) : null);
+			kaoRequestBean.setButton5(buttons.size() > 4 ? mapper.writeValueAsString(buttons.get(4)) : null);
+		}catch (JsonProcessingException e){
+			e.printStackTrace();
+		} catch (IOException e){
+			e.printStackTrace();
 		}
 
 		return kaoRequestBean;
 
 	}
 
-	private String Btn_json(String btn) {
-
-		String[] buttons = btn.split("\\^");
-
-		ButtonJsonBean btnjb = new ButtonJsonBean();
-		btnjb.setName(buttons[0]);
-		btnjb.setType(buttons[1]);
-		btnjb.setUrl_mobile(buttons[2]);
-		btnjb.setUrl_pc(buttons[3]);
-
-		String jsonString = "";
-
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			jsonString = mapper.writeValueAsString(btnjb);
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return jsonString;
-	}
 	
 	 public GCMParameterSpec generateGCMParameterSpec() {
 	        byte[] iv = new byte[12]; // 12바이트 nonce
 	        new SecureRandom().nextBytes(iv);
 	        return new GCMParameterSpec(128, iv);
-	   }
+	}
 }

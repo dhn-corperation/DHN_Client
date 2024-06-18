@@ -5,23 +5,23 @@
 
     <select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         select count(1) as cnt
-        fron ${msg_table}
+        from ${msg_table}
         where RESULT in ('0','R')
             and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
             and SENTTIME is NULL
             and KIND = '${msg_type}'
-            and GROUP_NO is NULL
+            and RETRY = '0'
     </select>
 
     <update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
-        set GROUP_NO = '${group_no}'
+        set RETRY = '${group_no}'
         where RESULT in ('0','R')
             and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
             and SENTTIME is NULL
             and KIND = '${msg_type}'
-            and GROUP_NO is NULL
-            and ROWNUM &lt; 1000
+            and RETRY = '0'
+            and ROWNUM &lt;= 1000
     </update>
 
     <select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
@@ -32,18 +32,18 @@
             and SENTTIME is NULL
             and KIND = '${msg_type}'
             and FKCONTENT is NULL
-            and GROUP_NO is NULL
+            and RETRY = '0'
     </select>
 
     <update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
-        set GROUP_NO = '${group_no}'
+        set RETRY = '${group_no}'
         where RESULT in ('0','R')
             and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
             and SENTTIME is NULL
             and KIND = '${msg_type}'
             and FKCONTENT is NULL
-            and GROUP_NO is NULL
+            and RETRY = '0'
             AND ROWNUM &lt;= 1000
     </update>
 
@@ -54,19 +54,19 @@
             and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
             and SENTTIME is NULL
             and KIND = '${msg_type}'
-            and GROUP_NO IS NULL
-            and MMS_IMAGE_KEY is not null
+            and RETRY = '0'
+            and PSEQ is not null
     </select>
 
     <update id="req_mms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
-        set GROUP_NO = '${group_no}'
+        set RETRY = '${group_no}'
         where RESULT in ('0','R')
             and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
             and SENTTIME is NULL
             and KIND = '${msg_type}'
-            and GROUP_NO is NULL
-            and MMS_IMAGE_KEY is not null
+            and RETRY = '0'
+            and PSEQ is not null
             AND ROWNUM &lt;= 1000
     </update>
 
@@ -74,7 +74,7 @@
         select count(1) as cnt
         from ${msg_table}
         where FKCONTENT is not null
-            and MMS_IMAGE_KEY is null
+            and PSEQ is null
     </select>
 
     <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
@@ -85,12 +85,12 @@
         from ${msg_table} msg join ${img_table} img
             on msg.FKCONTENT = img.SEQNO
         where FKCONTENT is not null
-            and MMS_IMAGE_KEY is null
+            and PSEQ is null
     </select>
 
     <update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
-        set MMS_IMAGE_KEY = '${mms_key}'
+        set PSEQ = '${mms_key}'
         where FKCONTENT = '${fkContent}'
     </update>
 
@@ -121,11 +121,12 @@
             null as msg_txt_title,
             'S' as smskind,
             'D' as pcom,
+            'N' as crypto,
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
-            NVL(TO_CHAR(REQTIME, 'YYYYMMDDHH24MISS'), '00000000000000') AS snd_dttm
+            NVL(REQTIME, '00000000000000') AS snd_dttm
         from ${msg_table}
         WHERE RESULT = '0'
-            and GROUP_NO = '${group_no}'
+            and RETRY = '${group_no}'
             and KIND = '${msg_type}'
     </select>
 
@@ -140,11 +141,12 @@
             SUBJECT as msg_txt_title,
             'L' as smskind,
             'D' as pcom,
+            'N' as crypto,
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
-            NVL(TO_CHAR(REQTIME, 'YYYYMMDDHH24MISS'), '00000000000000') AS snd_dttm
+            NVL(REQTIME, '00000000000000') AS snd_dttm
         from ${msg_table}
         where RESULT = '0'
-            and GROUP_NO = '${group_no}'
+            and RETRY = '${group_no}'
             and KIND = '${msg_type}'
             and FKCONTENT is NULL
     </select>
@@ -160,14 +162,15 @@
             SUBJECT as msg_txt_title,
             'M' as smskind,
             'D' as pcom,
+            'N' as crypto,
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
-            NVL(TO_CHAR(REQTIME, 'YYYYMMDDHH24MISS'), '00000000000000') AS snd_dttm,
-            mms_image_key
+            NVL(REQTIME, '00000000000000') AS snd_dttm,
+            PSEQ as mms_image_key
         from ${msg_table}
-        where RESLT = '0'
-          and GROUP_NO = '${group_no}'
+        where RESULT = '0'
+          and RETRY = '${group_no}'
           and KIND = '${msg_type}'
-          and mms_image_key is not null
+          and PSEQ is not null
     </select>
 
     <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -175,29 +178,111 @@
         set RESULT = '1',
             SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
         where RESULT = '0'
-          and GROUP_NO = '${group_no}'
+          and RETRY = '${group_no}'
           and KIND = '${msg_type}'
-    </update>
-
-    <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
-
-        update ${msg_table}
-        set MSG_SNDG_STTS_CD = '0',
-            GROUP_NO = NULL,
-            SNDG_DDTI = NULL
-        where
-            MSG_SNDG_STTS_CD = '1'
-          and GROUP_NO = '${group_no}'
-          and MSG_DCD = '${msg_type}'
     </update>
 
     <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
         set RESULT = '0',
-            GROUP_NO = NULL,
+            RETRY = '0',
             SENTTIME = NULL
-        where GROUP_NO = '${group_no}'
+        where RETRY = '${group_no}'
           and KIND = '${msg_type}'
+    </update>
+
+    <resultMap id="LMSTable" type="com.dhn.client.bean.LMSTableBean">
+        <result column="msgid" property="msg_id"/>
+        <result column="intime" property="intime"/>
+        <result column="usercode" property="usercode"/>
+        <result column="reqname" property="reqname"/>
+        <result column="reqphone" property="reqphone"/>
+        <result column="callname" property="callname"/>
+        <result column="callphone" property="callphone"/>
+        <result column="msgtitle" property="msgtitle"/>
+        <result column="msgtitle" property="msgtitle"/>
+        <result column="msg" property="msg"/>
+        <result column="msgsms" property="msgsms"/>
+        <result column="smskind" property="smskind"/>
+        <result column="mmskey" property="mmskey"/>
+        <result column="deptcode" property="deptcode"/>
+        <result column="seq_ex_ums" property="seq_ex_ums"/>
+        <result column="empl_no" property="empl_no"/>
+        <result column="reqid" property="reqid"/>
+        <result column="smrseq" property="smrseq"/>
+    </resultMap>
+
+    <select id="kakao_to_sms_select" parameterType="com.dhn.client.bean.Msg_Log" resultMap="LMSTable">
+        select SEQNO      as msgid,
+               INTIME     as intime,
+               USERCODE   as usercode,
+               REQNAME    as reqname,
+               REQPHONE   as reqphone,
+               CALLNAME   as callname,
+               CALLPHONE  as callphone,
+               SUBJECT    as msgtitle,
+               MSG        as msg,
+               RETEXT     as msgsms,
+               (case
+                    when RESENTFLAG = '7' then 'S'
+                    when RESENTFLAG in ('8', '9') then 'M'
+                   end)   as smskind,
+               FKCONTENT  as mmskey,
+               DEPTCODE   as deptcode,
+               SEQ_EX_UMS as seq_ex_ums,
+               EMPL_NO    as empl_no,
+               REQID      as reqid,
+               SURE_MESSAGE_REQUEST_SEQ as smrseq
+        from ${msg_table}
+        where SEQNO = '${msgid}'
+          and nvl(RESENTFLAG, '0') != '0'
+    </select>
+
+    <insert id="kao_to_sms_insert" parameterType="com.dhn.client.bean.LMSTableBean">
+        insert into ${table} (
+            SEQNO,
+            INTIME,
+            USERCODE,
+            REQNAME,
+            REQPHONE,
+            CALLNAME,
+            CALLPHONE,
+            SUBJECT,
+            MSG,
+            KIND,
+            FKCONTENT,
+            DEPTCODE,
+            SEQ_EX_UMS,
+            EMPL_NO,
+            REQID,
+            SURE_MESSAGE_REQUEST_SEQ
+             )
+        values (
+            ${table_seq}.nextval
+            ,TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+            ,'${usercode}'
+            ,'${reqname}'
+            ,'${reqphone}'
+            ,'${callname}'
+            ,'${callphone}'
+            ,'${msgtitle}'
+            ,'${msgsms}'
+            ,'${smskind}'
+            ,'${mmskey}'
+            ,'${deptcode}'
+            ,'${seq_ex_ums}'
+            ,'${empl_no}'
+            ,'${reqid}'
+            ,'${smrseq}'
+             )
+    </insert>
+
+    <update id = "result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+        update ${msg_table}
+            set RECVTIME = '${result_time}',
+                ERRCODE = '${result}',
+                RESULT = '${status}'
+        where SEQNO = '${msgid}'
     </update>
 
 </mapper>

@@ -71,7 +71,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 			LocalDateTime now = LocalDateTime.now();
-			String group_no = "S" + now.format(formatter);
+			String group_no = "2" + now.format(formatter);
 			
 			if(!group_no.equals(preGroupNo)) {
 				try {
@@ -83,6 +83,10 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						requestService.updateSMSGroupNo(param);
 						
 						List<RequestBean> _list = requestService.selectSMSRequests(param);
+
+						for (RequestBean kaoRequestBean : _list) {
+							log.info(kaoRequestBean.toString());
+						}
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
@@ -95,6 +99,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						
 						RestTemplate rt = new RestTemplate();
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+						/*
 						
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
@@ -113,6 +119,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							
 							requestService.updateSMSSendInit(param);
 						}
+
+						 */
 
 					}
 				

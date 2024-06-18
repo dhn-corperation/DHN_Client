@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+import com.dhn.client.bean.KAORequestBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -69,7 +70,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 			LocalDateTime now = LocalDateTime.now();
-			String group_no = "L" + now.format(formatter);
+			String group_no = "3" + now.format(formatter);
 			
 			if(!group_no.equals(preGroupNo)) {
 				
@@ -83,6 +84,10 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						requestService.updateLMSGroupNo(param);
 						
 						List<RequestBean> _list = requestService.selectLMSRequests(param);
+
+						for (RequestBean kaoRequestBean : _list) {
+							log.info(kaoRequestBean.toString());
+						}
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
@@ -95,7 +100,8 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						
 						RestTemplate rt = new RestTemplate();
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-						
+
+						/*
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 													
@@ -113,6 +119,8 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							
 							requestService.updateSMSSendInit(param);
 						}
+
+						 */
 						
 					}
 					

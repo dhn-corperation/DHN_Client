@@ -1,16 +1,12 @@
 package com.dhn.client.dao;
 
+import java.util.Collections;
 import java.util.List;
 
+import com.dhn.client.bean.*;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.MMSImageBean;
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.RequestBean;
-import com.dhn.client.bean.SQLParameter;
 
 @Repository
 public class RequestImpl implements RequestDAO{
@@ -122,15 +118,19 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
+	public LMSTableBean kakao_to_sms_select(Msg_Log ml) throws Exception {
+		return sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.kakao_to_sms_select",ml);
+	}
+
+	@Override
 	public void Insert_msg_log(Msg_Log _ml) throws Exception {
-		if(_ml.getMsg_type().equals("AT") || _ml.getAgan_code().length()>1) {
-			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert1", _ml);
-			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert2", _ml);
-			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert3", _ml);
-		}else {
-			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert1", _ml);
-			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert2", _ml);
-			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert3", _ml);
-		}
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert1", _ml);
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert2", _ml);
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert3", _ml);
+	}
+
+	@Override
+	public void insert_sms(LMSTableBean lmsBean) throws Exception {
+		sqlSession.insert("com.dhn.client.nkakao.mapper.SendRequest.kao_to_sms_insert",lmsBean);
 	}
 }

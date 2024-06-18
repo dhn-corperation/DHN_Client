@@ -47,6 +47,9 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private RequestService requestService;
 
 	@Autowired
+	private KAOService kaoService;
+
+	@Autowired
 	private ApplicationContext appContext;
 
 	@Autowired
@@ -57,6 +60,9 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setKakao(appContext.getEnvironment().getProperty("dhnclient.kakao"));
 		param.setMsg_type("A");
+
+		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
 		if (param.getKakao() != null && param.getKakao().toUpperCase().equals("Y")) {
 			log.info("KAO 초기화 완료");
@@ -75,7 +81,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 			LocalDateTime now = LocalDateTime.now();
-			String group_no = now.format(formatter);
+			String group_no = "1" + now.format(formatter);
 			
 			if(!group_no.equals(preGroupNo)) {
 				
@@ -90,6 +96,13 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 						List<KAORequestBean> _list = requestService.selectKAORequests(param);
 
+						for (KAORequestBean kaoRequestBean : _list) {
+							if(kaoRequestBean.getButton()!=null && !kaoRequestBean.getButton().isEmpty()){
+								kaoService.Btn_form(kaoRequestBean);
+							}
+							log.info(kaoRequestBean.toString());
+						}
+
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
 						om.writeValue(sw, _list);
@@ -101,7 +114,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 						RestTemplate rt = new RestTemplate();
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
+						/*
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 
@@ -117,6 +130,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 							log.info("KAO 메세지 전송 오류 : " + e.toString());
 							requestService.updateKAOSendInit(param);
 						}
+
+						 */
 
 					}
 					

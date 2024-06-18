@@ -45,5 +45,6 @@ public class KAORequestBean {
 	private String crypto;
 	private String btn_name;
 	private String btn_url;
+	private String button;
 	  
 }
