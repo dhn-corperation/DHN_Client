@@ -100,7 +100,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 							if(kaoRequestBean.getButton()!=null && !kaoRequestBean.getButton().isEmpty()){
 								kaoService.Btn_form(kaoRequestBean);
 							}
-							log.info(kaoRequestBean.toString());
 						}
 
 						StringWriter sw = new StringWriter();
@@ -114,7 +113,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 						RestTemplate rt = new RestTemplate();
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-						/*
+
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 
@@ -130,8 +129,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 							log.info("KAO 메세지 전송 오류 : " + e.toString());
 							requestService.updateKAOSendInit(param);
 						}
-
-						 */
 
 					}
 					

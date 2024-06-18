@@ -84,10 +84,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						requestService.updateLMSGroupNo(param);
 						
 						List<RequestBean> _list = requestService.selectLMSRequests(param);
-
-						for (RequestBean kaoRequestBean : _list) {
-							log.info(kaoRequestBean.toString());
-						}
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
@@ -101,7 +97,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						RestTemplate rt = new RestTemplate();
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
-						/*
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 													
@@ -120,7 +115,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							requestService.updateSMSSendInit(param);
 						}
 
-						 */
 						
 					}
 					

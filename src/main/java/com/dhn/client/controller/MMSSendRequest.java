@@ -98,10 +98,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						requestService.updateMMSGroupNo(param);
 						
 						List<RequestBean> _list = requestService.selectMMSRequests(param);
-
-						for (RequestBean kaoRequestBean : _list) {
-							log.info(kaoRequestBean.toString());
-						}
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
@@ -114,10 +110,8 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						
 						RestTemplate rt = new RestTemplate();
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-						/*
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							//log.info(response.getStatusCode() + " / " + response.getBody());
 													
 							if(response.getStatusCode() == HttpStatus.OK)
 							{
@@ -134,7 +128,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							requestService.updateSMSSendInit(param);
 						}
 
-						 */
 						
 					}
 					
