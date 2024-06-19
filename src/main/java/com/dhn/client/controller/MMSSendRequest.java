@@ -156,6 +156,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					for (MMSImageBean mmsImageBean : imgList) {
 						param.setFkContent(mmsImageBean.getFkContent());
+						param.setMsgid(mmsImageBean.getMsgid());
 
 						MultipartBody.Builder builder = new MultipartBody.Builder();
 						builder.addFormDataPart("userid", userid);

@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class MMSImageBean {
+	private String msgid;
 	private String fkContent;
 	private String file1;
 	private String file2;
