@@ -84,8 +84,9 @@
                img.FILEPATH3 as file3
         from ${msg_table} msg join ${img_table} img
             on msg.FKCONTENT = img.SEQNO
-        where FKCONTENT is not null
-            and PSEQ is null
+        where msg.FKCONTENT is not null
+            and msg.PSEQ is null
+            and msg.KIND = 'M'
     </select>
 
     <update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -125,7 +126,7 @@
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
             NVL(REQTIME, '00000000000000') AS snd_dttm
         from ${msg_table}
-        WHERE RESULT = '0'
+        WHERE RESULT in ('0','R')
             and RETRY = '${group_no}'
             and KIND = '${msg_type}'
     </select>
@@ -145,7 +146,7 @@
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
             NVL(REQTIME, '00000000000000') AS snd_dttm
         from ${msg_table}
-        where RESULT = '0'
+        where RESULT in ('0','R')
             and RETRY = '${group_no}'
             and KIND = '${msg_type}'
             and FKCONTENT is NULL
@@ -167,7 +168,7 @@
             NVL(REQTIME, '00000000000000') AS snd_dttm,
             PSEQ as mms_image_key
         from ${msg_table}
-        where RESULT = '0'
+        where RESULT in ('0','R')
           and RETRY = '${group_no}'
           and KIND = '${msg_type}'
           and PSEQ is not null
@@ -177,7 +178,7 @@
         update ${msg_table}
         set RESULT = '1',
             SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-        where RESULT = '0'
+        where RESULT in ('0','R')
           and RETRY = '${group_no}'
           and KIND = '${msg_type}'
     </update>

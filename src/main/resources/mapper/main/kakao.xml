@@ -68,7 +68,7 @@
             YELLOWID_KEY AS profile_key,
             NVL(REQTIME, '00000000000000') AS snd_dttm
         from ${msg_table}
-        where RESULT = '0'
+        where RESULT in ('0','R')
           and RETRY = '${group_no}'
           and KIND in ('A','F')
     </select>
@@ -77,7 +77,7 @@
         update ${msg_table}
         set RESULT = '1',
             SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-        where RESULT = '0'
+        where RESULT in ('0','R')
             and RETRY = '${group_no}'
             and KIND in ('A','F')
     </update>

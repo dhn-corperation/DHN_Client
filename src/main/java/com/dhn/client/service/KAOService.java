@@ -2,10 +2,7 @@ package com.dhn.client.service;
 
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.crypto.spec.GCMParameterSpec;
 
@@ -93,7 +90,7 @@ public class KAOService {
 				buttons = mapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {});
 			} else {
 				Map<String, Object> singleButton = mapper.readValue(json, new TypeReference<Map<String, Object>>() {});
-				buttons = Arrays.asList(singleButton);
+				buttons = Collections.singletonList(singleButton);
 			}
 
 			// 버튼 정보를 각각의 변수에 저장
@@ -104,7 +101,7 @@ public class KAOService {
 			kaoRequestBean.setButton5(buttons.size() > 4 ? mapper.writeValueAsString(buttons.get(4)) : null);
 		}catch (JsonProcessingException e){
 			e.printStackTrace();
-		} catch (IOException e){
+		}catch (IOException e){
 			e.printStackTrace();
 		}
 
