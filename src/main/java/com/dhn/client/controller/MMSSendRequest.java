@@ -189,7 +189,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							if(response.code() == 200) {
 								ObjectMapper mapper = new ObjectMapper();
 								Map<String, String> res = mapper.readValue(response.body().string(), Map.class);
-								log.info("MMS Image Key : " + res.get("image group"));
+								//log.info("MMS Image Key : " + res.get("image group"));
 								if(res.get("image group") != null && res.get("image group").length() > 0) {
 									param.setMms_key(res.get("image group"));
 									requestService.updateMMSImageGroup(param);
