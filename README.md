@@ -1,4 +1,4 @@
-# 자바 DHN_CLIENT Sample
+# 자바 DHN_CLIENT 한국기술교육대학교
 ## Service
 - oracle
 - mysql
