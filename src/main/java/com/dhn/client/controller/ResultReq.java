@@ -146,7 +146,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			String rscode = "7000";
 			_ml.setStatus("2");
 
-			if(ent.getString("message_type").toUpperCase().equals("PH")){
+			if(ent.getString("message_type").equalsIgnoreCase("PH")){
 				rscode = ent.getString("code").substring(2);
 				_ml.setResult(rscode);
 				_ml.setResult_time(ent.getString("remark2"));
