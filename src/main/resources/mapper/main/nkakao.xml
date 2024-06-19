@@ -78,7 +78,8 @@
     </select>
 
     <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
-        select msg.FKCONTENT as fkContent,
+        select msg.SEQNO as msgid,
+               msg.FKCONTENT as fkContent,
                img.FILEPATH1 as file1,
                img.FILEPATH2 as file2,
                img.FILEPATH3 as file3

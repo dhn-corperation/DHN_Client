@@ -20,5 +20,6 @@ public class SQLParameter {
 	private String file3;
 	private String mms_key;
 	private String fkContent;
+	private String msgid;
 
 }
