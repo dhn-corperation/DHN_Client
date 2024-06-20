@@ -288,4 +288,34 @@
         where SEQNO = '${msgid}'
     </update>
 
+    <insert id="result_log_insert2" parameterType="com.dhn.client.bean.SQLParameter">
+        insert into ${log_table} select * from ${msg_table} where SEQNO = '${msgid}'
+    </insert>
+
+    <delete id="result_log_insert3" parameterType="com.dhn.client.bean.SQLParameter">
+        delete from ${msg_table} where SEQNO = '${msgid}'
+    </delete>
+
+    <select id="log_move_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        select count(1) as cnt
+        from ${msg_table}
+        where RESULT = 'C'
+    </select>
+
+    <update id="log_move_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        update ${msg_table}
+        set RETRY = '${group_no}'
+        where RESULT = 'C'
+          and ROWNUM &lt;= 1000
+    </update>
+
+    <insert id="log_move_insert" parameterType="com.dhn.client.bean.SQLParameter">
+        insert into ${log_table} select * from ${msg_table} where RETRY = '${group_no}'
+    </insert>
+
+    <delete id="log_move_delete" parameterType="com.dhn.client.bean.SQLParameter">
+        delete from ${msg_table} where RETRY = '${group_no}'
+    </delete>
+
+
 </mapper>

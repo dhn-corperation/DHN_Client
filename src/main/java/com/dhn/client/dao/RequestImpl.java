@@ -125,10 +125,28 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void Insert_msg_log(Msg_Log _ml) throws Exception {
 		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert1", _ml);
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert2", _ml);
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert3", _ml);
 	}
 
 	@Override
 	public void insert_sms(LMSTableBean lmsBean) throws Exception {
 		sqlSession.insert("com.dhn.client.nkakao.mapper.SendRequest.kao_to_sms_insert",lmsBean);
+	}
+
+	@Override
+	public int log_move_count(SQLParameter param) throws Exception {
+		return sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.log_move_count",param);
+	}
+
+	@Override
+	public void update_log_move_groupNo(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.log_move_group_update",param);
+	}
+
+	@Override
+	public void log_move(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.log_move_insert",param);
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.log_move_delete",param);
 	}
 }

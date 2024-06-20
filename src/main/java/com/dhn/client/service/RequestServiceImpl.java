@@ -125,4 +125,19 @@ public class RequestServiceImpl implements RequestService {
 		requestDAO.insert_sms(lmsBean);
 	}
 
+	@Override
+	public int log_move_count(SQLParameter param) throws Exception {
+		return requestDAO.log_move_count(param);
+	}
+
+	@Override
+	public void update_log_move_groupNo(SQLParameter param) throws Exception {
+		requestDAO.update_log_move_groupNo(param);
+	}
+
+	@Override
+	public void log_move(SQLParameter param) throws Exception {
+		requestDAO.log_move(param);
+	}
+
 }

@@ -49,4 +49,10 @@ public interface RequestService {
     public LMSTableBean kakao_to_sms_select(Msg_Log ml) throws Exception;
 
 	public void insert_sms(LMSTableBean lmsBean) throws Exception;
+
+	public int log_move_count(SQLParameter param) throws Exception;
+
+	public void update_log_move_groupNo(SQLParameter param) throws Exception;
+
+	public void log_move(SQLParameter param) throws Exception;
 }

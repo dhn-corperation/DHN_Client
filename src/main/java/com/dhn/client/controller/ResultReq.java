@@ -2,6 +2,7 @@ package com.dhn.client.controller;
 
 import com.dhn.client.bean.LMSTableBean;
 import com.dhn.client.bean.Msg_Log;
+import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -25,6 +29,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	
 	public static boolean isStart = false;
 	private boolean isProc = false;
+	private boolean logProc = false;
 	//private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
@@ -32,6 +37,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private static int procCnt = 0;
 	private String msgTable = "";
 	private String tableseq = "";
+	private String logTable = "";
 	
 	@Autowired
 	private RequestService requestService;
@@ -43,8 +49,9 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
+		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		tableseq = appContext.getEnvironment().getProperty("dhnclient.table_seq");
-		
+
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
@@ -142,6 +149,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			Msg_Log _ml = new Msg_Log();
 			_ml.setMsgid(ent.getString("msgid"));
 			_ml.setMsg_table(msgTable);
+			_ml.setLog_table(logTable);
 
 			String rscode = "7000";
 			_ml.setStatus("2");
@@ -151,7 +159,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				_ml.setResult(rscode);
 				_ml.setResult_time(ent.getString("remark2"));
 
-				if (!rscode.equals("0000")){
+				if (!rscode.equals("00")){
 					_ml.setStatus("3");
 				}
 			}else{
@@ -192,6 +200,5 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		procCnt--;
 		
 	}
-	
 
 }
