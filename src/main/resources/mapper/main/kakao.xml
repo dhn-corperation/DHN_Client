@@ -65,7 +65,10 @@
             BUTTON_NAME as btn_name,
             BUTTON_URL as btn_url,
             trim(TEMPLATECODE) as template_cd,
-            YELLOWID_KEY AS profile_key,
+            (case when YELLOWID_KEY = '74cd69ab6e0066074e2da0f197409633b46efb5e' then
+                'bfdb1b51fe4b29c3dc7e3f3d40fba90fb66bf858'
+                else YELLOWID_KEY
+            end) as profile_key,
             NVL(REQTIME, '00000000000000') AS snd_dttm
         from ${msg_table}
         where RESULT in ('0','R')
