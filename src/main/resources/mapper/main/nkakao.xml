@@ -287,4 +287,12 @@
         where SEQNO = '${msgid}'
     </update>
 
+    <insert id="result_log_insert2" parameterType="com.dhn.client.bean.SQLParameter">
+        insert into ${log_table} select * from ${msg_table} where SEQNO = '${msgid}'
+    </insert>
+
+    <delete id="result_log_insert3" parameterType="com.dhn.client.bean.SQLParameter">
+        delete from ${msg_table} where SEQNO = '${msgid}'
+    </delete>
+
 </mapper>

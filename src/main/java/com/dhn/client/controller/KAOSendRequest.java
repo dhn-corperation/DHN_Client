@@ -54,7 +54,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-		if (param.getKakao() != null && param.getKakao().toUpperCase().equals("Y")) {
+		if (param.getKakao() != null && param.getKakao().equalsIgnoreCase("Y")) {
 			log.info("KAO 초기화 완료");
 			isStart = true;
 		} else {

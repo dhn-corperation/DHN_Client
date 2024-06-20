@@ -39,6 +39,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private Map<String, String> _kaoCode = new HashMap<String,String>();
 	private static int procCnt = 0;
 	private String msgTable = "";
+	private String logTable = "";
 	private String tableseq = "";
 	
 	@Autowired
@@ -51,6 +52,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
+		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		tableseq = appContext.getEnvironment().getProperty("dhnclient.table_seq");
 		
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
@@ -150,16 +152,17 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			Msg_Log _ml = new Msg_Log();
 			_ml.setMsgid(ent.getString("msgid"));
 			_ml.setMsg_table(msgTable);
+			_ml.setLog_table(logTable);
 
 			String rscode = "7000";
 			_ml.setStatus("2");
 
-			if(ent.getString("message_type").toUpperCase().equals("PH")){
+			if(ent.getString("message_type").equalsIgnoreCase("PH")){
 				rscode = ent.getString("code").substring(2);
 				_ml.setResult(rscode);
 				_ml.setResult_time(ent.getString("remark2"));
 
-				if (!rscode.equals("0000")){
+				if (!rscode.equals("00")){
 					_ml.setStatus("3");
 				}
 			}else{

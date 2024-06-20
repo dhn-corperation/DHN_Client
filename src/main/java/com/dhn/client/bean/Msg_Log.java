@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class Msg_Log {
 	private String msg_table;
+	private String log_table;
 	private String msgid;
 	private String result;
 	private String telecom;
