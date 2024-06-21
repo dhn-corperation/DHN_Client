@@ -33,6 +33,7 @@
         <result column="smskind" property="smskind"/>
         <result column="msg_txt_title" property="smslmstit"/>
         <result column="curr_date" property="regdt"/>
+        <result column="crypto" property="crypto"/>
         <result column="button" property="button"/>
         <result column="template_cd" property="tmplid"/>
         <result column="profile_key" property="profile"/>
@@ -53,6 +54,7 @@
             end) as smskind,
             TITLE as msg_txt_title,
             'D' as pcom,
+            'N' as crypto,
             ATTACHMENT_JSON as button,
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
             TEMPLATE_CODE as template_cd,
