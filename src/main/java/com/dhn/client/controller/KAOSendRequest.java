@@ -48,6 +48,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+		param.setImg_table(appContext.getEnvironment().getProperty("dhnclient.img_table"));
 		param.setKakao(appContext.getEnvironment().getProperty("dhnclient.kakao"));
 		param.setMsg_type("A");
 

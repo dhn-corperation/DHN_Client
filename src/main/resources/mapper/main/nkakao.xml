@@ -26,24 +26,32 @@
 
     <select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         select count(1) as cnt
-        from ${msg_table}
-        where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND = '${msg_type}'
-            and FKCONTENT is NULL
-            and RETRY = '0'
+        from ${msg_table} msg left join ${img_table} img
+        on msg.FKCONTENT = img.SEQNO
+        where msg.RESULT in ('0','R')
+            and (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+            and msg.SENTTIME is NULL
+            and msg.KIND = '${msg_type}'
+            and (msg.FKCONTENT IS NULL OR img.FILECNT = 0)
+            and msg.RETRY = '0'
     </select>
 
     <update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set RETRY = '${group_no}'
+        update ${msg_table} msg
+        set msg.RETRY = '${group_no}'
         where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND = '${msg_type}'
-            and FKCONTENT is NULL
-            and RETRY = '0'
+            and (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+            and msg.SENTTIME is NULL
+            and msg.KIND = '${msg_type}'
+            AND (
+                msg.FKCONTENT IS NULL
+                OR msg.FKCONTENT IN (
+                    SELECT img.SEQNO
+                    FROM ${img_table} img
+                    WHERE img.FILECNT = 0
+                )
+            )
+            and msg.RETRY = '0'
             AND ROWNUM &lt;= 1000
     </update>
 
@@ -72,9 +80,11 @@
 
     <select id="req_mms_image_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType="int">
         select count(1) as cnt
-        from ${msg_table}
-        where FKCONTENT is not null
-            and PSEQ is null
+        from ${msg_table} msg left join ${img_table} img
+        on msg.FKCONTENT = img.SEQNO
+        where msg.FKCONTENT is not null
+            and img.FILECNT > '0'
+            and msg.PSEQ is null
     </select>
 
     <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
@@ -86,6 +96,7 @@
         from ${msg_table} msg join ${img_table} img
             on msg.FKCONTENT = img.SEQNO
         where msg.FKCONTENT is not null
+            and img.FILECNT > '0'
             and msg.PSEQ is null
             and msg.KIND = 'M'
     </select>
@@ -151,7 +162,6 @@
         where RESULT in ('0','R')
             and RETRY = '${group_no}'
             and KIND = '${msg_type}'
-            and FKCONTENT is NULL
     </select>
 
     <select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
