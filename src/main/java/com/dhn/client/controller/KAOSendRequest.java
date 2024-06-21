@@ -14,6 +14,8 @@ import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringWriter;
@@ -32,6 +34,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
+	private String crypto = "";
 
     @Autowired
 	private RequestService requestService;
@@ -54,14 +57,35 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-		if (param.getKakao() != null && param.getKakao().equalsIgnoreCase("Y")) {
-			log.info("KAO 초기화 완료");
-			isStart = true;
-		} else {
-			posts.postProcessBeforeDestruction(this, null);
-		}
 
-		
+		HttpHeaders cheader = new HttpHeaders();
+
+		cheader.setContentType(MediaType.APPLICATION_JSON);
+		cheader.set("userid", userid);
+
+		RestTemplate crt = new RestTemplate();
+		HttpEntity<String> centity = new HttpEntity<String>(cheader);
+
+		try {
+			ResponseEntity<String> cresponse = crt.exchange( dhnServer + "get_crypto",HttpMethod.GET, centity, String.class );
+
+			if(cresponse.getStatusCode()!=HttpStatus.OK) {
+				log.info("암호화 컬럼 가져오기 오류 ");
+			}
+
+			if (param.getKakao() != null && param.getKakao().equalsIgnoreCase("Y") && cresponse.getStatusCode() == HttpStatus.OK) {
+				crypto = cresponse.getBody()!=null? cresponse.getBody().toString():"";
+				log.info("KAO 초기화 완료");
+				isStart = true;
+			} else {
+				posts.postProcessBeforeDestruction(this, null);
+			}
+
+		}catch (HttpClientErrorException e) {
+			log.error("crypto 가져오기 오류 : " + e.getStatusCode() + ", " + e.toString());
+		}catch (RestClientException e) {
+			log.error("기타 오류 : " + dhnServer + ", " + e.toString());
+		}
 	}
 
 	@Scheduled(fixedDelay = 100)
@@ -86,6 +110,14 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 						List<KAORequestBean> _list = requestService.selectKAORequests(param);
 
+						for (KAORequestBean kaoRequestBean : _list) {
+							if(kaoRequestBean.getButton() != null && !kaoRequestBean.getButton().isEmpty()){
+								kaoRequestBean = kaoService.Btn_form(kaoRequestBean);
+							}
+							kaoRequestBean = kaoService.encryption(kaoRequestBean, crypto);
+						}
+
+
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
 						om.writeValue(sw, _list);
@@ -100,6 +132,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+							param.setRescode(String.valueOf(response.getStatusCodeValue()));
 
 							if (response.getStatusCode() == HttpStatus.OK) {
 								requestService.updateKAOSendComplete(param);
@@ -113,6 +146,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 							log.info("KAO 메세지 전송 오류 : " + e.toString());
 							requestService.updateKAOSendInit(param);
 						}
+
+
 
 					}
 					

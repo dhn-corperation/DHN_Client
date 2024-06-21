@@ -81,48 +81,8 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public int selectMMSReqeustCount(SQLParameter param) throws Exception {
-		return requestDAO.selectMMSReqeustCount(param);
-	}
-
-	@Override
-	public void updateMMSGroupNo(SQLParameter param) throws Exception {
-		requestDAO.updateMMSGroupNo(param);
-	}
-
-	@Override
-	public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectMMSRequests(param);
-	}
-
-	@Override
-	public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception {
-		return requestDAO.selectMMSImage(param);
-	}
-
-	@Override
-	public void updateMMSImageGroup(SQLParameter param) throws Exception {
-		requestDAO.updateMMSImageGroup(param);
-	}
-
-	@Override
 	public void Insert_msg_log(Msg_Log _ml) throws Exception {
 		requestDAO.Insert_msg_log(_ml);
-	}
-
-	@Override
-	public int selectMMSImageCount(SQLParameter param) throws Exception {
-		return requestDAO.selectMMSImageCount(param);
-	}
-
-	@Override
-	public LMSTableBean kakao_to_sms_select(Msg_Log ml) throws Exception {
-		return requestDAO.kakao_to_sms_select(ml);
-	}
-
-	@Override
-	public void insert_sms(LMSTableBean lmsBean) throws Exception {
-		requestDAO.insert_sms(lmsBean);
 	}
 
 }

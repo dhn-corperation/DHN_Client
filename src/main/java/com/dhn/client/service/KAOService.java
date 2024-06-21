@@ -84,21 +84,22 @@ public class KAOService {
             String json = kaoRequestBean.getButton();
             List<Map<String, Object>> buttons;
 
-            if (json.trim().startsWith("[")) {
-                buttons = mapper.readValue(json, new TypeReference<List<Map<String, Object>>>() {
-                });
+            String buttonArrayJson = mapper.readTree(json).get("button").toString();
+
+            if (buttonArrayJson.trim().startsWith("[")) {
+                buttons = mapper.readValue(buttonArrayJson, new TypeReference<List<Map<String, Object>>>() {});
             } else {
-                Map<String, Object> singleButton = mapper.readValue(json, new TypeReference<Map<String, Object>>() {
-                });
+                Map<String, Object> singleButton = mapper.readValue(buttonArrayJson, new TypeReference<Map<String, Object>>() {});
                 buttons = Collections.singletonList(singleButton);
             }
 
-            // 버튼 정보를 각각의 변수에 저장
+            // Set button1 to button5 fields in kaoRequestBean
             kaoRequestBean.setButton1(buttons.size() > 0 ? mapper.writeValueAsString(buttons.get(0)) : null);
             kaoRequestBean.setButton2(buttons.size() > 1 ? mapper.writeValueAsString(buttons.get(1)) : null);
             kaoRequestBean.setButton3(buttons.size() > 2 ? mapper.writeValueAsString(buttons.get(2)) : null);
             kaoRequestBean.setButton4(buttons.size() > 3 ? mapper.writeValueAsString(buttons.get(3)) : null);
             kaoRequestBean.setButton5(buttons.size() > 4 ? mapper.writeValueAsString(buttons.get(4)) : null);
+
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {

@@ -86,51 +86,15 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
-	public int selectMMSReqeustCount(SQLParameter param) throws Exception {
-		int cnt ;
-		cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_mms_count", param);
-		return cnt;
-	}
-
-	@Override
-	public void updateMMSGroupNo(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_mms_group_update", param);
-	}
-
-	@Override
-	public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception {
-		return sqlSession.selectList("com.dhn.client.nkakao.mapper.SendRequest.req_mms_select", param);
-	}
-
-	@Override
-	public int selectMMSImageCount(SQLParameter param) throws Exception {
-		return sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_mms_image_count",param);
-	}
-
-	@Override
-	public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception {
-		return sqlSession.selectList("com.dhn.client.nkakao.mapper.SendRequest.req_mms_image", param);
-	}
-
-	@Override
-	public void updateMMSImageGroup(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_mms_key_update", param);
-	}
-
-	@Override
-	public LMSTableBean kakao_to_sms_select(Msg_Log ml) throws Exception {
-		return sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.kakao_to_sms_select",ml);
-	}
-
-	@Override
 	public void Insert_msg_log(Msg_Log _ml) throws Exception {
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert1", _ml);
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert2", _ml);
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert3", _ml);
+		/*
 		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert1", _ml);
 		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert2", _ml);
 		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert3", _ml);
+		 */
 	}
 
-	@Override
-	public void insert_sms(LMSTableBean lmsBean) throws Exception {
-		sqlSession.insert("com.dhn.client.nkakao.mapper.SendRequest.kao_to_sms_insert",lmsBean);
-	}
 }

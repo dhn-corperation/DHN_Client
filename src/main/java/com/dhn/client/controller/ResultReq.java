@@ -144,6 +144,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			isProc = false;
 		}
 	}
+
 	
 	private void ResultProc(JSONArray json, int _pc) {
 		for(int i=0; i<json.length(); i++) {
@@ -154,45 +155,21 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			_ml.setMsg_table(msgTable);
 			_ml.setLog_table(logTable);
 
-			String rscode = "7000";
-			_ml.setStatus("2");
+			String restype = "";
+			_ml.setStatus("3");
+			_ml.setKao_send_date(ent.getString("res_dt"));
 
-			if(ent.getString("message_type").equalsIgnoreCase("PH")){
-				rscode = ent.getString("code").substring(2);
-				_ml.setResult(rscode);
-				_ml.setResult_time(ent.getString("remark2"));
-
-				if (!rscode.equals("00")){
-					_ml.setStatus("3");
-				}
+			if(ent.getString("message_type").equalsIgnoreCase("AT")){
+				_ml.setKao_err_code(_kaoCode.getOrDefault(ent.getString("code"),"7300"));
+				restype = "AT";
 			}else{
-				_ml.setResult(_kaoCode.getOrDefault(ent.getString("code"),"7300"));
-				_ml.setResult_time(ent.getString("res_dt"));
-
-				if(!_ml.getResult().equals("7000")){
-					_ml.setStatus("3");
-					try{
-						LMSTableBean lmsBean = requestService.kakao_to_sms_select(_ml);
-						if(lmsBean != null){
-
-							lmsBean.setTable(msgTable);
-							lmsBean.setTable_seq(tableseq);
-
-							// SMS가 90자 초과일 경우 LMS로 변경
-							if(lmsBean.getSmskind().equals("S")){
-								if(lmsBean.getMsgsms().length()>90){
-									lmsBean.setSmskind("M");
-								}
-							}
-
-							requestService.insert_sms(lmsBean);
-						}
-
-					}catch (Exception e){
-						e.printStackTrace();
-					}
-				}
+				_ml.setKao_err_code(_kaoCode.getOrDefault(ent.getString("s_code"),"7300"));
+				restype = ent.getString("sms_kind").equalsIgnoreCase("S")?"SM":"LM";
+				_ml.setMsg_err_code(ent.getString("code").substring(2));
+				_ml.setMsg_send_date(ent.getString("remark2"));
 			}
+
+			_ml.setRestype(restype);
 			try {
 				requestService.Insert_msg_log(_ml);
 			}catch (Exception e) {

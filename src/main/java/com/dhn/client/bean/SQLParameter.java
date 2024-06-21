@@ -21,5 +21,6 @@ public class SQLParameter {
 	private String mms_key;
 	private String fkContent;
 	private String msgid;
+	private String rescode;
 
 }

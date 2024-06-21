@@ -63,7 +63,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		log.info("SMS 초기화 완료");
 	}
 	
-	
+	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
@@ -125,6 +125,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 		}
 	}
+
+	 */
 	
 	
 

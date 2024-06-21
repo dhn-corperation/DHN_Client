@@ -32,21 +32,5 @@ public interface RequestService {
 
 	public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception;
 
-	public int selectMMSReqeustCount(SQLParameter param) throws Exception;
-
-	public void updateMMSGroupNo(SQLParameter param) throws Exception;
-
-	public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception;
-
-	public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception;
-
-	public void updateMMSImageGroup(SQLParameter param) throws Exception;
-
 	public void Insert_msg_log(Msg_Log _ml) throws Exception;
-
-	public int selectMMSImageCount(SQLParameter param) throws Exception;
-
-    public LMSTableBean kakao_to_sms_select(Msg_Log ml) throws Exception;
-
-	public void insert_sms(LMSTableBean lmsBean) throws Exception;
 }

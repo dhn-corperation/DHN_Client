@@ -5,21 +5,19 @@
     <select id="req_kao_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         select count(1) as cnt
         from ${msg_table}
-        where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND in ('A','F')
-            and RETRY = '0'
+        where STATUS = '1'
+            and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+            and REQUEST_DATE is null
+            and ETC1 is null
     </select>
 
     <update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
-        set RETRY = '${group_no}'
-        where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND in ('A','F')
-            and RETRY = '0'
+        set ETC1 = '${group_no}'
+        where STATUS = '1'
+            and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+            and REQUEST_DATE is null
+            and ETC1 is null
             and ROWNUM &lt;= 1000
     </update>
 
@@ -32,8 +30,8 @@
         <result column="call_from" property="smssender"/>
         <result column="pcom" property="pcom"/>
         <result column="userdata" property="pinvoice"/>
+        <result column="smskind" property="smskind"/>
         <result column="msg_txt_title" property="smslmstit"/>
-        <result column="crypto" property="crypto"/>
         <result column="curr_date" property="regdt"/>
         <result column="button" property="button"/>
         <result column="template_cd" property="tmplid"/>
@@ -43,51 +41,66 @@
 
     <select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
         select
-            SEQNO as msg_id,
-            (case
-                when KIND = 'A' then 'AT'
-                when KIND = 'F' then 'FT'
-                else 'PH'
-            end) as message_type,
-            MSG as msg_txt,
-            null as sms_txt,
-            (case
-                when CALLPHONE like '82%' then CALLPHONE
-                when CALLPHONE like '010%' then '82' || substr(CALLPHONE,2,15)
-                else '82' || substr(CALLPHONE,2,15)
-            end) as call_to,
-            REQPHONE as call_from,
-            SUBJECT as msg_txt_title,
+            ID as msg_id,
+            'AT' as message_type,
+            MESSAGE as msg_txt,
+            RESEND_MT_MESSAGE as sms_txt,
+            PHONE_NUMBER as call_to,
+            RESEND_MT_FROM as call_from,
+            (case when RESEND_MT_TYPE = 'SM' then 'S'
+                when RESEND_MT_TYPE = 'LM' then 'L'
+                when RESEND_MT_TYPE = 'NO' then null
+            end) as smskind,
+            TITLE as msg_txt_title,
             'D' as pcom,
-            'N' as crypto,
-            K_ATTACH as button,
+            ATTACHMENT_JSON as button,
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
-            BUTTON_NAME as btn_name,
-            BUTTON_URL as btn_url,
-            trim(TEMPLATECODE) as template_cd,
-            YELLOWID_KEY AS profile_key,
-            NVL(REQTIME, '00000000000000') AS snd_dttm
+            TEMPLATE_CODE as template_cd,
+            (case when SENDER_KEY = 'c5f8f78627fe0877758d4b339fa09252b68c5cc1' then
+                'e928cfe1258ede6069fde1b680aa24a25e38e148'
+                else SENDER_KEY
+            end) as profile_key,
+            NVL(RESERVED_DATE, '00000000000000') AS snd_dttm
         from ${msg_table}
-        where RESULT in ('0','R')
-          and RETRY = '${group_no}'
-          and KIND in ('A','F')
+        where STATUS = '1'
+          and ETC1 = '${group_no}'
     </select>
 
     <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
-        set RESULT = '1',
-            SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-        where RESULT in ('0','R')
-            and RETRY = '${group_no}'
-            and KIND in ('A','F')
+        set STATUS = '2',
+            RESPONSE_CODE = '${rescode}',
+            REQUEST_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+            RESPONSE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+        where STATUS = '1'
+            and ETC1 = '${group_no}'
     </update>
 
     <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
-        set RESULT = '0',
-            RETRY = '0',
-            SENTTIME = NULL
-        where RETRY = '${group_no}'
-            and KIND in ('A','F')
+        set STATUS = '1',
+            ETC1 = null,
+            REQUEST_DATE = null
+        where ETC1 = '${group_no}'
     </update>
+
+    <update id = "result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+        update ${msg_table}
+        set STATUS = '${status}',
+            REPORT_TYPE = '${restype}',
+            REPORT_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+            REPORT_CODE = '${kao_err_code}',
+            ARRIVAL_DATE = TO_CHAR(TO_DATE('${kao_send_date}','YYYY-MM-DD HH24:MI:SS'),'YYYYMMDDHH24MISS'),
+            RESEND_REPORT_CODE = '${msg_err_code}',
+            RESEND_ARRIVAL_DATE = TO_CHAR(TO_DATE('${msg_send_date}', 'YYYY-MM-DD HH24:MI:SS'), 'YYYYMMDDHH24MISS')
+        where ID = '${msgid}'
+    </update>
+
+    <insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
+        insert into ${log_table} select * from ${msg_table} where ID = '${msgid}'
+    </insert>
+
+    <delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
+        delete from ${msg_table} where ID = '${msgid}'
+    </delete>
 </mapper>
