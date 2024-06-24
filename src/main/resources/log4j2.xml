@@ -16,7 +16,7 @@
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
-            <DefaultRolloverStrategy max="10" fileIndex="min"/>
+            <DefaultRolloverStrategy max="30" fileIndex="min"/>
         </RollingFile>
     </Appenders>
   <!--    실제 Logger-->
