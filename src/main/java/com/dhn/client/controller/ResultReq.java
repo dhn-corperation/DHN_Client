@@ -1,31 +1,19 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.LMSTableBean;
+import com.dhn.client.bean.Msg_Log;
+import com.dhn.client.service.RequestService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.service.RequestService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.extern.slf4j.Slf4j;
-
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Component
 @Slf4j
@@ -36,11 +24,10 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	//private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
-	private Map<String, String> _kaoCode = new HashMap<String,String>();
+	//private Map<String, String> _kaoCode = new HashMap<String,String>();
 	private static int procCnt = 0;
 	private String msgTable = "";
 	private String logTable = "";
-	private String tableseq = "";
 	
 	@Autowired
 	private RequestService requestService;
@@ -53,51 +40,9 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
-		tableseq = appContext.getEnvironment().getProperty("dhnclient.table_seq");
 		
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-
-		_kaoCode.put("0000", "7000");
-		_kaoCode.put("1001", "7101");
-		_kaoCode.put("1003", "7103");
-		_kaoCode.put("1006", "7106");
-		_kaoCode.put("1007", "7107");
-		_kaoCode.put("1021", "7108");
-		_kaoCode.put("1022", "7109");
-		_kaoCode.put("1023", "7110");
-		_kaoCode.put("1024", "7111");
-		_kaoCode.put("1014", "7112");
-		_kaoCode.put("1025", "7125");
-		_kaoCode.put("2003", "7203");
-		_kaoCode.put("3016", "7204");
-		_kaoCode.put("2006", "7206");
-		_kaoCode.put("9998", "7300");
-		_kaoCode.put("3005", "7305");
-		_kaoCode.put("9999", "7306");
-		_kaoCode.put("3008", "7308");
-		_kaoCode.put("3013", "7311");
-		_kaoCode.put("3014", "7314");
-		_kaoCode.put("3015", "7315");
-		_kaoCode.put("3018", "7318");
-		_kaoCode.put("3022", "7322");
-		_kaoCode.put("3024", "7324");
-		_kaoCode.put("3025", "7325");
-		_kaoCode.put("3026", "7326");
-		_kaoCode.put("3027", "7327");
-		_kaoCode.put("3028", "7328");
-		_kaoCode.put("3029", "7329");
-		_kaoCode.put("3030", "7330");
-		_kaoCode.put("3031", "7331");
-		_kaoCode.put("3032", "7332");
-		_kaoCode.put("3033", "7333");
-		_kaoCode.put("3034", "7334");
-		_kaoCode.put("3035", "7335");
-		_kaoCode.put("3036", "7336");
-		_kaoCode.put("3037", "7337");
-		_kaoCode.put("3038", "7338");
-		_kaoCode.put("3039", "7339");
-		_kaoCode.put("3040", "7340");
 		
 		isStart = true;
 	}
@@ -156,19 +101,30 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			_ml.setLog_table(logTable);
 
 			String restype = "";
-			_ml.setStatus("3");
+			String rescode = "3";
 			_ml.setKao_send_date(ent.getString("res_dt"));
 
 			if(ent.getString("message_type").equalsIgnoreCase("AT")){
-				_ml.setKao_err_code(_kaoCode.getOrDefault(ent.getString("code"),"7300"));
+				_ml.setKao_err_code(ent.getString("code"));
 				restype = "AT";
+				if(ent.getString("code").equals("0000")){
+					rescode = "3";
+				}else{
+					rescode = "5";
+				}
 			}else{
-				_ml.setKao_err_code(_kaoCode.getOrDefault(ent.getString("s_code"),"7300"));
+				_ml.setKao_err_code(ent.getString("s_code"));
 				restype = ent.getString("sms_kind").equalsIgnoreCase("S")?"SM":"LM";
 				_ml.setMsg_err_code(ent.getString("code").substring(2));
 				_ml.setMsg_send_date(ent.getString("remark2"));
+				if(ent.getString("code").equals("0000")){
+					rescode = "4";
+				}else{
+					rescode = "5";
+				}
 			}
 
+			_ml.setStatus(rescode);
 			_ml.setRestype(restype);
 			try {
 				requestService.Insert_msg_log(_ml);

@@ -48,10 +48,14 @@
             RESEND_MT_MESSAGE as sms_txt,
             PHONE_NUMBER as call_to,
             RESEND_MT_FROM as call_from,
-            (case when RESEND_MT_TYPE = 'SM' then 'S'
-                when RESEND_MT_TYPE = 'LM' then 'L'
+            (case
                 when RESEND_MT_TYPE = 'NO' then null
-            end) as smskind,
+                else
+                    case
+                        when LENGTHB(CONVERT(RESEND_MT_MESSAGE, 'KO16MSWIN949')) > 90 THEN 'L'
+                        else 'S'
+                        end
+                end) as smskind,
             TITLE as msg_txt_title,
             'D' as pcom,
             'N' as crypto,

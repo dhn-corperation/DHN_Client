@@ -40,45 +40,6 @@ public class RequestServiceImpl implements RequestService {
 		requestDAO.updateKAOSendInit(param);
 	}
 
-	@Override
-	public int selectSMSReqeustCount(SQLParameter param) throws Exception {
-		return requestDAO.selectSMSReqeustCount(param);
-	}
-
-	@Override
-	public void updateSMSGroupNo(SQLParameter param) throws Exception {
-		requestDAO.updateSMSGroupNo(param);
-	}
-
-	@Override
-	public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectSMSRequests(param);
-	}
-
-	@Override
-	public void updateSMSSendComplete(SQLParameter param) throws Exception {
-		requestDAO.updateSMSSendComplete(param);
-	}
-
-	@Override
-	public void updateSMSSendInit(SQLParameter param) throws Exception {
-		requestDAO.updateSMSSendInit(param);
-	}
-
-	@Override
-	public int selectLMSReqeustCount(SQLParameter param) throws Exception {
-		return requestDAO.selectLMSReqeustCount(param);
-	}
-
-	@Override
-	public void updateLMSGroupNo(SQLParameter param) throws Exception {
-		requestDAO.updateLMSGroupNo(param);
-	}
-
-	@Override
-	public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectLMSRequests(param);
-	}
 
 	@Override
 	public void Insert_msg_log(Msg_Log _ml) throws Exception {

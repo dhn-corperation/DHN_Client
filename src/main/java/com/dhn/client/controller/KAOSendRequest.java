@@ -71,7 +71,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 			LocalDateTime now = LocalDateTime.now();
-			String group_no = "1" + now.format(formatter);
+			String group_no = now.format(formatter);
 			
 			if(!group_no.equals(preGroupNo)) {
 				
