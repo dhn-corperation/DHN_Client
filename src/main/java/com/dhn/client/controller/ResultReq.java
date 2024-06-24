@@ -112,6 +112,13 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				}else{
 					rescode = "5";
 				}
+
+				if(!ent.getString("code").equals(ent.getString("s_code"))){
+					_ml.setKao_err_code(ent.getString("s_code"));
+					_ml.setMsg_err_code(ent.getString("code").substring(2));
+					_ml.setMsg_send_date(ent.getString("remark2"));
+					restype = ent.getString("sms_kind").equalsIgnoreCase("S")?"SM":"LM";
+				}
 			}else{
 				_ml.setKao_err_code(ent.getString("s_code"));
 				restype = ent.getString("sms_kind").equalsIgnoreCase("S")?"SM":"LM";
