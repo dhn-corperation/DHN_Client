@@ -28,6 +28,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private static int procCnt = 0;
 	private String msgTable = "";
 	private String logTable = "";
+	private String msg_at_table = "";
+	private String log_at_table = "";
 	
 	@Autowired
 	private RequestService requestService;
@@ -40,6 +42,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
+		msg_at_table = appContext.getEnvironment().getProperty("dhnclient.msg_at_table");
+		log_at_table = appContext.getEnvironment().getProperty("dhnclient.log_at_table");
 		
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -96,38 +100,59 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			JSONObject ent = json.getJSONObject(i);
 			
 			Msg_Log _ml = new Msg_Log();
-			_ml.setMsgid(ent.getString("msgid"));
-			_ml.setMsg_table(msgTable);
-			_ml.setLog_table(logTable);
+			_ml.setMsgid(ent.getString("msgid").substring(1));
+			_ml.setMsgtype(ent.getString("msgid").substring(0,1));
 
 			String restype = "";
 			String rescode = "3";
 			_ml.setKao_send_date(ent.getString("res_dt"));
 
-			if(ent.getString("message_type").equalsIgnoreCase("AT")){
-				_ml.setKao_err_code(ent.getString("code"));
-				restype = "AT";
+			if(_ml.getMsgtype().equalsIgnoreCase("M")){
+
+				_ml.setMsg_table(msgTable);
+				_ml.setLog_table(logTable);
+
+				restype = ent.getString("sms_kind").equalsIgnoreCase("S")?"SM":"LM";
+				_ml.setMsg_err_code(ent.getString("code").substring(2));
+				_ml.setMsg_send_date(ent.getString("remark2"));
+
 				if(ent.getString("code").equals("0000")){
 					rescode = "3";
 				}else{
 					rescode = "5";
 				}
 
-				if(!ent.getString("code").equals(ent.getString("s_code"))){
+			}else if(_ml.getMsgtype().equalsIgnoreCase("K")){
+
+				_ml.setMsg_table(msg_at_table);
+				_ml.setLog_table(log_at_table);
+
+
+				if(ent.getString("message_type").equalsIgnoreCase("AT")){
+					_ml.setKao_err_code(ent.getString("code"));
+					restype = "AT";
+					if(ent.getString("code").equals("0000")){
+						rescode = "3";
+					}else{
+						rescode = "5";
+					}
+
+					if(!ent.getString("code").equals(ent.getString("s_code"))){
+						_ml.setKao_err_code(ent.getString("s_code"));
+						_ml.setMsg_err_code(ent.getString("code").substring(2));
+						_ml.setMsg_send_date(ent.getString("remark2"));
+						restype = ent.getString("sms_kind").equalsIgnoreCase("S")?"SM":"LM";
+					}
+				}else{
 					_ml.setKao_err_code(ent.getString("s_code"));
+					restype = ent.getString("sms_kind").equalsIgnoreCase("S")?"SM":"LM";
 					_ml.setMsg_err_code(ent.getString("code").substring(2));
 					_ml.setMsg_send_date(ent.getString("remark2"));
-					restype = ent.getString("sms_kind").equalsIgnoreCase("S")?"SM":"LM";
-				}
-			}else{
-				_ml.setKao_err_code(ent.getString("s_code"));
-				restype = ent.getString("sms_kind").equalsIgnoreCase("S")?"SM":"LM";
-				_ml.setMsg_err_code(ent.getString("code").substring(2));
-				_ml.setMsg_send_date(ent.getString("remark2"));
-				if(ent.getString("code").equals("0000")){
-					rescode = "4";
-				}else{
-					rescode = "5";
+					if(ent.getString("code").equals("0000")){
+						rescode = "4";
+					}else{
+						rescode = "5";
+					}
 				}
 			}
 

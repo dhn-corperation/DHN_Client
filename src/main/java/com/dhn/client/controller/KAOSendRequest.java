@@ -34,6 +34,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
+	private String crypto;
 
     @Autowired
 	private RequestService requestService;
@@ -49,18 +50,38 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_at_table"));
 		param.setKakao(appContext.getEnvironment().getProperty("dhnclient.kakao"));
 		param.setMsg_type("A");
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-		if (param.getKakao() != null && param.getKakao().equalsIgnoreCase("Y")) {
-			log.info("KAO 초기화 완료");
-			isStart = true;
-		} else {
-			posts.postProcessBeforeDestruction(this, null);
+		HttpHeaders cheader = new HttpHeaders();
+		cheader.setContentType(MediaType.APPLICATION_JSON);
+		cheader.set("userid", userid);
+		RestTemplate crt = new RestTemplate();
+		HttpEntity<String> centity = new HttpEntity<String>(cheader);
+
+		try {
+			ResponseEntity<String> cresponse = crt.exchange( dhnServer + "get_crypto",HttpMethod.GET, centity, String.class );
+
+			if(cresponse.getStatusCode()!=HttpStatus.OK) {
+				log.info("암호화 컬럼 가져오기 오류 ");
+			}
+
+			if (param.getKakao() != null && param.getKakao().toUpperCase().equals("Y") && cresponse.getStatusCode() == HttpStatus.OK) {
+				crypto = cresponse.getBody()!=null? cresponse.getBody().toString():"";
+				log.info("KAO 초기화 완료");
+				isStart = true;
+			} else {
+				posts.postProcessBeforeDestruction(this, null);
+			}
+
+		}catch (HttpClientErrorException e) {
+			log.error("crypto 가져오기 오류 : " + e.getStatusCode() + ", " + e.toString());
+		}catch (RestClientException e) {
+			log.error("기타 오류 : " + dhnServer + ", " + e.toString());
 		}
 	}
 
@@ -90,6 +111,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 							if(kaoRequestBean.getButton() != null && !kaoRequestBean.getButton().isEmpty()){
 								kaoRequestBean = kaoService.Btn_form(kaoRequestBean);
 							}
+							kaoRequestBean = kaoService.encryption(kaoRequestBean,crypto);
 						}
 
 

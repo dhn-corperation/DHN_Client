@@ -7,6 +7,7 @@ public class Msg_Log {
 	private String msg_table;
 	private String log_table;
 	private String msgid;
+	private String msgtype;
 	private String status;
 	private String restype;
 	private String kao_err_code;

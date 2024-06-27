@@ -8,16 +8,16 @@
         where STATUS = '1'
             and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
             and REQUEST_DATE is null
-            and ETC1 is null
+            and ETC5 is null
     </select>
 
     <update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
-        set ETC1 = '${group_no}'
+        set ETC5 = '${group_no}'
         where STATUS = '1'
             and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
             and REQUEST_DATE is null
-            and ETC1 is null
+            and ETC5 is null
             and ROWNUM &lt;= 1000
     </update>
 
@@ -42,7 +42,7 @@
 
     <select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
         select
-            ID as msg_id,
+            'K' || ID as msg_id,
             'AT' as message_type,
             MESSAGE as msg_txt,
             RESEND_MT_MESSAGE as sms_txt,
@@ -69,7 +69,7 @@
             NVL(RESERVED_DATE, '00000000000000') AS snd_dttm
         from ${msg_table}
         where STATUS = '1'
-          and ETC1 = '${group_no}'
+          and ETC5 = '${group_no}'
     </select>
 
     <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -79,15 +79,15 @@
             REQUEST_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
             RESPONSE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
         where STATUS = '1'
-            and ETC1 = '${group_no}'
+            and ETC5 = '${group_no}'
     </update>
 
     <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
         update ${msg_table}
         set STATUS = '1',
-            ETC1 = null,
+            ETC5 = null,
             REQUEST_DATE = null
-        where ETC1 = '${group_no}'
+        where ETC5 = '${group_no}'
     </update>
 
     <update id = "result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">

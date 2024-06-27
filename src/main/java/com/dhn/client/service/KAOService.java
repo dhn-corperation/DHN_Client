@@ -82,6 +82,7 @@ public class KAOService {
         try {
             ObjectMapper mapper = new ObjectMapper();
             String json = kaoRequestBean.getButton();
+
             List<Map<String, Object>> buttons;
 
             String buttonArrayJson = mapper.readTree(json).get("button").toString();

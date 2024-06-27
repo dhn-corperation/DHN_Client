@@ -46,4 +46,70 @@ public class RequestServiceImpl implements RequestService {
 		requestDAO.Insert_msg_log(_ml);
 	}
 
+	@Override
+	public int selectSMSReqeustCount(SQLParameter param) throws Exception {
+		return requestDAO.selectSMSReqeustCount(param);
+	}
+
+	@Override
+	public void updateSMSGroupNo(SQLParameter param) throws Exception {
+		requestDAO.updateSMSGroupNo(param);
+	}
+
+	@Override
+	public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectSMSRequests(param);
+	}
+
+	@Override
+	public void updateMSGSendComplete(SQLParameter param) throws Exception {
+		requestDAO.updateMSGSendComplete(param);
+	}
+
+	@Override
+	public void updateMSGSendInit(SQLParameter param) throws Exception {
+		requestDAO.updateMSGSendInit(param);
+	}
+
+	@Override
+	public int selectLMSReqeustCount(SQLParameter param) throws Exception {
+		return requestDAO.selectLMSReqeustCount(param);
+	}
+
+	@Override
+	public void updateLMSGroupNo(SQLParameter param) throws Exception {
+		requestDAO.updateLMSGroupNo(param);
+	}
+
+	@Override
+	public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectLMSRequests(param);
+	}
+
+	@Override
+	public int selectMMSReqeustCount(SQLParameter param) throws Exception {
+		return requestDAO.selectMMSReqeustCount(param);
+	}
+
+	@Override
+	public void updateMMSGroupNo(SQLParameter param) throws Exception {
+		requestDAO.updateMMSGroupNo(param);
+	}
+
+	@Override
+	public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectMMSRequests(param);
+	}
+
+	@Override
+	public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception {
+		return requestDAO.selectMMSImage(param);
+	}
+
+	@Override
+	public void updateMMSImageGroup(SQLParameter param) throws Exception {
+		requestDAO.updateMMSImageGroup(param);
+	}
+
+
 }

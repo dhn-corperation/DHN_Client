@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.nkakao.mapper.SendRequest">
+    <select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        select count(1) as cnt
+        from ${msg_table}
+        where STATUS = '1'
+          and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+          and MT_TYPE = '${msg_type}'
+          and REQUEST_DATE is null
+          and ETC5 is null
+    </select>
+
+    <update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        update ${msg_table}
+        set ETC5 = '${group_no}'
+        where STATUS = '1'
+          and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+          and MT_TYPE = '${msg_type}'
+          and REQUEST_DATE is null
+          and ETC5 is null
+          and ROWNUM &lt;= 1000
+    </update>
+
+    <select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        select count(1) as cnt
+        from ${msg_table}
+        where STATUS = '1'
+          and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+          and MT_TYPE = '${msg_type}'
+          and REQUEST_DATE is null
+          and ETC5 is null
+    </select>
+
+    <update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        update ${msg_table}
+        set ETC5 = '${group_no}'
+        where STATUS = '1'
+          and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+          and MT_TYPE = '${msg_type}'
+          and REQUEST_DATE is null
+          and ETC5 is null
+          and ROWNUM &lt;= 1000
+    </update>
+
+    <select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        select count(1) as cnt
+        from ${msg_table}
+        where STATUS = '1'
+          and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+          and MT_TYPE = '${msg_type}'
+          and REQUEST_DATE is null
+          and ETC5 is null
+          and REQUEST_UID is not null
+    </select>
+
+    <update id="req_mms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        update ${msg_table}
+        set ETC5 = '${group_no}'
+        where STATUS = '1'
+          and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+          and MT_TYPE = '${msg_type}'
+          and REQUEST_DATE is null
+          and ETC5 is null
+          and REQUEST_UID is not null
+          and ROWNUM &lt;= 1000
+    </update>
+
+    <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
+        select ATTACH_FILE_01 as file1
+             ,ATTACH_FILE_02 as file2
+             ,ATTACH_FILE_03 as file3
+        from ${msg_table}
+        where STATUS = '1'
+          and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+          and MT_TYPE = '${msg_type}'
+          and REQUEST_DATE is null
+          and ETC5 is null
+          and REQUEST_UID is null
+          and ATTACH_FILE_01 is not null
+        group by ATTACH_FILE_01, ATTACH_FILE_02, ATTACH_FILE_03
+    </select>
+
+    <update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        update ${msg_table}
+        set REQUEST_UID = '${mms_key}'
+        where STATUS = '1'
+          and ETC5 is null
+          and MT_TYPE = '${msg_type}'
+          and (RESERVED_DATE = '00000000000000' OR RESERVED_DATE &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+          and nvl(ATTACH_FILE_01,'X') = '${file1}'
+          and nvl(ATTACH_FILE_02,'X') = '${file2}'
+          and nvl(ATTACH_FILE_03,'X') = '${file3}'
+    </update>
+
+    <resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
+        <result column="msg_id" property="msgid"/>
+        <result column="message_type" property="messagetype"/>
+        <result column="msg_txt" property="msg"/>
+        <result column="sms_txt" property="msgsms"/>
+        <result column="call_to" property="phn"/>
+        <result column="call_from" property="smssender"/>
+        <result column="pcom" property="pcom"/>
+        <result column="mms_img_key" property="pinvoice"/>
+        <result column="smskind" property="smskind"/>
+        <result column="msg_txt_title" property="smslmstit"/>
+        <result column="crypto" property="crypto"/>
+        <result column="curr_date" property="regdt"/>
+        <result column="snd_dttm" property="reservedt"/>
+        <result column="bill_code" property="remark4"/>
+    </resultMap>
+
+    <select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+        select
+            'M' || ID as msg_id,
+            'PH' as message_type,
+            MESSAGE as msg_txt,
+            MESSAGE as sms_txt,
+            PHONE_NUMBER as call_to,
+            CALLBACK as call_from,
+            '' as msg_txt_title,
+            (case
+                when LENGTHB(CONVERT(MESSAGE, 'KO16MSWIN949')) > 90 THEN 'L'
+                else 'S'
+            end) as smskind,
+            'D' as pcom,
+            'N' as crypto,
+            BILL_CODE as bill_code,
+            to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') as curr_date,
+            NVL(RESERVED_DATE, '00000000000000') as snd_dttm
+        from ${msg_table}
+        where STATUS = '1'
+            and ETC5 = '${group_no}'
+            and MT_TYPE = '${msg_type}'
+    </select>
+
+    <select id="req_lms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+        select
+            'M' || ID as msg_id,
+            'PH' as message_type,
+            MESSAGE as msg_txt,
+            MESSAGE as sms_txt,
+            PHONE_NUMBER as call_to,
+            CALLBACK as call_from,
+            TITLE as msg_txt_title,
+            (case
+                 when LENGTHB(CONVERT(MESSAGE, 'KO16MSWIN949')) > 90 THEN 'L'
+                 else 'S'
+                end) as smskind,
+            'D' as pcom,
+            'N' as crypto,
+            BILL_CODE as bill_code,
+            to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') as curr_date,
+            NVL(RESERVED_DATE, '00000000000000') as snd_dttm
+        from ${msg_table}
+        where STATUS = '1'
+          and ETC5 = '${group_no}'
+          and MT_TYPE = '${msg_type}'
+    </select>
+
+    <select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+        select
+            'M' || ID as msg_id,
+            'PH' as message_type,
+            MESSAGE as msg_txt,
+            MESSAGE as sms_txt,
+            PHONE_NUMBER as call_to,
+            CALLBACK as call_from,
+            TITLE as msg_txt_title,
+            'M' as smskind,
+            'D' as pcom,
+            'N' as crypto,
+            BILL_CODE as bill_code,
+            to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') as curr_date,
+            NVL(RESERVED_DATE, '00000000000000') as snd_dttm,
+            REQUEST_UID as mms_img_key
+        from ${msg_table}
+        where STATUS = '1'
+          and ETC5 = '${group_no}'
+          and MT_TYPE = '${msg_type}'
+          and REQUEST_UID is not null
+    </select>
+
+    <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+        update ${msg_table}
+        set STATUS = '2',
+            RESPONSE_CODE = '${rescode}',
+            REQUEST_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+            RESPONSE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+        where STATUS = '1'
+            and ETC5 = '${group_no}'
+            and MT_TYPE = '${msg_type}'
+    </update>
+
+    <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+        update ${msg_table}
+        set STATUS = '1',
+            ETC5 = null,
+            REQUEST_DATE = null
+        where ETC5 = '${group_no}'
+            and MT_TYPE = '${msg_type}'
+    </update>
+
+    <update id = "result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+        update ${msg_table}
+        set STATUS = '${status}',
+            REPORT_TYPE = '${restype}',
+            REPORT_DATE = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'),
+            REPORT_CODE = '${msg_err_code}',
+            ARRIVAL_DATE = TO_CHAR(TO_DATE('${msg_send_date}','YYYY-MM-DD HH24:MI:SS'),'YYYYMMDDHH24MISS')
+        where ID = '${msgid}'
+    </update>
+
+    <insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
+        insert into ${log_table} select * from ${msg_table} where ID = '${msgid}'
+    </insert>
+
+    <delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
+        delete from ${msg_table} where ID = '${msgid}'
+    </delete>
+
+</mapper>

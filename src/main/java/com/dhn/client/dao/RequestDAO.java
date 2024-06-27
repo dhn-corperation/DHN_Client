@@ -18,4 +18,29 @@ public interface RequestDAO {
 
 	public void Insert_msg_log(Msg_Log _ml) throws Exception;
 
+    public int selectSMSReqeustCount(SQLParameter param) throws Exception;
+
+	public void updateSMSGroupNo(SQLParameter param) throws Exception;
+
+	public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception;
+
+	public void updateMSGSendComplete(SQLParameter param) throws Exception;
+
+	public void updateMSGSendInit(SQLParameter param) throws Exception;
+
+	public int selectLMSReqeustCount(SQLParameter param) throws Exception;
+
+	public void updateLMSGroupNo(SQLParameter param) throws Exception;
+
+	public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception;
+
+	public int selectMMSReqeustCount(SQLParameter param) throws Exception;
+
+	public void updateMMSGroupNo(SQLParameter param) throws Exception;
+
+	public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception;
+
+	public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception;
+
+	public void updateMMSImageGroup(SQLParameter param) throws Exception;
 }
