@@ -33,13 +33,13 @@ public class KAOService {
             if (kaoRequestBean.getPhn() != null && !kaoRequestBean.getPhn().isEmpty()) {
                 kaoRequestBean.setPhn(aes256.encrypt(kaoRequestBean.getPhn(), nonce));
             }
-            if (column.contains("MSG") && kaoRequestBean.getMsg() != null && !kaoRequestBean.getMsg().isEmpty()) {
+            if (column.toUpperCase().contains("MSG") && kaoRequestBean.getMsg() != null && !kaoRequestBean.getMsg().isEmpty()) {
                 kaoRequestBean.setMsg(aes256.encrypt(kaoRequestBean.getMsg(), nonce));
             }
-            if (column.contains("PROFILE") && kaoRequestBean.getProfile() != null && !kaoRequestBean.getProfile().isEmpty()) {
+            if (column.toUpperCase().contains("PROFILE") && kaoRequestBean.getProfile() != null && !kaoRequestBean.getProfile().isEmpty()) {
                 kaoRequestBean.setProfile(aes256.encrypt(kaoRequestBean.getProfile(), nonce));
             }
-            if (column.contains("BUTTON")) {
+            if (column.toUpperCase().contains("BUTTON")) {
 
                 if (kaoRequestBean.getButton1() != null && !kaoRequestBean.getButton1().isEmpty()) {
                     kaoRequestBean.setButton1(aes256.encrypt(kaoRequestBean.getButton1(), nonce));
@@ -57,19 +57,19 @@ public class KAOService {
                     kaoRequestBean.setButton5(aes256.encrypt(kaoRequestBean.getButton5(), nonce));
                 }
             }
-            if (column.contains("MESSAGETYPE") && kaoRequestBean.getMessagetype() != null && !kaoRequestBean.getMessagetype().isEmpty()) {
+            if (column.toUpperCase().contains("MESSAGETYPE") && kaoRequestBean.getMessagetype() != null && !kaoRequestBean.getMessagetype().isEmpty()) {
                 kaoRequestBean.setMessagetype(aes256.encrypt(kaoRequestBean.getMessagetype(), nonce));
             }
-            if (column.contains("MSGSMS") && kaoRequestBean.getMsgsms() != null && !kaoRequestBean.getMsgsms().isEmpty()) {
+            if (column.toUpperCase().contains("MSGSMS") && kaoRequestBean.getMsgsms() != null && !kaoRequestBean.getMsgsms().isEmpty()) {
                 kaoRequestBean.setMsgsms(aes256.encrypt(kaoRequestBean.getMsgsms(), nonce));
             }
-            if (column.contains("SMSSENDER") && kaoRequestBean.getSmssender() != null && !kaoRequestBean.getSmssender().isEmpty()) {
+            if (column.toUpperCase().contains("SMSSENDER") && kaoRequestBean.getSmssender() != null && !kaoRequestBean.getSmssender().isEmpty()) {
                 kaoRequestBean.setSmssender(aes256.encrypt(kaoRequestBean.getSmssender(), nonce));
             }
-            if (column.contains("TMPLID") && kaoRequestBean.getTmplid() != null && !kaoRequestBean.getTmplid().isEmpty()) {
+            if (column.toUpperCase().contains("TMPLID") && kaoRequestBean.getTmplid() != null && !kaoRequestBean.getTmplid().isEmpty()) {
                 kaoRequestBean.setTmplid(aes256.encrypt(kaoRequestBean.getTmplid(), nonce));
             }
-            if (column.contains("SMSLMSTIT") && kaoRequestBean.getSmslmstit() != null && !kaoRequestBean.getSmslmstit().isEmpty()) {
+            if (column.toUpperCase().contains("SMSLMSTIT") && kaoRequestBean.getSmslmstit() != null && !kaoRequestBean.getSmslmstit().isEmpty()) {
                 kaoRequestBean.setSmslmstit(aes256.encrypt(kaoRequestBean.getSmslmstit(), nonce));
             }
         } catch (Exception e) {

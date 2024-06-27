@@ -38,6 +38,7 @@
         <result column="template_cd" property="tmplid"/>
         <result column="profile_key" property="profile"/>
         <result column="snd_dttm" property="reservedt"/>
+        <result column="bill_code" property="remark4"/>
     </resultMap>
 
     <select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -60,6 +61,7 @@
             'D' as pcom,
             'N' as crypto,
             ATTACHMENT_JSON as button,
+            BILL_CODE as bill_code,
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
             TEMPLATE_CODE as template_cd,
             (case when SENDER_KEY = 'c5f8f78627fe0877758d4b339fa09252b68c5cc1' then

@@ -31,6 +31,7 @@
           and MT_TYPE = '${msg_type}'
           and REQUEST_DATE is null
           and ETC5 is null
+          and ATTACH_FILE_01 is null
     </select>
 
     <update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -41,6 +42,7 @@
           and MT_TYPE = '${msg_type}'
           and REQUEST_DATE is null
           and ETC5 is null
+          and ATTACH_FILE_01 is null
           and ROWNUM &lt;= 1000
     </update>
 
@@ -144,10 +146,7 @@
             PHONE_NUMBER as call_to,
             CALLBACK as call_from,
             TITLE as msg_txt_title,
-            (case
-                 when LENGTHB(CONVERT(MESSAGE, 'KO16MSWIN949')) > 90 THEN 'L'
-                 else 'S'
-                end) as smskind,
+            'L' as smskind,
             'D' as pcom,
             'N' as crypto,
             BILL_CODE as bill_code,
@@ -157,6 +156,7 @@
         where STATUS = '1'
           and ETC5 = '${group_no}'
           and MT_TYPE = '${msg_type}'
+          and ATTACH_FILE_01 is null
     </select>
 
     <select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
