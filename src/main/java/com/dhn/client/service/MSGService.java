@@ -30,19 +30,20 @@ public class MSGService {
 			if (requestBean.getPhn() != null && !requestBean.getPhn().isEmpty()) {
 				requestBean.setPhn(aes256.encrypt(requestBean.getPhn(), nonce));
 			}
-			if(column.toUpperCase().contains("MSG") && requestBean.getMsg() != null && !requestBean.getMsg().isEmpty()) {
+
+			String columnLowerCase = column.toLowerCase();
+
+			if(columnLowerCase.contains("msg") && requestBean.getMsg() != null && !requestBean.getMsg().isEmpty()) {
 				requestBean.setMsg(aes256.encrypt(requestBean.getMsg(), nonce));
-			}
-			if(column.toUpperCase().contains("MESSAGETYPE") && requestBean.getMessagetype() != null && !requestBean.getMessagetype().isEmpty()) {
-				requestBean.setMessagetype(aes256.encrypt(requestBean.getMessagetype(), nonce));
-			}
-			if(column.toUpperCase().contains("MSGSMS") && requestBean.getMsgsms() != null && !requestBean.getMsgsms().isEmpty()) {
 				requestBean.setMsgsms(aes256.encrypt(requestBean.getMsgsms(), nonce));
 			}
-			if(column.toUpperCase().contains("SMSSENDER") && requestBean.getSmssender() != null && !requestBean.getSmssender().isEmpty()) {
+			if(columnLowerCase.contains("messagetype") && requestBean.getMessagetype() != null && !requestBean.getMessagetype().isEmpty()) {
+				requestBean.setMessagetype(aes256.encrypt(requestBean.getMessagetype(), nonce));
+			}
+			if(columnLowerCase.contains("smssender") && requestBean.getSmssender() != null && !requestBean.getSmssender().isEmpty()) {
 				requestBean.setSmssender(aes256.encrypt(requestBean.getSmssender(), nonce));
 			}
-			if(column.toUpperCase().contains("SMSLMSTIT") && requestBean.getSmslmstit() != null && !requestBean.getSmslmstit().isEmpty()) {
+			if(columnLowerCase.contains("smslmstit") && requestBean.getSmslmstit() != null && !requestBean.getSmslmstit().isEmpty()) {
 				requestBean.setSmslmstit(aes256.encrypt(requestBean.getSmslmstit(), nonce));
 			}
 		}catch (Exception e) {
