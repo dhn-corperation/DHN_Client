@@ -51,11 +51,12 @@
             RESEND_MT_FROM as call_from,
             (case
                 when RESEND_MT_TYPE = 'NO' then null
-                else
-                    case
-                        when LENGTHB(CONVERT(RESEND_MT_MESSAGE, 'KO16MSWIN949')) > 90 THEN 'L'
-                        else 'S'
-                        end
+                when RESEND_MT_TYPE = 'LM' then 'L'
+                when RESEND_MT_TYPE = 'SM' then
+                (case
+                    when LENGTHB(CONVERT(RESEND_MT_MESSAGE, 'KO16MSWIN949')) > 90 THEN 'L'
+                    else 'S'
+                    end)
                 end) as smskind,
             TITLE as msg_txt_title,
             'D' as pcom,
