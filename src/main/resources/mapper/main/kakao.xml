@@ -66,7 +66,7 @@
             to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
             TEMPLATE_CODE as template_cd,
             (case when SENDER_KEY = 'c5f8f78627fe0877758d4b339fa09252b68c5cc1' then
-                'e928cfe1258ede6069fde1b680aa24a25e38e148'
+                '547c2b240d4f2b7f28d5174d16a8cbfeefb3c59a'
                 else SENDER_KEY
             end) as profile_key,
             NVL(RESERVED_DATE, '00000000000000') AS snd_dttm
