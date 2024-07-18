@@ -16,17 +16,17 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class SMSService {
-	
+
 	@Autowired
 	private AES256_GCM aes256;
-	
+
 	public RequestBean encryption(RequestBean requestBean, String column) {
 		GCMParameterSpec nonce = generateGCMParameterSpec();
 		//String noncestd = Base64.getEncoder().encodeToString(nonce.getIV());
 		String nonceHex = aes256.toHex(nonce.getIV());
 		requestBean.setCrypto(nonceHex+","+column);
 		try {
-			
+
 			if (requestBean.getPhn() != null && !requestBean.getPhn().isEmpty()) {
 				requestBean.setPhn(aes256.encrypt(requestBean.getPhn(), nonce));
 			}
@@ -50,11 +50,11 @@ public class SMSService {
 		}
 		return requestBean;
 	}
-	
+
 	public GCMParameterSpec generateGCMParameterSpec() {
-        byte[] iv = new byte[12]; // 12바이트 nonce
-        new SecureRandom().nextBytes(iv);
-        return new GCMParameterSpec(128, iv);
-   }
+		byte[] iv = new byte[12]; // 12바이트 nonce
+		new SecureRandom().nextBytes(iv);
+		return new GCMParameterSpec(128, iv);
+	}
 
 }

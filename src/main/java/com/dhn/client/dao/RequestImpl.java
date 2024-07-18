@@ -17,13 +17,13 @@ public class RequestImpl implements RequestDAO{
 
 	@Autowired
 	private SqlSession sqlSession;
-	
+
 	@Override
 	public int selectKAORequestCount(SQLParameter param) throws Exception {
 		int cnt = 0;
-		
+
 		cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.req_kao_count",param);
-		
+
 		return cnt;
 	}
 
@@ -40,20 +40,20 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void updateKAOSendComplete(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param); 
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param);
 	}
 
 	@Override
 	public void updateKAOSendInit(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_init", param); 
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_init", param);
 	}
 
 	@Override
 	public int selectSMSReqeustCount(SQLParameter param) throws Exception {
 		int cnt = 0;
-		
+
 		cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_sms_count",param);
-		
+
 		return cnt;
 	}
 
@@ -74,21 +74,21 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void updateSMSSendInit(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_sent_init", param); 
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_sent_init", param);
 	}
 
 	@Override
 	public int selectLMSReqeustCount(SQLParameter param) throws Exception {
 		int cnt = 0;
-		
+
 		cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_lms_count", param);
-		
+
 		return cnt;
 	}
 
 	@Override
 	public void updateLMSGroupNo(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_lms_group_update", param); 
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_lms_group_update", param);
 	}
 
 	@Override
@@ -100,7 +100,7 @@ public class RequestImpl implements RequestDAO{
 	public int selectMMSReqeustCount(SQLParameter param) throws Exception {
 		int cnt ;
 
-		cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_mms_count", param); 
+		cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_mms_count", param);
 
 		return cnt;
 	}
@@ -127,8 +127,8 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void Insert_msg_log(Msg_Log _ml) throws Exception {
-		
-		if(_ml.getMsg_type().equals("AT") || _ml.getAgan_code().length()>1) {
+
+		if(_ml.getMsg_type().equals("AT") || !_ml.getAgan_code().equals("")) {
 			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert1", _ml);
 			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert2", _ml);
 			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert3", _ml);

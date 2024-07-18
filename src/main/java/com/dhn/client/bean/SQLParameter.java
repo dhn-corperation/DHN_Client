@@ -21,7 +21,6 @@ public class SQLParameter {
 	private String file3;
 	private String mms_key;
 
-	/*
 	public void setDist_proc_option(String dist_proc_option) {
 		if(dist_proc_option != null && dist_proc_option.length() > 0) {
 			this.dist_proc_option = dist_proc_option;
@@ -35,7 +34,7 @@ public class SQLParameter {
 			this.newagent = newagent;
 		} else {
 			this.newagent = "N";
-		}		 
+		}
 	}
 
 	public void setKakaobtn(String kakaobtn) {
@@ -44,7 +43,6 @@ public class SQLParameter {
 		} else {
 			this.kakaobtn = "N";
 		}
-	}	
-	*/
+	}
 
 }
