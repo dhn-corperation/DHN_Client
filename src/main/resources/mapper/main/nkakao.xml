@@ -132,9 +132,9 @@
 			CHTR_MSG_CNTS as msg_txt,
 			CHTR_MSG_CNTS as sms_txt,
 			case
-			    when trim(RCPT_TEL) is null or trim(RCPT_TEL) = '' then '000'
-			else trim(RCPT_TEL)
-			end as call_to,
+				when trim(RCPT_TEL) is null or trim(RCPT_TEL) = '' then '000'
+				else trim(RCPT_TEL)
+				end as call_to,
 			trim(TRNS_PR_TEL) as call_from,
 			'' as msg_txt_title,
 			CASE
