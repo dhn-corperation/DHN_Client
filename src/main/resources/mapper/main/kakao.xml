@@ -11,8 +11,6 @@
 		  and SNDG_DDTI is null
 		  and MSG_DCD = '${msg_type}'
 		  and BIZ_MSG_DCD = 'AT'
-		  and RCPT_TEL IS NOT NULL
-		  and RCPT_TEL &lt;&gt; ''
 		  and GRP_NO is null
 	</select>
 
@@ -28,8 +26,6 @@
 		  and SNDG_DDTI is null
 		  and MSG_DCD = '${msg_type}'
 		  and BIZ_MSG_DCD = 'AT'
-		  and RCPT_TEL IS NOT NULL
-		  and RCPT_TEL &lt;&gt; ''
 		  and GRP_NO is null
 			fetch first 1000 rows only
 			)

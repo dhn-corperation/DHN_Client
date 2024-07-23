@@ -10,8 +10,6 @@
 		  and COALESCE(RSRT_DDTI,CURRENT TIMESTAMP) &lt;= CURRENT TIMESTAMP
 		  and SNDG_DDTI is null
 		  and MSG_DCD = '${msg_type}'
-		  and RCPT_TEL IS NOT NULL
-		  and RCPT_TEL &lt;&gt; ''
 		  and GRP_NO is NULL
 	</select>
 
@@ -27,8 +25,6 @@
 		  and SNDG_DDTI is null
 		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is null
-		  and RCPT_TEL IS NOT NULL
-		  and RCPT_TEL &lt;&gt; ''
 			fetch first 1000 rows only
 			)
 	</update>
@@ -40,8 +36,6 @@
 		  and COALESCE(RSRT_DDTI,CURRENT TIMESTAMP) &lt;= CURRENT TIMESTAMP
 		  and SNDG_DDTI is null
 		  and MSG_DCD = '${msg_type}'
-		  and RCPT_TEL IS NOT NULL
-		  and RCPT_TEL &lt;&gt; ''
 		  and GRP_NO is NULL
 	</select>
 
@@ -57,8 +51,6 @@
 		  and SNDG_DDTI is null
 		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is null
-		  and RCPT_TEL IS NOT NULL
-		  and RCPT_TEL &lt;&gt; ''
 			fetch first 1000 rows only
 			)
 	</update>
@@ -71,8 +63,6 @@
 		  and SNDG_DDTI is null
 		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is NULL
-		  and RCPT_TEL IS NOT NULL
-		  and RCPT_TEL &lt;&gt; ''
 		  and MMS_IMG_KEY is not null
 	</select>
 
@@ -89,8 +79,6 @@
 		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is null
 		  and MMS_IMG_KEY is not null
-		  and RCPT_TEL IS NOT NULL
-		  and RCPT_TEL &lt;&gt; ''
 			fetch first 1000 rows only
 			)
 	</update>
@@ -105,8 +93,6 @@
 		  and SNDG_DDTI is null
 		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is null
-		  and RCPT_TEL IS NOT NULL
-		  and RCPT_TEL &lt;&gt; ''
 		  and CHTR_ATCH_FILE_PATH is not null
 		group by CHTR_ATCH_FILE_PATH, CHTR_ATCH_FILE_PATH_2, CHTR_ATCH_FILE_PATH_3
 	</select>
@@ -145,7 +131,10 @@
 			'PH' as message_type,
 			CHTR_MSG_CNTS as msg_txt,
 			CHTR_MSG_CNTS as sms_txt,
-			trim(RCPT_TEL) as call_to,
+			case
+			    when trim(RCPT_TEL) is null or trim(RCPT_TEL) = '' then '000'
+			else trim(RCPT_TEL)
+			end as call_to,
 			trim(TRNS_PR_TEL) as call_from,
 			'' as msg_txt_title,
 			CASE
@@ -167,7 +156,10 @@
 			'PH' as message_type,
 			CHTR_MSG_CNTS as msg_txt,
 			CHTR_MSG_CNTS as sms_txt,
-			trim(RCPT_TEL) as call_to,
+			case
+				when trim(RCPT_TEL) is null or trim(RCPT_TEL) = '' then '000'
+				else trim(RCPT_TEL)
+				end as call_to,
 			trim(TRNS_PR_TEL) as call_from,
 			CHTR_MSG_TITL as msg_txt_title,
 			'L' as smskind,
@@ -186,7 +178,10 @@
 			'PH' as message_type,
 			CHTR_MSG_CNTS as msg_txt,
 			CHTR_MSG_CNTS as sms_txt,
-			trim(RCPT_TEL) as call_to,
+			case
+				when trim(RCPT_TEL) is null or trim(RCPT_TEL) = '' then '000'
+				else trim(RCPT_TEL)
+				end as call_to,
 			trim(TRNS_PR_TEL) as call_from,
 			CHTR_MSG_TITL as msg_txt_title,
 			'M' as smskind,
