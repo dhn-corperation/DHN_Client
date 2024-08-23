@@ -189,7 +189,7 @@
 
 	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = '2',
+		set MSG_SNDG_STTS_CD = '5',
 			SNDG_DDTI = CURRENT TIMESTAMP
 		where
 			MSG_SNDG_STTS_CD = '1'
