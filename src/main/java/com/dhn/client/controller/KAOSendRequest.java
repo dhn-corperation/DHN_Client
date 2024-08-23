@@ -91,6 +91,19 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 							if(kaoRequestBean.getButton()!=null && !kaoRequestBean.getButton().isEmpty()){
 								kaoService.Btn_form(kaoRequestBean);
 							}
+
+							StringWriter valSw = new StringWriter();
+							ObjectMapper valOm = new ObjectMapper();
+							valOm.writeValue(valSw, kaoRequestBean);
+							String jsonString = valSw.toString();
+
+							KAORequestBean newkao = valOm.readValue(jsonString, KAORequestBean.class);
+
+							boolean isEqual = kaoRequestBean.equals(newkao);
+
+							if (!isEqual) {
+								log.info("JSON 변환 작업에 이상이 있는 데이터 입니다. / 메세지 아이디 : "+kaoRequestBean.getMsgid());
+							}
 						}
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
