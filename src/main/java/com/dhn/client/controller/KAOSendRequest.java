@@ -92,7 +92,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 								kaoService.Btn_form(kaoRequestBean);
 							}
 						}
-
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
 						om.writeValue(sw, _list);
