@@ -56,4 +56,5 @@ public interface RequestDAO {
 
 	public void log_move(SQLParameter param) throws Exception;
 
+    public void jsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) throws Exception;
 }

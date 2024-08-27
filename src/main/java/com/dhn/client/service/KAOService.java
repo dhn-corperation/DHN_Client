@@ -10,8 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dhn.client.AES256_GCM;
-import com.dhn.client.bean.ButtonJsonBean;
+import com.dhn.client.config.AES256_GCM;
 import com.dhn.client.bean.KAORequestBean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

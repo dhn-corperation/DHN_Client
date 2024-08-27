@@ -4,23 +4,19 @@ import com.dhn.client.bean.KAORequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.KAOService;
 import com.dhn.client.service.RequestService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.dhn.client.service.SendService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Slf4j
@@ -43,19 +39,22 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private ApplicationContext appContext;
 
 	@Autowired
-	ScheduledAnnotationBeanPostProcessor posts;
+	private SendService sendService;
+
+	@Autowired
+	private ScheduledAnnotationBeanPostProcessor posts;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setImg_table(appContext.getEnvironment().getProperty("dhnclient.img_table"));
-		param.setKakao(appContext.getEnvironment().getProperty("dhnclient.kakao"));
+		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
 		param.setMsg_type("A");
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-		if (param.getKakao() != null && param.getKakao().equalsIgnoreCase("Y")) {
+		if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
 			log.info("KAO 초기화 완료");
 			isStart = true;
 		} else {
@@ -66,8 +65,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	}
 
 	@Scheduled(fixedDelay = 100)
-	private void SendProcess() {
-		if(isStart && !isProc) {
+	public void SendProcess() {
+		if(isStart && !isProc && sendService.getActiveKAOThreads() < SendService.MAX_THREADS) {
 			isProc = true;
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
@@ -75,75 +74,30 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			String group_no = "1" + now.format(formatter);
 			
 			if(!group_no.equals(preGroupNo)) {
-				
+
 				try {
 					int cnt = requestService.selectKAORequestCount(param);
 					
 					if(cnt > 0) {
 
 						param.setGroup_no(group_no);
-
 						requestService.updateKAOGroupNo(param);
-
 						List<KAORequestBean> _list = requestService.selectKAORequests(param);
 
-						for (KAORequestBean kaoRequestBean : _list) {
-							if(kaoRequestBean.getButton()!=null && !kaoRequestBean.getButton().isEmpty()){
-								kaoService.Btn_form(kaoRequestBean);
-							}
+						SQLParameter paramCopy = param.toBuilder().build();
 
-							StringWriter valSw = new StringWriter();
-							ObjectMapper valOm = new ObjectMapper();
-							valOm.writeValue(valSw, kaoRequestBean);
-							String jsonString = valSw.toString();
-
-							KAORequestBean newkao = valOm.readValue(jsonString, KAORequestBean.class);
-
-							boolean isEqual = kaoRequestBean.equals(newkao);
-
-							if (!isEqual) {
-								log.info("JSON 변환 작업에 이상이 있는 데이터 입니다. / 메세지 아이디 : "+kaoRequestBean.getMsgid());
-							}
-						}
-						StringWriter sw = new StringWriter();
-						ObjectMapper om = new ObjectMapper();
-						om.writeValue(sw, _list);
-
-						HttpHeaders header = new HttpHeaders();
-
-						header.setContentType(MediaType.APPLICATION_JSON);
-						header.set("userid", userid);
-
-						RestTemplate rt = new RestTemplate();
-						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-
-							if (response.getStatusCode() == HttpStatus.OK) {
-								requestService.updateKAOSendComplete(param);
-								log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-							} else {
-								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("KAO 메세지 전송오류 : " + res.get("message"));
-								requestService.updateKAOSendInit(param);
-							}
-						} catch (Exception e) {
-							log.info("KAO 메세지 전송 오류 : " + e.toString());
-							requestService.updateKAOSendInit(param);
-						}
+						sendService.KAOSendAsync(_list, paramCopy, group_no);
 
 					}
-					
+
 				}catch (Exception e) {
-					log.error("KAO Send Error : " + e.toString());
+					log.error("KAO 메세지 전송 오류 : " + e.toString());
 				}
-				
 				preGroupNo = group_no;
 			}
-			
-			
 			isProc = false;
+		} else if (sendService.getActiveKAOThreads() >= SendService.MAX_THREADS) {
+			//log.info("KAO 스케줄러: 최대 활성화된 쓰레드 수에 도달했습니다. 다음 주기에 다시 시도합니다.");
 		}
 	}
 

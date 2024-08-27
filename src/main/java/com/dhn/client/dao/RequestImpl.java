@@ -1,7 +1,9 @@
 package com.dhn.client.dao;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.dhn.client.bean.*;
 import org.apache.ibatis.session.SqlSession;
@@ -148,5 +150,18 @@ public class RequestImpl implements RequestDAO{
 	public void log_move(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.log_move_insert",param);
 		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.log_move_delete",param);
+	}
+
+	@Override
+	public void jsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) throws Exception {
+		Map<String, Object> paramMap = new HashMap<>();
+		paramMap.put("param", param);
+		paramMap.put("jsonErrMsgid", jsonErrMsgid);
+		if(param.getMsg_type().equals("A")){
+			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kao_json_err_message",paramMap);
+
+		}else{
+			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.msg_json_err_message",paramMap);
+		}
 	}
 }

@@ -140,4 +140,9 @@ public class RequestServiceImpl implements RequestService {
 		requestDAO.log_move(param);
 	}
 
+	@Override
+	public void jsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) throws Exception {
+		requestDAO.jsonErrMessage(param, jsonErrMsgid);
+	}
+
 }

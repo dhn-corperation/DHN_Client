@@ -1,4 +1,4 @@
-package com.dhn.client;
+package com.dhn.client.config;
 
 import org.jasypt.encryption.StringEncryptor;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;

@@ -1,13 +1,22 @@
 package com.dhn.client.bean;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class SQLParameter {
 	private String msg_table;
 	private String log_table;
 	private String img_table;
-	private String kakao;
+	private String kakao_use;
+	private String sms_use;
+	private String lms_use;
+	private String mms_use;
 	private String group_no;
 	private String msg_type;
 	private String log_mv_flag;

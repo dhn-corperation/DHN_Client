@@ -1,4 +1,4 @@
-package com.dhn.client;
+package com.dhn.client.config;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;

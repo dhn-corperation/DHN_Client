@@ -56,11 +56,12 @@ public class Log_Move implements ApplicationListener<ContextRefreshedEvent> {
                         requestService.update_log_move_groupNo(param);
 
                         requestService.log_move(param);
+
+                        log.info("Log 테이블 이동 그룹 : {}",param.getGroup_no());
                     }
                 }catch (Exception e){
                     log.error("Log 테이블로 이동중 오류 발생 : " + e.toString());
                 }
-
 
                 preGroupNo = group_no;
             }

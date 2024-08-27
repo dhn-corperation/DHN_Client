@@ -55,4 +55,6 @@ public interface RequestService {
 	public void update_log_move_groupNo(SQLParameter param) throws Exception;
 
 	public void log_move(SQLParameter param) throws Exception;
+
+    public void jsonErrMessage(SQLParameter param, List<String> jsonErrMsgid) throws Exception;
 }

@@ -3,23 +3,19 @@ package com.dhn.client.controller;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
-import com.dhn.client.service.SMSService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.dhn.client.service.SendService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Slf4j
@@ -38,24 +34,34 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Autowired
 	private ApplicationContext appContext;
 
+	@Autowired
+	private SendService sendService;
+
+	@Autowired
+	private ScheduledAnnotationBeanPostProcessor posts;
+
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setImg_table(appContext.getEnvironment().getProperty("dhnclient.img_table"));
+		param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
 		param.setMsg_type("S");
 		
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-		isStart = true;
-		
-		log.info("SMS 초기화 완료");
+		if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
+			log.info("SMS 초기화 완료");
+			isStart = true;
+		} else {
+			posts.postProcessBeforeDestruction(this, null);
+		}
 	}
 	
 	
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
-		if(isStart && !isProc) {
+		if(isStart && !isProc && sendService.getActiveSMSThreads() < SendService.MAX_THREADS) {
 			isProc = true;
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
@@ -68,53 +74,21 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 					
 					if(cnt > 0) {
 						param.setGroup_no(group_no);
-						
 						requestService.updateSMSGroupNo(param);
 						
 						List<RequestBean> _list = requestService.selectSMSRequests(param);
-						
-						StringWriter sw = new StringWriter();
-						ObjectMapper om = new ObjectMapper();
-						om.writeValue(sw, _list);
-						
-						HttpHeaders header = new HttpHeaders();
-						
-						header.setContentType(MediaType.APPLICATION_JSON);
-						header.set("userid", userid);
-						
-						RestTemplate rt = new RestTemplate();
-						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
-						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							
-							if(response.getStatusCode() ==  HttpStatus.OK)
-							{
-								requestService.updateSMSSendComplete(param);
-								log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-							} else {
-								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("SMS 메세지 전송오류 : " + res.get("message"));
-								requestService.updateSMSSendInit(param);
-							}
-						}catch (Exception e) {
-							log.info("SMS 메세지 전송 오류 : " + e.toString());
-							
-							requestService.updateSMSSendInit(param);
-						}
-
+						SQLParameter paramCopy = param.toBuilder().build();
+						sendService.SMSSendAsync(_list, paramCopy, group_no);
 					}
-				
 				}catch (Exception e) {
-					log.error("SMS Send Error : " + e.toString());
+					log.error("SMS 메세지 전송 오류 : " + e.toString());
 				}
 				preGroupNo = group_no;
 			}
 			isProc = false;
-			
+		}else if (sendService.getActiveKAOThreads() >= SendService.MAX_THREADS) {
+			//log.info("SMS 스케줄러: 최대 활성화된 쓰레드 수에 도달했습니다. 다음 주기에 다시 시도합니다.");
 		}
 	}
-	
-	
-
 }

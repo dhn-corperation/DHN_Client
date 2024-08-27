@@ -14,6 +14,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.MediaType;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -42,10 +43,14 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Autowired
 	private ApplicationContext appContext;
 
+	@Autowired
+	private ScheduledAnnotationBeanPostProcessor posts;
+
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-		param.setImg_table( appContext.getEnvironment().getProperty("dhnclient.img_table"));
+		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+		param.setImg_table(appContext.getEnvironment().getProperty("dhnclient.img_table"));
+		param.setMms_use(appContext.getEnvironment().getProperty("dhnclient.mms_use"));
 		param.setMsg_type("M");
 		
 
@@ -55,9 +60,12 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		// 풀 경로를 DB에 담는듯.
 		basepath = appContext.getEnvironment().getProperty("dhnclient.file_base_path")==null?"":appContext.getEnvironment().getProperty("dhnclient.file_base_path");
 
-		isStart = true;
-
-		log.info("MMS 초기화 완료");
+		if (param.getMms_use() != null && param.getMms_use().equalsIgnoreCase("Y")) {
+			log.info("MMS 초기화 완료");
+			isStart = true;
+		} else {
+			posts.postProcessBeforeDestruction(this, null);
+		}
 	}
 	
 	@Scheduled(fixedDelay = 100)

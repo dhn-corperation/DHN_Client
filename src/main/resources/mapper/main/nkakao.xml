@@ -21,7 +21,7 @@
             and SENTTIME is NULL
             and KIND = '${msg_type}'
             and RETRY = '0'
-            and ROWNUM &lt;= 1000
+            and ROWNUM &lt;= 500
     </update>
 
     <select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
@@ -52,7 +52,7 @@
                 )
             )
             and msg.RETRY = '0'
-            AND ROWNUM &lt;= 1000
+            AND ROWNUM &lt;= 500
     </update>
 
     <select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
@@ -75,7 +75,7 @@
             and KIND = '${msg_type}'
             and RETRY = '0'
             and PSEQ is not null
-            AND ROWNUM &lt;= 1000
+            AND ROWNUM &lt;= 500
     </update>
 
     <select id="req_mms_image_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType="int">
@@ -327,5 +327,13 @@
         delete from ${msg_table} where RETRY = '${group_no}'
     </delete>
 
+    <update id="msg_json_err_message" parameterType="map">
+        UPDATE ${param.msg_table}
+        SET RESULT = '9'
+        WHERE SEQNO IN
+        <foreach item="msgid" collection="jsonErrMsgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
+    </update>
 
 </mapper>

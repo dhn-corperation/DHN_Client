@@ -1,4 +1,4 @@
-package com.dhn.client;
+package com.dhn.client.config;
 
 import javax.sql.DataSource;
 
