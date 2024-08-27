@@ -105,7 +105,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			isProc = true;
 			procCnt++;
 			try {
-				log.info("test");
 				ObjectMapper om = new ObjectMapper();
 				HttpHeaders header = new HttpHeaders();
 				
