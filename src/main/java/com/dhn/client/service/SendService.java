@@ -8,13 +8,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,71 +62,84 @@ public class SendService {
     }
 
     @Async("kaoTaskExecutor")
-    public void KAOSendAsync(List<KAORequestBean> _list, SQLParameter paramCopy, String group_no){
+    @Retryable(
+            value = {Exception.class}, // 재시도할 예외 유형
+            maxAttempts = 3, // 최대 시도 횟수
+            backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
+    )
+    @Transactional
+    public void KAOSendAsync(List<KAORequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeKAOThreads.incrementAndGet() <= MAX_THREADS) {
+            boolean apiCalled = false;
+            List<String> json_err_msgid = new ArrayList<>();
+            List<KAORequestBean> removeData = new ArrayList<>();
             try{
-                List<String> json_err_msgid = new ArrayList<>();
-                List<KAORequestBean> removeData = new ArrayList<>();
-                for (KAORequestBean kaoRequestBean : _list) {
-                    if(kaoRequestBean.getButton()!=null && !kaoRequestBean.getButton().isEmpty()){
-                        kaoService.Btn_form(kaoRequestBean);
+                if(!apiCalled){
+                    for (KAORequestBean kaoRequestBean : _list) {
+                        if(kaoRequestBean.getButton()!=null && !kaoRequestBean.getButton().isEmpty()){
+                            kaoService.Btn_form(kaoRequestBean);
+                        }
+
+                        StringWriter valSw = new StringWriter();
+                        ObjectMapper valOm = new ObjectMapper();
+                        valOm.writeValue(valSw, kaoRequestBean);
+                        String jsonString = valSw.toString();
+
+                        KAORequestBean newkao = valOm.readValue(jsonString, KAORequestBean.class);
+
+                        boolean isEqual = kaoRequestBean.equals(newkao);
+
+                        if (!isEqual) {
+                            log.info("JSON 변환 작업에 이상이 있는 데이터 입니다. / 메세지 아이디 : "+kaoRequestBean.getMsgid());
+                            json_err_msgid.add(kaoRequestBean.getMsgid());
+                            removeData.add(kaoRequestBean);
+                        }
                     }
 
-                    StringWriter valSw = new StringWriter();
-                    ObjectMapper valOm = new ObjectMapper();
-                    valOm.writeValue(valSw, kaoRequestBean);
-                    String jsonString = valSw.toString();
+                    _list.removeAll(removeData);
 
-                    KAORequestBean newkao = valOm.readValue(jsonString, KAORequestBean.class);
+                    StringWriter sw = new StringWriter();
+                    ObjectMapper om = new ObjectMapper();
+                    om.writeValue(sw, _list);
 
-                    boolean isEqual = kaoRequestBean.equals(newkao);
+                    HttpHeaders header = new HttpHeaders();
 
-                    if (!isEqual) {
-                        log.info("JSON 변환 작업에 이상이 있는 데이터 입니다. / 메세지 아이디 : "+kaoRequestBean.getMsgid());
-                        json_err_msgid.add(kaoRequestBean.getMsgid());
-                        removeData.add(kaoRequestBean);
+                    header.setContentType(MediaType.APPLICATION_JSON);
+                    header.set("userid", userid);
+
+                    RestTemplate rt = new RestTemplate();
+                    HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+                    try {
+                        ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                        Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                        if (response.getStatusCode() == HttpStatus.OK) {
+                            requestService.updateKAOSendComplete(paramCopy);
+                            log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+                        } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
+                            requestService.updateKAOSendInit(paramCopy);
+                            log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        } else {
+                            log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                            requestService.updateKAOSendInit(paramCopy);
+                        }
+                        apiCalled = true;
+                    } catch (Exception e) {
+                        log.info("KAO 메세지 전송 오류 : " + e.toString());
+                        requestService.updateKAOSendInit(paramCopy);
+                        throw e;
                     }
                 }
 
-                _list.removeAll(removeData);
-
-                StringWriter sw = new StringWriter();
-                ObjectMapper om = new ObjectMapper();
-                om.writeValue(sw, _list);
-
-                HttpHeaders header = new HttpHeaders();
-
-                header.setContentType(MediaType.APPLICATION_JSON);
-                header.set("userid", userid);
-
-                RestTemplate rt = new RestTemplate();
-                HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-                try {
-                    ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                    Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                    if (response.getStatusCode() == HttpStatus.OK) {
-                        requestService.updateKAOSendComplete(paramCopy);
-                        log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                    } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
-                        requestService.updateKAOSendInit(paramCopy);
-                        log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                    } else {
-                        log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                        requestService.updateKAOSendInit(paramCopy);
+                if (apiCalled) {
+                    Thread.sleep(4000); // API 호출 성공 후의 대기 시간 또는 후속 처리
+                    if (!json_err_msgid.isEmpty()) {
+                        requestService.jsonErrMessage(paramCopy, json_err_msgid);
                     }
-                } catch (Exception e) {
-                    log.info("KAO 메세지 전송 오류 : " + e.toString());
-                    requestService.updateKAOSendInit(paramCopy);
-                }
-
-                Thread.sleep(4000);
-
-                if(!json_err_msgid.isEmpty()){
-                    requestService.jsonErrMessage(paramCopy,json_err_msgid);
                 }
             }catch (Exception e){
                 log.error("KAO 비동기 작업 처리 중 오류 발생: " + e.toString());
+                throw e;
             }finally {
                 activeKAOThreads.decrementAndGet(); // 작업 완료 후 활성화된 쓰레드 수 감소
             }
@@ -136,69 +151,82 @@ public class SendService {
 
 
     @Async("smsTaskExecutor")
-    public void SMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no){
+    @Retryable(
+            value = {Exception.class}, // 재시도할 예외 유형
+            maxAttempts = 3, // 최대 시도 횟수
+            backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
+    )
+    @Transactional
+    public void SMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeSMSThreads.incrementAndGet() <= MAX_THREADS) {
+            boolean apiCalled = false;
+            List<String> json_err_msgid = new ArrayList<>();
+            List<RequestBean> removeData = new ArrayList<>();
             try{
-                List<String> json_err_msgid = new ArrayList<>();
-                List<RequestBean> removeData = new ArrayList<>();
-                for (RequestBean requestBean : _list) {
+                if (!apiCalled) {
+                    for (RequestBean requestBean : _list) {
 
-                    StringWriter valSw = new StringWriter();
-                    ObjectMapper valOm = new ObjectMapper();
-                    valOm.writeValue(valSw, requestBean);
-                    String jsonString = valSw.toString();
+                        StringWriter valSw = new StringWriter();
+                        ObjectMapper valOm = new ObjectMapper();
+                        valOm.writeValue(valSw, requestBean);
+                        String jsonString = valSw.toString();
 
-                    RequestBean newsms = valOm.readValue(jsonString, RequestBean.class);
+                        RequestBean newsms = valOm.readValue(jsonString, RequestBean.class);
 
-                    boolean isEqual = requestBean.equals(newsms);
+                        boolean isEqual = requestBean.equals(newsms);
 
-                    if (!isEqual) {
-                        log.info("JSON 변환 작업에 이상이 있는 데이터 입니다. / 메세지 아이디 : "+requestBean.getMsgid());
-                        json_err_msgid.add(requestBean.getMsgid());
-                        removeData.add(requestBean);
+                        if (!isEqual) {
+                            log.info("JSON 변환 작업에 이상이 있는 데이터 입니다. / 메세지 아이디 : "+requestBean.getMsgid());
+                            json_err_msgid.add(requestBean.getMsgid());
+                            removeData.add(requestBean);
+                        }
                     }
-                }
 
-                _list.removeAll(removeData);
+                    _list.removeAll(removeData);
 
-                StringWriter sw = new StringWriter();
-                ObjectMapper om = new ObjectMapper();
-                om.writeValue(sw, _list);
+                    StringWriter sw = new StringWriter();
+                    ObjectMapper om = new ObjectMapper();
+                    om.writeValue(sw, _list);
 
-                HttpHeaders header = new HttpHeaders();
+                    HttpHeaders header = new HttpHeaders();
 
-                header.setContentType(MediaType.APPLICATION_JSON);
-                header.set("userid", userid);
+                    header.setContentType(MediaType.APPLICATION_JSON);
+                    header.set("userid", userid);
 
-                RestTemplate rt = new RestTemplate();
-                HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+                    RestTemplate rt = new RestTemplate();
+                    HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
-                try {
-                    ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                    Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                    if(response.getStatusCode() ==  HttpStatus.OK)
-                    {
-                        requestService.updateSMSSendComplete(paramCopy);
-                        log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                    } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
-                        requestService.updateKAOSendInit(paramCopy);
-                        log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                    } else {
-                        log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                    try {
+                        ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                        Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                        if(response.getStatusCode() ==  HttpStatus.OK)
+                        {
+                            requestService.updateSMSSendComplete(paramCopy);
+                            log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+                        } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
+                            requestService.updateKAOSendInit(paramCopy);
+                            log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        } else {
+                            log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                            requestService.updateSMSSendInit(paramCopy);
+                        }
+                        apiCalled = true;
+                    }catch (Exception e) {
+                        log.info("SMS 메세지 전송 오류 : " + e.toString());
                         requestService.updateSMSSendInit(paramCopy);
+                        throw e;
                     }
-                }catch (Exception e) {
-                    log.info("SMS 메세지 전송 오류 : " + e.toString());
-
-                    requestService.updateSMSSendInit(paramCopy);
                 }
 
-                Thread.sleep(4000);
-                if(!json_err_msgid.isEmpty()){
-                    requestService.jsonErrMessage(paramCopy,json_err_msgid);
+                if (apiCalled) {
+                    Thread.sleep(4000); // API 호출 성공 후의 대기 시간 또는 후속 처리
+                    if (!json_err_msgid.isEmpty()) {
+                        requestService.jsonErrMessage(paramCopy, json_err_msgid);
+                    }
                 }
             }catch (Exception e){
                 log.error("SMS 비동기 작업 처리 중 오류 발생: " + e.toString());
+                throw e;
             }finally {
                 activeSMSThreads.decrementAndGet(); // 작업 완료 후 활성화된 쓰레드 수 감소
             }
@@ -209,69 +237,83 @@ public class SendService {
     }
 
     @Async("lmsTaskExecutor")
-    public void LMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no){
+    @Retryable(
+            value = {Exception.class}, // 재시도할 예외 유형
+            maxAttempts = 3, // 최대 시도 횟수
+            backoff = @Backoff(delay = 2000) // 재시도 간의 대기 시간 (밀리초)
+    )
+    @Transactional
+    public void LMSSendAsync(List<RequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeLMSThreads.incrementAndGet() <= MAX_THREADS) {
+            boolean apiCalled = false;
+            List<String> json_err_msgid = new ArrayList<>();
+            List<RequestBean> removeData = new ArrayList<>();
             try{
-                List<String> json_err_msgid = new ArrayList<>();
-                List<RequestBean> removeData = new ArrayList<>();
-                for (RequestBean requestBean : _list) {
+                if (!apiCalled) {
 
-                    StringWriter valSw = new StringWriter();
-                    ObjectMapper valOm = new ObjectMapper();
-                    valOm.writeValue(valSw, requestBean);
-                    String jsonString = valSw.toString();
+                    for (RequestBean requestBean : _list) {
 
-                    RequestBean newlms = valOm.readValue(jsonString, RequestBean.class);
+                        StringWriter valSw = new StringWriter();
+                        ObjectMapper valOm = new ObjectMapper();
+                        valOm.writeValue(valSw, requestBean);
+                        String jsonString = valSw.toString();
 
-                    boolean isEqual = requestBean.equals(newlms);
+                        RequestBean newlms = valOm.readValue(jsonString, RequestBean.class);
 
-                    if (!isEqual) {
-                        log.info("JSON 변환 작업에 이상이 있는 데이터 입니다. / 메세지 아이디 : "+requestBean.getMsgid());
-                        json_err_msgid.add(requestBean.getMsgid());
-                        removeData.add(requestBean);
+                        boolean isEqual = requestBean.equals(newlms);
+
+                        if (!isEqual) {
+                            log.info("JSON 변환 작업에 이상이 있는 데이터 입니다. / 메세지 아이디 : "+requestBean.getMsgid());
+                            json_err_msgid.add(requestBean.getMsgid());
+                            removeData.add(requestBean);
+                        }
                     }
-                }
 
-                _list.removeAll(removeData);
+                    _list.removeAll(removeData);
 
-                StringWriter sw = new StringWriter();
-                ObjectMapper om = new ObjectMapper();
-                om.writeValue(sw, _list);
+                    StringWriter sw = new StringWriter();
+                    ObjectMapper om = new ObjectMapper();
+                    om.writeValue(sw, _list);
 
-                HttpHeaders header = new HttpHeaders();
+                    HttpHeaders header = new HttpHeaders();
 
-                header.setContentType(MediaType.APPLICATION_JSON);
-                header.set("userid", userid);
+                    header.setContentType(MediaType.APPLICATION_JSON);
+                    header.set("userid", userid);
 
-                RestTemplate rt = new RestTemplate();
-                HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+                    RestTemplate rt = new RestTemplate();
+                    HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
-                try {
-                    ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                    Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                    if(response.getStatusCode() ==  HttpStatus.OK)
-                    {
-                        requestService.updateSMSSendComplete(paramCopy);
-                        log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                    } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
-                        requestService.updateKAOSendInit(paramCopy);
-                        log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                    } else {
-                        log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                    try {
+                        ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                        Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                        if(response.getStatusCode() ==  HttpStatus.OK)
+                        {
+                            requestService.updateSMSSendComplete(paramCopy);
+                            log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+                        } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
+                            requestService.updateKAOSendInit(paramCopy);
+                            log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                        } else {
+                            log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
+                            requestService.updateSMSSendInit(paramCopy);
+                        }
+                        apiCalled = true;
+                    }catch (Exception e) {
+                        log.info("LMS 메세지 전송 오류 : " + e.toString());
                         requestService.updateSMSSendInit(paramCopy);
+                        throw e;
                     }
-                }catch (Exception e) {
-                    log.info("LMS 메세지 전송 오류 : " + e.toString());
-
-                    requestService.updateSMSSendInit(paramCopy);
                 }
 
-                Thread.sleep(4000);
-                if(!json_err_msgid.isEmpty()){
-                    requestService.jsonErrMessage(paramCopy,json_err_msgid);
+                if (apiCalled) {
+                    Thread.sleep(4000); // API 호출 성공 후의 대기 시간 또는 후속 처리
+                    if (!json_err_msgid.isEmpty()) {
+                        requestService.jsonErrMessage(paramCopy, json_err_msgid);
+                    }
                 }
             }catch (Exception e){
                 log.error("LMS 비동기 작업 처리 중 오류 발생: " + e.toString());
+                throw e;
             }finally {
                 activeLMSThreads.decrementAndGet(); // 작업 완료 후 활성화된 쓰레드 수 감소
             }
