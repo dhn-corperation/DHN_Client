@@ -132,12 +132,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 						procCnt--;
 					}
 				} catch(Exception ex) {
-					log.info("결과 수신 오류 : " + ex.toString());
+					log.error("결과 수신 오류 : " + ex.toString());
 					procCnt--;
 				}
 				
 			}catch (Exception e) {
-				log.info("결과 수신 오류 : " + e.toString());
+				log.error("결과 수신 오류 : " + e.toString());
 				procCnt--;
 			}
 			isProc = false;
@@ -195,7 +195,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			try {
 				requestService.Insert_msg_log(_ml);
 			}catch (Exception e) {
-				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
+				log.error("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
 			}
 		}
 		log.info("결과 수신 완료 : " + json.length() + " 건");		

@@ -115,7 +115,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 								requestService.updateSMSSendInit(param);
 							}
 						} catch(Exception ex) {
-							log.info("MMS 메세지 전송 오류 : " + ex.toString());
+							log.error("MMS 메세지 전송 오류 : " + ex.toString());
 							
 							requestService.updateSMSSendInit(param);
 						}
@@ -189,7 +189,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							}
 							response.close();
 						} catch (Exception e) {
-							log.info("MMS Image Key 등록 오류 : ", e.toString());
+							log.error("MMS Image Key 등록 오류 : ", e.toString());
 						}
 
 					}

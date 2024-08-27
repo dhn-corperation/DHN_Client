@@ -61,7 +61,7 @@ public class SendService {
         return activeMMSThreads.get();
     }
 
-    @Async("kaoTaskExecutor")
+    @Async("kaoTaskExecutor") // 비동기 처리
     @Retryable(
             value = {Exception.class}, // 재시도할 예외 유형
             maxAttempts = 3, // 최대 시도 횟수
@@ -71,8 +71,8 @@ public class SendService {
     public void KAOSendAsync(List<KAORequestBean> _list, SQLParameter paramCopy, String group_no) throws Exception {
         if (activeKAOThreads.incrementAndGet() <= MAX_THREADS) {
             boolean apiCalled = false;
-            List<String> json_err_msgid = new ArrayList<>();
-            List<KAORequestBean> removeData = new ArrayList<>();
+            List<String> json_err_msgid = new ArrayList<>(); // json 직렬화 -> 역직렬화시 기존 데이터 비교 후 다를때(문제있는 데이터) 상태값 별도로 update
+            List<KAORequestBean> removeData = new ArrayList<>(); // 위의 json 직, 역직렬화시 다를때 API전송시 지울 데이터
             try{
                 if(!apiCalled){
                     for (KAORequestBean kaoRequestBean : _list) {
@@ -100,7 +100,7 @@ public class SendService {
 
                     StringWriter sw = new StringWriter();
                     ObjectMapper om = new ObjectMapper();
-                    om.writeValue(sw, _list);
+                    om.writeValue(sw, _list); // List를 Json화 하여 문자열 저장
 
                     HttpHeaders header = new HttpHeaders();
 
@@ -113,26 +113,25 @@ public class SendService {
                     try {
                         ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                         Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                        if (response.getStatusCode() == HttpStatus.OK) {
+                        if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
                             requestService.updateKAOSendComplete(paramCopy);
                             log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
+                        } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){ // 데이터 전달 시 데이터 손상 즉, json 깨질떄
                             requestService.updateKAOSendInit(paramCopy);
                             log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
-                        } else {
+                        } else { // API 전송 실패시
                             log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                             requestService.updateKAOSendInit(paramCopy);
                         }
                         apiCalled = true;
                     } catch (Exception e) {
-                        log.info("KAO 메세지 전송 오류 : " + e.toString());
+                        log.error("KAO 메세지 전송 오류 : " + e.toString());
                         requestService.updateKAOSendInit(paramCopy);
                         throw e;
                     }
                 }
 
                 if (apiCalled) {
-                    Thread.sleep(4000); // API 호출 성공 후의 대기 시간 또는 후속 처리
                     if (!json_err_msgid.isEmpty()) {
                         requestService.jsonErrMessage(paramCopy, json_err_msgid);
                     }
@@ -212,14 +211,13 @@ public class SendService {
                         }
                         apiCalled = true;
                     }catch (Exception e) {
-                        log.info("SMS 메세지 전송 오류 : " + e.toString());
+                        log.error("SMS 메세지 전송 오류 : " + e.toString());
                         requestService.updateSMSSendInit(paramCopy);
                         throw e;
                     }
                 }
 
                 if (apiCalled) {
-                    Thread.sleep(4000); // API 호출 성공 후의 대기 시간 또는 후속 처리
                     if (!json_err_msgid.isEmpty()) {
                         requestService.jsonErrMessage(paramCopy, json_err_msgid);
                     }
@@ -299,14 +297,13 @@ public class SendService {
                         }
                         apiCalled = true;
                     }catch (Exception e) {
-                        log.info("LMS 메세지 전송 오류 : " + e.toString());
+                        log.error("LMS 메세지 전송 오류 : " + e.toString());
                         requestService.updateSMSSendInit(paramCopy);
                         throw e;
                     }
                 }
 
                 if (apiCalled) {
-                    Thread.sleep(4000); // API 호출 성공 후의 대기 시간 또는 후속 처리
                     if (!json_err_msgid.isEmpty()) {
                         requestService.jsonErrMessage(paramCopy, json_err_msgid);
                     }
