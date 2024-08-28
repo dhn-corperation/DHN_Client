@@ -4,6 +4,7 @@ import com.dhn.client.bean.MMSImageBean;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
+import com.dhn.client.service.SendService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -44,6 +45,9 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private ApplicationContext appContext;
 
 	@Autowired
+	private SendService sendService;
+
+	@Autowired
 	private ScheduledAnnotationBeanPostProcessor posts;
 
 	@Override
@@ -70,7 +74,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
-		if(isStart && !isProc) {
+		if(isStart && !isProc && sendService.getActiveMMSThreads() < SendService.MAX_THREADS) {
 			isProc = true;
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
@@ -86,50 +90,21 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 					if(cnt > 0) {
 						
 						param.setGroup_no(group_no);
-						
 						requestService.updateMMSGroupNo(param);
-						
 						List<RequestBean> _list = requestService.selectMMSRequests(param);
-						
-						StringWriter sw = new StringWriter();
-						ObjectMapper om = new ObjectMapper();
-						om.writeValue(sw, _list);
-						
-						HttpHeaders header = new HttpHeaders();
-						
-						header.setContentType(MediaType.APPLICATION_JSON);
-						header.set("userid", userid);
-						
-						RestTemplate rt = new RestTemplate();
-						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-													
-							if(response.getStatusCode() == HttpStatus.OK)
-							{
-								requestService.updateSMSSendComplete(param);
-								log.info("MMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-							} else {
-								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("MMS 메세지 전송오류 : " + res.get("message"));
-								requestService.updateSMSSendInit(param);
-							}
-						} catch(Exception ex) {
-							log.error("MMS 메세지 전송 오류 : " + ex.toString());
-							
-							requestService.updateSMSSendInit(param);
-						}
 
-						
+						SQLParameter paramCopy = param.toBuilder().build();
+						sendService.LMSSendAsync(_list, paramCopy, group_no);
+
 					}
-					
-					
 				}catch (Exception e) {
 					log.error("MMS Send Error : " + e.toString());
 				}
 				preGroupNo = group_no;
 			}
 			isProc = false;
+		}else if (sendService.getActiveMMSThreads() >= SendService.MAX_THREADS) {
+			//log.info("SMS 스케줄러: 최대 활성화된 쓰레드 수에 도달했습니다. 다음 주기에 다시 시도합니다.");
 		}
 	}
 	

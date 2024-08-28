@@ -89,7 +89,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				preGroupNo = group_no;
 			}
 			isProc = false;
-		}else if (sendService.getActiveKAOThreads() >= SendService.MAX_THREADS) {
+		}else if (sendService.getActiveLMSThreads() >= SendService.MAX_THREADS) {
 			//log.info("SMS 스케줄러: 최대 활성화된 쓰레드 수에 도달했습니다. 다음 주기에 다시 시도합니다.");
 		}
 	}
