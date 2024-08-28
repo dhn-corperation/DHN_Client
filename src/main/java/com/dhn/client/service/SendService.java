@@ -116,7 +116,7 @@ public class SendService {
                         if (response.getStatusCode() == HttpStatus.OK) { // 데이터 정상적으로 전달
                             requestService.updateKAOSendComplete(paramCopy);
                             log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){ // 데이터 전달 시 데이터 손상 즉, json 깨질떄
+                        } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){ // 데이터 전달 시 데이터 손상 즉, json 깨질떄
                             requestService.updateKAOSendInit(paramCopy);
                             log.info("({}) KAO 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                         } else { // API 전송 실패시
@@ -202,7 +202,7 @@ public class SendService {
                         {
                             requestService.updateSMSSendComplete(paramCopy);
                             log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
+                        } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){
                             requestService.updateSMSSendInit(paramCopy);
                             log.info("({}) SMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                         } else {
@@ -288,7 +288,7 @@ public class SendService {
                         {
                             requestService.updateSMSSendComplete(paramCopy);
                             log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
+                        } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){
                             requestService.updateSMSSendInit(paramCopy);
                             log.info("({}) LMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                         } else {
@@ -374,7 +374,7 @@ public class SendService {
                         {
                             requestService.updateSMSSendComplete(paramCopy);
                             log.info("MMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                        } else if(response.getStatusCode() == HttpStatus.NOT_FOUND){
+                        } else if(response.getStatusCode() == HttpStatus.BAD_REQUEST){
                             requestService.updateSMSSendInit(paramCopy);
                             log.info("({}) MMS 메세지 전송오류 : {}",res.get("userid"), res.get("message"));
                         } else {
