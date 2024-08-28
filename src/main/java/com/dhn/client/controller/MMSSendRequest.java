@@ -98,7 +98,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					}
 				}catch (Exception e) {
-					log.error("MMS Send Error : " + e.toString());
+					log.error("MMS 메세지 전송 오류 : " + e.toString());
 				}
 				preGroupNo = group_no;
 			}

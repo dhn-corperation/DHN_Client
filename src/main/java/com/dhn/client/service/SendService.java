@@ -395,7 +395,7 @@ public class SendService {
                     }
                 }
             }catch (Exception e){
-                log.error("LMS 비동기 작업 처리 중 오류 발생: " + e.toString());
+                log.error("MMS 비동기 작업 처리 중 오류 발생: " + e.toString());
                 throw e;
             }finally {
                 activeMMSThreads.decrementAndGet(); // 작업 완료 후 활성화된 쓰레드 수 감소
