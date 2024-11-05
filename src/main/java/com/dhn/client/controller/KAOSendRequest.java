@@ -98,6 +98,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		
 	}
 
+	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
@@ -177,5 +178,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			isProc = false;
 		}
 	}
+
+	 */
 
 }
