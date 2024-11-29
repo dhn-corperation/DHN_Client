@@ -98,6 +98,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		
 	}
 
+
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
@@ -148,8 +149,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
 						try {
-							//ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "testyyw",entity, String.class);
+							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 
 							if (response.getStatusCode() == HttpStatus.OK) {
 								reqService.updateKAOSendComplete(param);
