@@ -43,7 +43,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String crypto = "";
 	
 	@Autowired
-	private RequestService reqService;
+	private RequestService requestService;
 	
 	@Autowired
 	private SMSService smsService;
@@ -87,7 +87,8 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		}
 		
 	}
-	
+
+	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
@@ -100,15 +101,15 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			if(!group_no.equals(preGroupNo)) {
 				
 				try {
-					int cnt = reqService.selectLMSReqeustCount(param);
+					int cnt = requestService.selectLMSReqeustCount(param);
 					
 					if(cnt > 0) {
 						
 						param.setGroup_no(group_no);
 						
-						reqService.updateLMSGroupNo(param);
+						requestService.updateLMSGroupNo(param);
 						
-						List<RequestBean> _list = reqService.selectLMSRequests(param);
+						List<RequestBean> _list = requestService.selectLMSRequests(param);
 						
 						for (RequestBean requestBean : _list) {
 							requestBean = smsService.encryption(requestBean,crypto);
@@ -133,17 +134,17 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 													
 							if(response.getStatusCode() == HttpStatus.OK)
 							{
-								reqService.updateSMSSendComplete(param);
+								requestService.updateSMSSendComplete(param);
 								log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
 								log.info("LMS 메세지 전송오류 : " + res.get("message"));
-								reqService.updateSMSSendInit(param);
+								requestService.updateSMSSendInit(param);
 							}
 						}catch (Exception e) {
 							log.info("LMS 메세지 전송 오류 : " + e.toString());
 							
-							reqService.updateSMSSendInit(param);
+							requestService.updateSMSSendInit(param);
 						}
 						
 					}
@@ -157,6 +158,8 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			isProc = false;
 		}
 	}
+
+	 */
 	
 	
 

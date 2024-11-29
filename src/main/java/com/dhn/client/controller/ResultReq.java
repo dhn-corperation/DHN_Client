@@ -37,7 +37,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String dbtype = "";
 	
 	@Autowired
-	private RequestService reqService;
+	private RequestService requestService;
 	
 	@Autowired
 	private ApplicationContext appContext;
@@ -163,7 +163,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			
 			
 			try {
-				reqService.Insert_msg_log(_ml);
+				requestService.Insert_msg_log(_ml);
 			}catch (Exception e) {
 				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
 			}
