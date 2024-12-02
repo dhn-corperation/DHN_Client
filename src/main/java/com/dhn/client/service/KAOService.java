@@ -30,46 +30,25 @@ public class KAOService {
 		kaoRequestBean.setCrypto(nonceHex+","+column);
 		try {
 			
-			if(kaoRequestBean.getPhn() != null && !kaoRequestBean.getPhn().isEmpty()) {			
+			if(column.toUpperCase().contains("PHN") && kaoRequestBean.getPhn() != null && !kaoRequestBean.getPhn().isEmpty()) {
 				kaoRequestBean.setPhn(aes256.encrypt(kaoRequestBean.getPhn(), nonce));
 			}
-			if(column.contains("MSG") && kaoRequestBean.getMsg() != null && !kaoRequestBean.getMsg().isEmpty()) {
+			if(column.toUpperCase().contains("MSG") && kaoRequestBean.getMsg() != null && !kaoRequestBean.getMsg().isEmpty()) {
 				kaoRequestBean.setMsg(aes256.encrypt(kaoRequestBean.getMsg(), nonce));
 			}
-			if(column.contains("PROFILE") && kaoRequestBean.getProfile() != null && !kaoRequestBean.getProfile().isEmpty()) {
-				kaoRequestBean.setProfile(aes256.encrypt(kaoRequestBean.getProfile(), nonce));
-			}
-			if (column.contains("BUTTON")) {
-				
-				if(kaoRequestBean.getButton1() != null && !kaoRequestBean.getButton1().isEmpty()) {
-					kaoRequestBean.setButton1(aes256.encrypt(kaoRequestBean.getButton1(), nonce));
-				}
-				if(kaoRequestBean.getButton2() != null && !kaoRequestBean.getButton2().isEmpty()) {
-					kaoRequestBean.setButton2(aes256.encrypt(kaoRequestBean.getButton2(), nonce));					
-				}
-				if(kaoRequestBean.getButton3() != null && !kaoRequestBean.getButton3().isEmpty()) {
-					kaoRequestBean.setButton3(aes256.encrypt(kaoRequestBean.getButton3(), nonce));					
-				}
-				if(kaoRequestBean.getButton4() != null && !kaoRequestBean.getButton4().isEmpty()) {
-					kaoRequestBean.setButton4(aes256.encrypt(kaoRequestBean.getButton4(), nonce));					
-				}
-				if(kaoRequestBean.getButton5() != null && !kaoRequestBean.getButton5().isEmpty()) {
-					kaoRequestBean.setButton5(aes256.encrypt(kaoRequestBean.getButton5(), nonce));					
-				}
-			}
-			if(column.contains("MESSAGETYPE") && kaoRequestBean.getMessagetype() != null && !kaoRequestBean.getMessagetype().isEmpty()) {
+			if(column.toUpperCase().contains("MESSAGETYPE") && kaoRequestBean.getMessagetype() != null && !kaoRequestBean.getMessagetype().isEmpty()) {
 				kaoRequestBean.setMessagetype(aes256.encrypt(kaoRequestBean.getMessagetype(), nonce));
 			}
-			if(column.contains("MSGSMS") && kaoRequestBean.getMsgsms() != null && !kaoRequestBean.getMsgsms().isEmpty()) {
+			if(column.toUpperCase().contains("MSGSMS") && kaoRequestBean.getMsgsms() != null && !kaoRequestBean.getMsgsms().isEmpty()) {
 				kaoRequestBean.setMsgsms(aes256.encrypt(kaoRequestBean.getMsgsms(), nonce));
 			}
-			if(column.contains("SMSSENDER") && kaoRequestBean.getSmssender() != null && !kaoRequestBean.getSmssender().isEmpty()) {
+			if(column.toUpperCase().contains("SMSSENDER") && kaoRequestBean.getSmssender() != null && !kaoRequestBean.getSmssender().isEmpty()) {
 				kaoRequestBean.setSmssender(aes256.encrypt(kaoRequestBean.getSmssender(), nonce));
 			}
-			if(column.contains("TMPLID") && kaoRequestBean.getTmplid() != null && !kaoRequestBean.getTmplid().isEmpty()) {
+			if(column.toUpperCase().contains("TMPLID") && kaoRequestBean.getTmplid() != null && !kaoRequestBean.getTmplid().isEmpty()) {
 				kaoRequestBean.setTmplid(aes256.encrypt(kaoRequestBean.getTmplid(), nonce));
 			}
-			if(column.contains("SMSLMSTIT") && kaoRequestBean.getSmslmstit() != null && !kaoRequestBean.getSmslmstit().isEmpty()) {
+			if(column.toUpperCase().contains("SMSLMSTIT") && kaoRequestBean.getSmslmstit() != null && !kaoRequestBean.getSmslmstit().isEmpty()) {
 				kaoRequestBean.setSmslmstit(aes256.encrypt(kaoRequestBean.getSmslmstit(), nonce));
 			}
 		}catch (Exception e) {
@@ -78,53 +57,6 @@ public class KAOService {
 		return kaoRequestBean;
 	}
 
-	public KAORequestBean Btn_form(KAORequestBean kaoRequestBean) {
-
-		String[] buttons = kaoRequestBean.getButton1().split("\\|");
-
-		if (buttons.length > 0) {
-			kaoRequestBean.setButton1(Btn_json(buttons[0]));
-		}
-		if (buttons.length > 1) {
-			kaoRequestBean.setButton2(Btn_json(buttons[1]));
-		}
-		if (buttons.length > 2) {
-			kaoRequestBean.setButton3(Btn_json(buttons[2]));
-		}
-		if (buttons.length > 3) {
-			kaoRequestBean.setButton4(Btn_json(buttons[3]));
-		}
-		if (buttons.length > 4) {
-			kaoRequestBean.setButton5(Btn_json(buttons[4]));
-		}
-
-		return kaoRequestBean;
-
-	}
-
-	private String Btn_json(String btn) {
-
-		String[] buttons = btn.split("\\^");
-
-		ButtonJsonBean btnjb = new ButtonJsonBean();
-		btnjb.setName(buttons[0]);
-		btnjb.setType(buttons[1]);
-		btnjb.setUrl_mobile(buttons[2]);
-		btnjb.setUrl_pc(buttons[3]);
-
-		String jsonString = "";
-
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			jsonString = mapper.writeValueAsString(btnjb);
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return jsonString;
-	}
-	
 	 public GCMParameterSpec generateGCMParameterSpec() {
 	        byte[] iv = new byte[12]; // 12바이트 nonce
 	        new SecureRandom().nextBytes(iv);

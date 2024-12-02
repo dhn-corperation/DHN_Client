@@ -44,7 +44,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String crypto = "";
 
 	@Autowired
-	private RequestService reqService;
+	private RequestService requestService;
 
 	@Autowired
 	private ApplicationContext appContext;
@@ -59,43 +59,20 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-		param.setKakao(appContext.getEnvironment().getProperty("dhnclient.kakao"));
-		param.setKakaobtn(appContext.getEnvironment().getProperty("dhnclient.kakaobtn"));
-		param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
-		param.setMsg_type("T");
+		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
+		param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
+		param.setMsg_type("K");
 
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+		crypto = appContext.getEnvironment().getProperty("dhnclient.crypto");
 
-		HttpHeaders cheader = new HttpHeaders();
-		
-		cheader.setContentType(MediaType.APPLICATION_JSON);
-		cheader.set("userid", userid);
-		
-		RestTemplate crt = new RestTemplate();
-		HttpEntity<String> centity = new HttpEntity<String>(cheader);
-
-		try {
-			ResponseEntity<String> cresponse = crt.exchange( dhnServer + "get_crypto",HttpMethod.GET, centity, String.class );
-			
-			if(cresponse.getStatusCode()!=HttpStatus.OK) {
-				log.info("암호화 컬럼 가져오기 오류 ");
-			}
-			
-			if (param.getKakao() != null && param.getKakao().toUpperCase().equals("Y") && cresponse.getStatusCode() == HttpStatus.OK) {
-				crypto = cresponse.getBody()!=null? cresponse.getBody().toString():"";
-				log.info("KAO 초기화 완료");
-				isStart = true;
-			} else {
-				posts.postProcessBeforeDestruction(this, null);
-			}
-			
-		}catch (HttpClientErrorException e) {
-			log.error("crypto 가져오기 오류 : " + e.getStatusCode() + ", " + e.toString());
-		}catch (RestClientException e) {
-			log.error("기타 오류 : " + dhnServer + ", " + e.toString());
+		if (param.getKakao_use() != null && param.getKakao_use().toUpperCase().equals("Y")) {
+			log.info("KAO 초기화 완료");
+			isStart = true;
+		} else {
+			posts.postProcessBeforeDestruction(this, null);
 		}
-		
 	}
 
 
@@ -107,72 +84,53 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 			LocalDateTime now = LocalDateTime.now();
 			String group_no = now.format(formatter);
-			
-			if(!group_no.equals(preGroupNo)) {
-				
-				try {
-					int cnt = reqService.selectKAORequestCount(param);
-					
-					if(cnt > 0) {
-						
-						HttpHeaders cheader = new HttpHeaders();
-						
-						cheader.setContentType(MediaType.APPLICATION_JSON);
-						cheader.set("userid", userid);
-						
-						RestTemplate crt = new RestTemplate();
-						HttpEntity<String> centity = new HttpEntity<String>(cheader);
-						param.setGroup_no(group_no);
 
-						reqService.updateKAOGroupNo(param);
+			try{
+				int cnt = requestService.selectKAORequestCount(param);
 
-						List<KAORequestBean> _list = reqService.selectKAORequests(param);
+				if(cnt > 0){
+					requestService.updateKAOStatus(param);
 
+					List<KAORequestBean> _list = requestService.selectKAORequests(param);
 
+					if(!crypto.isEmpty() && !crypto.equals("")){
 						for (KAORequestBean kaoRequestBean : _list) {
-							if (kaoRequestBean.getButton1() != null) {
-								kaoRequestBean = kaoService.Btn_form(kaoRequestBean);
-							}
 							kaoRequestBean = kaoService.encryption(kaoRequestBean, crypto);
 						}
-
-						StringWriter sw = new StringWriter();
-						ObjectMapper om = new ObjectMapper();
-						om.writeValue(sw, _list);
-
-						HttpHeaders header = new HttpHeaders();
-
-						header.setContentType(MediaType.APPLICATION_JSON);
-						header.set("userid", userid);
-
-						RestTemplate rt = new RestTemplate();
-						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-
-							if (response.getStatusCode() == HttpStatus.OK) {
-								reqService.updateKAOSendComplete(param);
-								log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-							} else {
-								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("KAO 메세지 전송오류 : " + res.get("message"));
-								reqService.updateKAOSendInit(param);
-							}
-						} catch (Exception e) {
-							log.info("KAO 메세지 전송 오류 : " + e.toString());
-							reqService.updateKAOSendInit(param);
-						}
-
 					}
-					
-				}catch (Exception e) {
-					log.error("KAO Send Error : " + e.toString());
+
+					StringWriter sw = new StringWriter();
+					ObjectMapper om = new ObjectMapper();
+					om.writeValue(sw, _list);
+
+					HttpHeaders header = new HttpHeaders();
+
+					header.setContentType(MediaType.APPLICATION_JSON);
+					header.set("userid", userid);
+
+					RestTemplate rt = new RestTemplate();
+					HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+					try {
+						ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+
+						if (response.getStatusCode() == HttpStatus.OK) {
+							requestService.updateKAOSendComplete(param);
+							log.info("KAO 메세지 전송 완료(Http OK) : "+ _list.size() + " 건");
+						} else {
+							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+							log.error("KAO 메세지 전송 오류(Http ERR) : " + res.get("message"));
+							requestService.updateKAOSendInit(param);
+						}
+					} catch (Exception e) {
+						log.error("KAO 메세지 전송 오류(Response) : " + e.toString());
+						requestService.updateKAOSendInit(param);
+					}
+
 				}
-				
-				preGroupNo = group_no;
+			}catch (Exception e){
+				log.error("KAO 메세지 전송 오류(Send) : " + e.toString());
 			}
-			
 			
 			isProc = false;
 		}

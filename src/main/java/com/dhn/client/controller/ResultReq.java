@@ -101,7 +101,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	}
 	*/
 	
-	
+	/*
 	private void ResultProc(JSONArray json, int _pc) {
 		
 		for(int i=0; i<json.length(); i++) {
@@ -172,6 +172,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		procCnt--;
 		
 	}
-	
+	*/
 
 }

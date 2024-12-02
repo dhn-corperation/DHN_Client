@@ -83,11 +83,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jdbc</artifactId> 
-		</dependency>
-
-		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 			<version>2.3.1</version> 
@@ -127,27 +122,13 @@
             <artifactId>jasypt-spring-boot-starter</artifactId>
             <version>3.0.5</version>
         </dependency>
-<!--        
-		<dependency>
-		    <groupId>org.json</groupId>
-		    <artifactId>json</artifactId>
-		    <version>20230618</version>
-		</dependency>-->
-		
+
 		<dependency>
 		    <groupId>org.json</groupId>
 		    <artifactId>json</artifactId>
 		    <version>20240303</version>
 		</dependency>
 
-		
-		<!-- https://mvnrepository.com/artifact/com.ibm.db2.jcc/db2jcc -->
-		<dependency>
-		    <groupId>com.ibm.db2.jcc</groupId>
-		    <artifactId>db2jcc</artifactId>
-		    <version>db2jcc4</version>
-		</dependency>
-		
 		<dependency>
 		    <groupId>net.sf.jt400</groupId>
 		    <artifactId>jt400-jdk8</artifactId>
@@ -165,15 +146,34 @@
 		  <artifactId>okhttp</artifactId>
 		  <version>3.10.0</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>org.postgresql</groupId>
-		    <artifactId>postgresql</artifactId>
-		    <version>42.7.3</version>
+			<groupId>tibero</groupId>
+			<artifactId>tibero6-jdbc</artifactId>
+			<version>6</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/resources/lib/tibero/tibero6-jdbc.jar</systemPath>
 		</dependency>
 
-				
-   </dependencies>
+		<!--
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jdbc</artifactId>
+		</dependency>
+		-->
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-relational</artifactId>
+		</dependency>
+
+
+	</dependencies>
 	
 	<build>
 		<plugins>
