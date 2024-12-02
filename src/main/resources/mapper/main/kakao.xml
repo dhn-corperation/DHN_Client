@@ -8,6 +8,7 @@
 		from ${msg_table}
 		where STATUS = '100'
 			and TYPE = '${msg_type}'
+			and NVL(REQDTTM, CURRENT_TIMESTAMP) &lt;= CURRENT_TIMESTAMP
 	</select>
 
 	<!--
@@ -30,9 +31,10 @@
 				FROM ${msg_table}
 				WHERE STATUS = '100'
 					AND TYPE = '${msg_type}'
+					AND NVL(REQDTTM, CURRENT_TIMESTAMP) &lt;= CURRENT_TIMESTAMP
 				ORDER BY PRIORITY ASC
 			)
-			WHERE ROWNUM &lt;= 2
+			WHERE ROWNUM &lt;= 500
 		)
 	</update>
 
