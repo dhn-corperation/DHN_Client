@@ -1,10 +1,6 @@
-# 자바 DHN_CLIENT Sample
+# 자바 DHN_CLIENT 여성가족부
 ## Service
-- oracle
-- mysql
-- postgresql
-- mssql
-- DB2
+- Tibero6 DB
 
 ## Java version
 - 1.8
