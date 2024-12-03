@@ -1,7 +1,6 @@
 package com.dhn.client.service;
 
 import com.dhn.client.AES256_GCM;
-import com.dhn.client.bean.KAORequestBean;
 import com.dhn.client.bean.PUSHRequestBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

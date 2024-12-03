@@ -27,15 +27,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	
 	public static boolean isStart = false;
 	private boolean isProc = false;
-	//private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
-	//private Map<String, String> _rsltCode = new HashMap<String, String>();
 	private static int procCnt = 0;
 	private String msgTable = "";
 	private String logTable = "";
-	private String dbtype = "";
-	
+
 	@Autowired
 	private RequestService requestService;
 	

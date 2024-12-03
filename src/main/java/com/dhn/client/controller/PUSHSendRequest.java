@@ -1,9 +1,7 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.KAORequestBean;
 import com.dhn.client.bean.PUSHRequestBean;
 import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.KAOService;
 import com.dhn.client.service.PUSHService;
 import com.dhn.client.service.RequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
