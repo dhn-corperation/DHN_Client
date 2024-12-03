@@ -65,4 +65,34 @@ public class RequestServiceImpl implements RequestService {
 	public void updatePUSHSendInit(SQLParameter param) throws Exception {
 		requestDAO.updatePUSHSendInit(param);
 	}
+
+	@Override
+	public int selectMSGRequestCount(SQLParameter param) throws Exception {
+		return requestDAO.selectMSGRequestCount(param);
+	}
+
+	@Override
+	public void updateMSGStatus(SQLParameter param) throws Exception {
+		requestDAO.updateMSGStatus(param);
+	}
+
+	@Override
+	public List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectMSGRequests(param);
+	}
+
+	@Override
+	public void updateMSGSendComplete(SQLParameter param) throws Exception {
+		requestDAO.updateMSGSendComplete(param);
+	}
+
+	@Override
+	public void updateMSGSendInit(SQLParameter param) throws Exception {
+		requestDAO.updateMSGSendInit(param);
+	}
+
+	@Override
+	public void update_msg_log(Msg_Log ml) throws Exception {
+		requestDAO.update_msg_log(ml);
+	}
 }

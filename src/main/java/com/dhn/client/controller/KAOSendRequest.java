@@ -63,11 +63,11 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
 		param.setMsg_type("K");
 
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server") + "/";
+		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		crypto = appContext.getEnvironment().getProperty("dhnclient.crypto");
 
-		if (param.getKakao_use() != null && param.getKakao_use().toUpperCase().equals("Y")) {
+		if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
 			log.info("KAO 초기화 완료");
 			isStart = true;
 		} else {
@@ -113,19 +113,20 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					try {
 						ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-
+						Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+						log.info(res.toString());
 						if (response.getStatusCode() == HttpStatus.OK) {
 							requestService.updateKAOSendComplete(param);
-							log.info("KAO 메세지 전송 완료(Http OK) : "+ _list.size() + " 건");
+							log.info("KAO 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
 						} else {
-							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-							log.error("KAO 메세지 전송 오류(Http ERR) : " + res.get("message"));
+							log.error("KAO 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
 							requestService.updateKAOSendInit(param);
 						}
 					} catch (Exception e) {
 						log.error("KAO 메세지 전송 오류(Response) : " + e.toString());
 						requestService.updateKAOSendInit(param);
 					}
+
 
 				}
 			}catch (Exception e){

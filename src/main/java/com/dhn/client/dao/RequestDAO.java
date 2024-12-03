@@ -2,9 +2,7 @@ package com.dhn.client.dao;
 
 import java.util.List;
 
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.PUSHRequestBean;
-import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.bean.*;
 
 public interface RequestDAO {
 
@@ -27,4 +25,16 @@ public interface RequestDAO {
 	void updatePUSHSendComplete(SQLParameter param) throws Exception;
 
 	void updatePUSHSendInit(SQLParameter param) throws Exception;
+
+    int selectMSGRequestCount(SQLParameter param) throws Exception;
+
+	void updateMSGStatus(SQLParameter param) throws Exception;
+
+	List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception;
+
+	void updateMSGSendComplete(SQLParameter param) throws Exception;
+
+	void updateMSGSendInit(SQLParameter param) throws Exception;
+
+	void update_msg_log(Msg_Log ml) throws Exception;
 }

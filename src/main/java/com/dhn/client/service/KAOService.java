@@ -1,20 +1,13 @@
 package com.dhn.client.service;
 
-import java.security.SecureRandom;
-import java.util.Base64;
-
-import javax.crypto.spec.GCMParameterSpec;
-
+import com.dhn.client.AES256_GCM;
+import com.dhn.client.bean.KAORequestBean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dhn.client.AES256_GCM;
-import com.dhn.client.bean.ButtonJsonBean;
-import com.dhn.client.bean.KAORequestBean;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.crypto.spec.GCMParameterSpec;
+import java.security.SecureRandom;
 
 @Service
 @Slf4j

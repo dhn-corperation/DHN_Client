@@ -33,7 +33,7 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void updateKAOSendComplete(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complet", param);
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param);
 	}
 
 	@Override
@@ -60,11 +60,43 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void updatePUSHSendComplete(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.push.mapper.SendRequest.req_push_sent_complet",param);
+		sqlSession.update("com.dhn.client.push.mapper.SendRequest.req_push_sent_complete",param);
 	}
 
 	@Override
 	public void updatePUSHSendInit(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.push.mapper.SendRequest.req_push_sent_init",param);
+	}
+
+	@Override
+	public int selectMSGRequestCount(SQLParameter param) throws Exception {
+		int cnt = 0;
+		cnt = sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_msg_count",param);
+		return cnt;
+	}
+
+	@Override
+	public void updateMSGStatus(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_status_update",param);
+	}
+
+	@Override
+	public List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception {
+		return sqlSession.selectList("com.dhn.client.msg.mapper.SendRequest.req_msg_select", param);
+	}
+
+	@Override
+	public void updateMSGSendComplete(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete",param);
+	}
+
+	@Override
+	public void updateMSGSendInit(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_init",param);
+	}
+
+	@Override
+	public void update_msg_log(Msg_Log ml) throws Exception {
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.log_update",ml);
 	}
 }

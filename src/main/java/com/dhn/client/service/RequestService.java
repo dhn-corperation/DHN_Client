@@ -2,12 +2,11 @@ package com.dhn.client.service;
 
 import java.util.List;
 
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.PUSHRequestBean;
-import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.bean.*;
 
 public interface RequestService {
 
+	// 알림톡
 	int selectKAORequestCount(SQLParameter param) throws Exception;
 
 	void updateKAOStatus(SQLParameter param) throws Exception;
@@ -18,6 +17,7 @@ public interface RequestService {
 
 	void updateKAOSendInit(SQLParameter param) throws Exception;
 
+	// 푸쉬
 	int selectPUSHRequestCount(SQLParameter param) throws Exception;
 
 	void updatePUSHStatus(SQLParameter param) throws Exception;
@@ -27,4 +27,18 @@ public interface RequestService {
 	void updatePUSHSendComplete(SQLParameter param) throws Exception;
 
 	void updatePUSHSendInit(SQLParameter param) throws Exception;
+
+	// 문자
+	int selectMSGRequestCount(SQLParameter param) throws Exception;
+
+	void updateMSGStatus(SQLParameter param) throws Exception;
+
+	List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception;
+
+	void updateMSGSendComplete(SQLParameter param) throws Exception;
+
+	void updateMSGSendInit(SQLParameter param) throws Exception;
+
+	void update_msg_log(Msg_Log ml) throws Exception;
+
 }

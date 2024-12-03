@@ -86,7 +86,7 @@
           and STATUS = '101'
     </select>
 
-    <update id="req_push_sent_complet" parameterType="com.dhn.client.bean.SQLParameter">
+    <update id="req_push_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         update ${msg_table}
         set STATUS = '102'
         where STATUS = '101'

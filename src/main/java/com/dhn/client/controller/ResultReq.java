@@ -48,7 +48,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		
 		isStart = true;
@@ -75,13 +75,40 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 											
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
-						JSONArray json = new JSONArray(response.getBody().toString());
-						if(json.length()>0) {
-							Thread res = new Thread(() ->ResultProc(json, procCnt) );
-							res.start();
+
+						String responseBody = response.getBody();
+						JSONObject jsonObject = new JSONObject(responseBody);
+
+						if (jsonObject.has("data")) {
+							JSONObject dataObject = jsonObject.getJSONObject("data");
+
+							if (dataObject.has("detail")) {
+								JSONArray jsonArray = dataObject.getJSONArray("detail");
+
+								if (jsonArray.length() > 0) {
+									Thread res = new Thread(() -> ResultProc(jsonArray, procCnt));
+									res.start();
+								} else {
+									Thread.sleep(5000);
+									procCnt--;
+								}
+							} else {
+								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
+								procCnt--;
+							}
 						} else {
+							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
 							procCnt--;
 						}
+
+//						JSONArray json = new JSONArray(response.getBody().toString());
+//						if(json.length()>0) {
+//							Thread res = new Thread(() ->ResultProc(json, procCnt) );
+//							res.start();
+//						} else {
+//							procCnt--;
+//						}
+
 					} else {
 						log.info("결과 수신 오류 (Http Err) : " + response.getStatusCode());
 						procCnt--;
@@ -99,6 +126,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		}
 	}
 
+
 	private void ResultProc(JSONArray json, int _pc) {
 		
 		for(int i=0; i<json.length(); i++) {
@@ -106,22 +134,48 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			
 			Msg_Log _ml = new Msg_Log(msgTable, logTable);
 			_ml.setMsgid(ent.getString("msgid"));
-			
-			String rscode = "";
-			
+
 			_ml.setMsg_type(ent.getString("message_type").toUpperCase());
 
 			if(ent.getString("message_type").equalsIgnoreCase("AP")){ // 앱푸쉬 결과 처리
 				_ml.setSend_type("P");
+				if(ent.getString("code").equals("0000")){
+					_ml.setCode("4");
+				}else{
+					_ml.setCode(ent.getString("code"));
+				}
+				_ml.setReal_send_date(ent.getString("res_dt"));
+				_ml.setTel_code("0");
 			} else if(ent.getString("message_type").equalsIgnoreCase("AT")) { // 알림톡 결과 처리
 				_ml.setSend_type("K");
-			}else { // 문자 결과 처리
-				_ml.setSend_type("M");
+				if(ent.getString("s_code").equals("0000")){
+					_ml.setCode("7000");
+				}else{
+					_ml.setCode(ent.getString("s_code"));
+				}
+				_ml.setReal_send_date(ent.getString("res_dt"));
+				_ml.setTel_code("0");
+			}else if(ent.getString("message_type").equalsIgnoreCase("PH")){ // 문자 결과 처리
+				_ml.setSend_type(ent.getString("sms_kind").toUpperCase());
+				if(ent.getString("code").equals("0000")){
+					_ml.setCode("1000");
+				}else{
+					_ml.setCode(ent.getString("code"));
+				}
+				if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")){
+					_ml.setTel_code("19");
+				}else if(ent.getString("remark1").equalsIgnoreCase("SKT") || ent.getString("remark1").equals("011")){
+					_ml.setTel_code("11");
+				}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")){
+					_ml.setTel_code("16");
+				}else{
+					_ml.setTel_code("0");
+				}
+				_ml.setReal_send_date(ent.getString("remark2"));
 			}
-			
-			
+
 			try {
-				//requestService.Insert_msg_log(_ml);
+				requestService.update_msg_log(_ml);
 			}catch (Exception e) {
 				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
 			}
