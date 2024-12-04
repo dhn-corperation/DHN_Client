@@ -27,7 +27,7 @@ public class SMSService {
 		requestBean.setCrypto(nonceHex+","+column);
 		try {
 			
-			if (requestBean.getPhn() != null && !requestBean.getPhn().isEmpty()) {
+			if (column.contains("PHN") && requestBean.getPhn() != null && !requestBean.getPhn().isEmpty()) {
 				requestBean.setPhn(aes256.encrypt(requestBean.getPhn(), nonce));
 			}
 			if(column.contains("MSG") && requestBean.getMsg() != null && !requestBean.getMsg().isEmpty()) {

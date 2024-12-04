@@ -12,15 +12,12 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.dhn.client.bean.KAORequestBean;
@@ -44,7 +41,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String crypto = "";
 
 	@Autowired
-	private RequestService reqService;
+	private RequestService requestService;
 
 	@Autowired
 	private ApplicationContext appContext;
@@ -59,41 +56,19 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-		param.setKakao(appContext.getEnvironment().getProperty("dhnclient.kakao"));
+		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
 		param.setKakaobtn(appContext.getEnvironment().getProperty("dhnclient.kakaobtn"));
 		param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
 		param.setMsg_type("T");
 
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-		HttpHeaders cheader = new HttpHeaders();
-		
-		cheader.setContentType(MediaType.APPLICATION_JSON);
-		cheader.set("userid", userid);
-		
-		RestTemplate crt = new RestTemplate();
-		HttpEntity<String> centity = new HttpEntity<String>(cheader);
-
-		try {
-			ResponseEntity<String> cresponse = crt.exchange( dhnServer + "get_crypto",HttpMethod.GET, centity, String.class );
-			
-			if(cresponse.getStatusCode()!=HttpStatus.OK) {
-				log.info("암호화 컬럼 가져오기 오류 ");
-			}
-			
-			if (param.getKakao() != null && param.getKakao().toUpperCase().equals("Y") && cresponse.getStatusCode() == HttpStatus.OK) {
-				crypto = cresponse.getBody()!=null? cresponse.getBody().toString():"";
-				log.info("KAO 초기화 완료");
-				isStart = true;
-			} else {
-				posts.postProcessBeforeDestruction(this, null);
-			}
-			
-		}catch (HttpClientErrorException e) {
-			log.error("crypto 가져오기 오류 : " + e.getStatusCode() + ", " + e.toString());
-		}catch (RestClientException e) {
-			log.error("기타 오류 : " + dhnServer + ", " + e.toString());
+		if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
+			log.info("KAO 초기화 완료");
+			isStart = true;
+		} else {
+			posts.postProcessBeforeDestruction(this, null);
 		}
 		
 	}
@@ -110,22 +85,14 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			if(!group_no.equals(preGroupNo)) {
 				
 				try {
-					int cnt = reqService.selectKAORequestCount(param);
+					int cnt = requestService.selectKAORequestCount(param);
 					
 					if(cnt > 0) {
-						
-						HttpHeaders cheader = new HttpHeaders();
-						
-						cheader.setContentType(MediaType.APPLICATION_JSON);
-						cheader.set("userid", userid);
-						
-						RestTemplate crt = new RestTemplate();
-						HttpEntity<String> centity = new HttpEntity<String>(cheader);
 						param.setGroup_no(group_no);
 
-						reqService.updateKAOGroupNo(param);
+						requestService.updateKAOGroupNo(param);
 
-						List<KAORequestBean> _list = reqService.selectKAORequests(param);
+						List<KAORequestBean> _list = requestService.selectKAORequests(param);
 
 
 						for (KAORequestBean kaoRequestBean : _list) {
@@ -152,16 +119,16 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "testyyw",entity, String.class);
 
 							if (response.getStatusCode() == HttpStatus.OK) {
-								reqService.updateKAOSendComplete(param);
+								requestService.updateKAOSendComplete(param);
 								log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
 								log.info("KAO 메세지 전송오류 : " + res.get("message"));
-								reqService.updateKAOSendInit(param);
+								requestService.updateKAOSendInit(param);
 							}
 						} catch (Exception e) {
 							log.info("KAO 메세지 전송 오류 : " + e.toString());
-							reqService.updateKAOSendInit(param);
+							requestService.updateKAOSendInit(param);
 						}
 
 					}

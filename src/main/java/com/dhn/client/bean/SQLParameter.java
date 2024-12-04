@@ -6,7 +6,10 @@ import lombok.Data;
 public class SQLParameter {
 	private String msg_table;
 	private String log_table;
-	private String kakao;
+	private String kakao_use;
+	private String sms_use;
+	private String lms_use;
+	private String mms_use;
 	private String dbtype;
 	private String group_no;
 	private String msg_type;

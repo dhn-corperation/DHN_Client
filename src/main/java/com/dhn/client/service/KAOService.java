@@ -30,7 +30,7 @@ public class KAOService {
 		kaoRequestBean.setCrypto(nonceHex+","+column);
 		try {
 			
-			if(kaoRequestBean.getPhn() != null && !kaoRequestBean.getPhn().isEmpty()) {			
+			if(column.contains("PHN") && kaoRequestBean.getPhn() != null && !kaoRequestBean.getPhn().isEmpty()) {
 				kaoRequestBean.setPhn(aes256.encrypt(kaoRequestBean.getPhn(), nonce));
 			}
 			if(column.contains("MSG") && kaoRequestBean.getMsg() != null && !kaoRequestBean.getMsg().isEmpty()) {
