@@ -11,16 +11,6 @@
 			and NVL(REQDTTM, CURRENT_TIMESTAMP) &lt;= CURRENT_TIMESTAMP
 	</select>
 
-	<!--
-	<update id = 'req_kao_status_update' parameterType="com.dhn.client.bean.SQLParameter">
-		update ${msg_table}
-			set STATUS = '101'
-		where STATUS = '100'
-			and TYPE = '${msg_type}'
-			and rownum &lt;= 2
-	</update>
-	-->
-
 	<update id = 'req_kao_status_update' parameterType="com.dhn.client.bean.SQLParameter">
 		UPDATE ${msg_table}
 		SET STATUS = '101'
