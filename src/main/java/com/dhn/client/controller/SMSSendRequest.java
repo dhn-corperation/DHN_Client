@@ -12,14 +12,12 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.dhn.client.bean.RequestBean;
@@ -43,7 +41,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String crypto = "";
 	
 	@Autowired
-	private RequestService reqService;
+	private RequestService requestService;
 	
 	@Autowired
 	private SMSService smsService;
@@ -51,39 +49,26 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Autowired
 	private ApplicationContext appContext;
 
+	@Autowired
+	private ScheduledAnnotationBeanPostProcessor posts;
+
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
+		param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
 		param.setMsg_type("S");
 		
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-		
-		HttpHeaders cheader = new HttpHeaders();
-		
-		cheader.setContentType(MediaType.APPLICATION_JSON);
-		cheader.set("userid", userid);
-		
-		RestTemplate crt = new RestTemplate();
-		HttpEntity<String> centity = new HttpEntity<String>(cheader);
-	
-		try {
-			ResponseEntity<String> cresponse = crt.exchange( dhnServer + "get_crypto",HttpMethod.GET, centity, String.class );
-			
-			if(cresponse.getStatusCode()==HttpStatus.OK) {
-				crypto = cresponse.getBody()!=null? cresponse.getBody().toString():"";
-				log.info("SMS 초기화 완료");
-				isStart = true;
-			}else {
-				log.info("암호화 컬럼 가져오기 오류 ");			
-			}
-			
-		}catch (HttpClientErrorException e) {
-			log.error("crypto 가져오기 오류 : " + e.getStatusCode() + ", " + e.toString());
-		}catch (RestClientException e) {
-			log.error("기타 오류 : " + dhnServer + ", " + e.toString());
+
+		if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
+			isStart = true;
+			log.info("SMS 초기화 완료");
+		} else {
+			posts.postProcessBeforeDestruction(this, null);
 		}
+
 	}
 	
 	
@@ -98,14 +83,14 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			if(!group_no.equals(preGroupNo)) {
 				try {
-					int cnt = reqService.selectSMSReqeustCount(param);
+					int cnt = requestService.selectSMSReqeustCount(param);
 					
 					if(cnt > 0) {
 						param.setGroup_no(group_no);
 						
-						reqService.updateSMSGroupNo(param);
+						requestService.updateSMSGroupNo(param);
 						
-						List<RequestBean> _list = reqService.selectSMSRequests(param);
+						List<RequestBean> _list = requestService.selectSMSRequests(param);
 						
 						for (RequestBean requestBean : _list) {
 							requestBean = smsService.encryption(requestBean,crypto);
@@ -129,17 +114,16 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							
 							if(response.getStatusCode() ==  HttpStatus.OK)
 							{
-								reqService.updateSMSSendComplete(param);
-								log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+								requestService.updateSMSSendComplete(param);
+								log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("SMS 메세지 전송오류 : " + res.get("message"));
-								reqService.updateSMSSendInit(param);
+								log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+								requestService.updateSMSSendInit(param);
 							}
 						}catch (Exception e) {
-							log.info("SMS 메세지 전송 오류 : " + e.toString());
-							
-							reqService.updateSMSSendInit(param);
+							log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
+							requestService.updateSMSSendInit(param);
 						}
 
 					}
