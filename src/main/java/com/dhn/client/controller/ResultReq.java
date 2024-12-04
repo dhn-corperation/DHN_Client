@@ -54,9 +54,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		
 		isStart = true;
 	}
-	
-	
-	/*
+
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc && procCnt < 10) {
@@ -77,13 +75,39 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 											
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
-						JSONArray json = new JSONArray(response.getBody().toString());
-						if(json.length()>0) {
-							Thread res = new Thread(() ->ResultProc(json, procCnt) );
-							res.start();
+						String responseBody = response.getBody();
+						JSONObject jsonObject = new JSONObject(responseBody);
+
+						if (jsonObject.has("data")) {
+							JSONObject dataObject = jsonObject.getJSONObject("data");
+
+							if (dataObject.has("detail")) {
+								JSONArray jsonArray = dataObject.getJSONArray("detail");
+
+								if (jsonArray.length() > 0) {
+									Thread res = new Thread(() -> ResultProc(jsonArray, procCnt));
+									res.start();
+								} else {
+									Thread.sleep(5000);
+									procCnt--;
+								}
+							} else {
+								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
+								procCnt--;
+							}
 						} else {
+							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
 							procCnt--;
 						}
+
+//						JSONArray json = new JSONArray(response.getBody().toString());
+//						if(json.length()>0) {
+//							Thread res = new Thread(() ->ResultProc(json, procCnt) );
+//							res.start();
+//						} else {
+//							procCnt--;
+//						}
+
 					} else {
 						procCnt--;
 					}
@@ -99,8 +123,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			isProc = false;
 		}
 	}
-	*/
-	
 	
 	private void ResultProc(JSONArray json, int _pc) {
 		
