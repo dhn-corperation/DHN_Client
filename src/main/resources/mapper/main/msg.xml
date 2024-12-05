@@ -58,7 +58,10 @@
             BILLID,
             TITLE,
             TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
-            REQDTTM
+            CASE
+                WHEN REQDTTM IS NULL THEN '00000000000000'
+                ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
+            END AS REQDTTM
         FROM ${msg_table}
         WHERE TYPE = '${msg_type}'
           and STATUS = '101'
