@@ -96,6 +96,9 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						}
 					}
 
+					_list.forEach(kaoRequestBean -> kaoRequestBean.setRealsendflag("1"));
+					log.info(_list.toString());
+
 					StringWriter sw = new StringWriter();
 					ObjectMapper om = new ObjectMapper();
 					om.writeValue(sw, _list);
