@@ -141,7 +141,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				}else{
 					_ml.setCode(ent.getString("code"));
 				}
-				_ml.setReal_send_date(ent.getString("res_dt"));
+				_ml.setReal_send_date(ent.getString("remark2"));
 				_ml.setTel_code("0");
 			} else if(ent.getString("message_type").equalsIgnoreCase("AT")) { // 알림톡 결과 처리
 				_ml.setSend_type("K");
