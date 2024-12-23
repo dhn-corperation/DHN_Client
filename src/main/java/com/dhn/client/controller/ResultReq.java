@@ -98,14 +98,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 							procCnt--;
 						}
 
-//						JSONArray json = new JSONArray(response.getBody().toString());
-//						if(json.length()>0) {
-//							Thread res = new Thread(() ->ResultProc(json, procCnt) );
-//							res.start();
-//						} else {
-//							procCnt--;
-//						}
-
 					} else {
 						log.info("결과 수신 오류 (Http Err) : " + response.getStatusCode());
 						procCnt--;
@@ -134,42 +126,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			_ml.setMsg_type(ent.getString("message_type").toUpperCase());
 
-			if(ent.getString("message_type").equalsIgnoreCase("AP")){ // 앱푸쉬 결과 처리
-				_ml.setSend_type("P");
-				if(ent.getString("code").equals("0000")){
-					_ml.setCode("4");
-				}else{
-					_ml.setCode(ent.getString("code"));
-				}
-				_ml.setReal_send_date(ent.getString("remark2"));
-				_ml.setTel_code("0");
-			} else if(ent.getString("message_type").equalsIgnoreCase("AT")) { // 알림톡 결과 처리
-				_ml.setSend_type("K");
-				if(ent.getString("s_code").equals("0000")){
-					_ml.setCode("7000");
-				}else{
-					_ml.setCode(ent.getString("s_code"));
-				}
-				_ml.setReal_send_date(ent.getString("res_dt"));
-				_ml.setTel_code("0");
-			}else if(ent.getString("message_type").equalsIgnoreCase("PH")){ // 문자 결과 처리
-				_ml.setSend_type(ent.getString("sms_kind").toUpperCase());
-				if(ent.getString("code").equals("0000")){
-					_ml.setCode("1000");
-				}else{
-					_ml.setCode(ent.getString("code"));
-				}
-				if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")){
-					_ml.setTel_code("19");
-				}else if(ent.getString("remark1").equalsIgnoreCase("SKT") || ent.getString("remark1").equals("011")){
-					_ml.setTel_code("11");
-				}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")){
-					_ml.setTel_code("16");
-				}else{
-					_ml.setTel_code("0");
-				}
-				_ml.setReal_send_date(ent.getString("remark2"));
-			}
+
 
 			try {
 				requestService.update_msg_log(_ml);

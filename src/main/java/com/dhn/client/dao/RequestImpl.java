@@ -42,33 +42,6 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
-	public int selectPUSHRequestCount(SQLParameter param) throws Exception {
-		int cnt = 0;
-		cnt = sqlSession.selectOne("com.dhn.client.push.mapper.SendRequest.req_push_count",param);
-		return cnt;
-	}
-
-	@Override
-	public void updatePUSHStatus(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.push.mapper.SendRequest.req_push_status_update",param);
-	}
-
-	@Override
-	public List<PUSHRequestBean> selectPUSHRequests(SQLParameter param) throws Exception {
-		return sqlSession.selectList("com.dhn.client.push.mapper.SendRequest.req_push_select", param);
-	}
-
-	@Override
-	public void updatePUSHSendComplete(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.push.mapper.SendRequest.req_push_sent_complete",param);
-	}
-
-	@Override
-	public void updatePUSHSendInit(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.push.mapper.SendRequest.req_push_sent_init",param);
-	}
-
-	@Override
 	public int selectMSGRequestCount(SQLParameter param) throws Exception {
 		int cnt = 0;
 		cnt = sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_msg_count",param);

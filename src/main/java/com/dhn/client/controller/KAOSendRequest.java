@@ -57,7 +57,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
-		param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
 		param.setMsg_type("K");
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");

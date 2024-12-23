@@ -16,16 +16,6 @@ public interface RequestDAO {
 
 	void updateKAOSendInit(SQLParameter param) throws Exception;
 
-	int selectPUSHRequestCount(SQLParameter param) throws Exception;
-
-	void updatePUSHStatus(SQLParameter param) throws Exception;
-
-	List<PUSHRequestBean> selectPUSHRequests(SQLParameter param) throws Exception;
-
-	void updatePUSHSendComplete(SQLParameter param) throws Exception;
-
-	void updatePUSHSendInit(SQLParameter param) throws Exception;
-
     int selectMSGRequestCount(SQLParameter param) throws Exception;
 
 	void updateMSGStatus(SQLParameter param) throws Exception;

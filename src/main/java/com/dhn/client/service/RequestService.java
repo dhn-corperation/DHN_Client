@@ -17,17 +17,6 @@ public interface RequestService {
 
 	void updateKAOSendInit(SQLParameter param) throws Exception;
 
-	// 푸쉬
-	int selectPUSHRequestCount(SQLParameter param) throws Exception;
-
-	void updatePUSHStatus(SQLParameter param) throws Exception;
-
-	List<PUSHRequestBean> selectPUSHRequests(SQLParameter param) throws Exception;
-
-	void updatePUSHSendComplete(SQLParameter param) throws Exception;
-
-	void updatePUSHSendInit(SQLParameter param) throws Exception;
-
 	// 문자
 	int selectMSGRequestCount(SQLParameter param) throws Exception;
 

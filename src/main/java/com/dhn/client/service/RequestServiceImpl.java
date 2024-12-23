@@ -42,31 +42,6 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public int selectPUSHRequestCount(SQLParameter param) throws Exception {
-		return requestDAO.selectPUSHRequestCount(param);
-	}
-
-	@Override
-	public void updatePUSHStatus(SQLParameter param) throws Exception {
-		requestDAO.updatePUSHStatus(param);
-	}
-
-	@Override
-	public List<PUSHRequestBean> selectPUSHRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectPUSHRequests(param);
-	}
-
-	@Override
-	public void updatePUSHSendComplete(SQLParameter param) throws Exception {
-		requestDAO.updatePUSHSendComplete(param);
-	}
-
-	@Override
-	public void updatePUSHSendInit(SQLParameter param) throws Exception {
-		requestDAO.updatePUSHSendInit(param);
-	}
-
-	@Override
 	public int selectMSGRequestCount(SQLParameter param) throws Exception {
 		return requestDAO.selectMSGRequestCount(param);
 	}
