@@ -147,6 +147,7 @@
 		  <version>3.10.0</version>
 		</dependency>
 
+		<!--
 		<dependency>
 			<groupId>tibero</groupId>
 			<artifactId>tibero6-jdbc</artifactId>
@@ -154,6 +155,16 @@
 			<scope>system</scope>
 			<systemPath>${project.basedir}/src/main/resources/lib/tibero/tibero6-jdbc.jar</systemPath>
 		</dependency>
+		-->
+
+		<dependency>
+			<groupId>com.tmax.tibero</groupId>
+			<artifactId>tibero-jdbc</artifactId>
+			<version>6</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/resources/lib/tibero/tibero6-jdbc.jar</systemPath>
+		</dependency>
+
 
 		<!--
 		<dependency>
@@ -181,6 +192,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<includeSystemScope>true</includeSystemScope>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
