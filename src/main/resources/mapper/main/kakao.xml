@@ -6,26 +6,20 @@
 	<select id = "req_kao_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
 		select count(1) as cnt
 		from ${msg_table}
-		where STATUS = '100'
-			and TYPE = '${msg_type}'
-			and NVL(REQDTTM, CURRENT_TIMESTAMP) &lt;= CURRENT_TIMESTAMP
+		where REQDTTM &gt;= '2024-12-01 00:00:00'
+		  AND NVL(REQDTTM, sysdate) &lt;= sysdate
+		  and STATUS = '100'
+		  and TYPE = '${msg_type}'
 	</select>
 
 	<update id = 'req_kao_status_update' parameterType="com.dhn.client.bean.SQLParameter">
 		UPDATE ${msg_table}
 		SET STATUS = '101'
-		WHERE ROWID IN (
-			SELECT ROWID
-			FROM (
-				SELECT ROWID
-				FROM ${msg_table}
-				WHERE STATUS = '100'
-					AND TYPE = '${msg_type}'
-					AND NVL(REQDTTM, CURRENT_TIMESTAMP) &lt;= CURRENT_TIMESTAMP
-				ORDER BY PRIORITY ASC
-			)
-			WHERE ROWNUM &lt;= 500
-		)
+		WHERE REQDTTM &gt;= '2024-12-01 00:00:00'
+		  AND NVL(REQDTTM, sysdate) &lt;= sysdate
+		  and STATUS = '100'
+		  and TYPE = '${msg_type}'
+		  and ROWNUM &lt;= 500
 	</update>
 
 	<resultMap id="RequestTable" type="com.dhn.client.bean.KAORequestBean">
@@ -70,21 +64,26 @@
 				ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
 			END AS REQDTTM
 		FROM ${msg_table}
-		WHERE TYPE = '${msg_type}'
+		WHERE REQDTTM &gt;= '2024-12-01 00:00:00'
 			and STATUS = '101'
+			AND TYPE = '${msg_type}'
 	</select>
 	
 	<update id="req_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${msg_table}
 		set STATUS = '102'
-		where STATUS = '101'
+		where REQDTTM &gt;= '2024-12-01 00:00:00'
+		    AND NVL(REQDTTM, sysdate) &lt;= sysdate
+		    and STATUS = '101'
 			and TYPE = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${msg_table}
 		set STATUS = '100'
-		where STATUS = '101'
+		where REQDTTM &gt;= '2024-12-01 00:00:00'
+		    AND NVL(REQDTTM, sysdate) &lt;= sysdate
+		    and STATUS = '101'
 			and TYPE = '${msg_type}'
 	</update>
 
