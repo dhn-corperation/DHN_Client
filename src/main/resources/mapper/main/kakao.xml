@@ -30,10 +30,10 @@
 		<result column="PINVOICE" property="pinvoice"/>
 		<result column="SMSKIND" property="smskind"/>
 		<result column="TITLE" property="title"/>
-		<result column="MSG_TITLE" property="smslmstit"/>
+		<result column="MSGTITLE" property="smslmstit"/>
 		<result column="REGDT" property="regdt"/>
 		<result column="TMPLID" property="tmplid"/>
-		<result column="PROFILE_KEY" property="profile"/>
+		<result column="PROFILEKEY" property="profile"/>
 		<result column="RESERVEDT" property="reservedt"/>
 		<result column="BUTTON1" property="button1"/>
 		<result column="BUTTON2" property="button2"/>
@@ -57,7 +57,7 @@
 			TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
 			MSG_TEMPLATE_CD AS TMPLID,
 			SEND_EXPECTED_DT || SEND_EXPECTED_TIME AS RESERVEDT,
-			'${profile_key}' AS PROFILE_KEY,
+			'${profile_key}' AS PROFILEKEY,
 			CASE
 				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 1) IS NOT NULL THEN
 					JSON_OBJECT(
