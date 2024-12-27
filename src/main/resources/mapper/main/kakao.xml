@@ -13,79 +13,118 @@
 
 	<update id = 'req_kao_status_update' parameterType="com.dhn.client.bean.SQLParameter">
 		UPDATE ${msg_table}
-		SET MESSAGE_STATUS_CD = '11'
-		WHERE ROWID IN (
-			SELECT ROWID
-			FROM (
-				SELECT ROWID
-				FROM ${msg_table}
-				WHERE MESSAGE_STATUS_CD = '00'
-					AND SEND_TYPE_CD = 'K1'
-					AND TO_TIMESTAMP(SEND_EXPECTED_DT || SEND_EXPECTED_TIME , 'YYYYMMDDHH24MISS') <= SYSTIMESTAMP
-				ORDER BY SEND_PRIORITY ASC
-			)
-			WHERE ROWNUM &lt;= 500
-		)
+		SET MESSAGE_STATUS_CD = '01'
+		WHERE MESSAGE_STATUS_CD = '00'
+			AND SEND_TYPE_CD = '${msg_type}'
+			AND TO_TIMESTAMP(SEND_EXPECTED_DT || SEND_EXPECTED_TIME , 'YYYYMMDDHH24MISS') &lt; SYSTIMESTAMP
+			AND ROWNUM &lt;= 500
 	</update>
 
 	<resultMap id="RequestTable" type="com.dhn.client.bean.KAORequestBean">
-		<result column="SEQNO" property="msgid"/>
-		<result column="TYPE" property="messagetype"/>
+		<result column="MSGID" property="msgid"/>
+		<result column="MSGTYPE" property="messagetype"/>
 		<result column="MSG" property="msg"/>
 		<result column="MSG_SMS" property="msgsms"/>
-		<result column="DESTNO" property="phn"/>
+		<result column="PHN" property="phn"/>
 		<result column="CALLBACK" property="smssender"/>
-		<result column="BILLID" property="pinvoice"/>
+		<result column="PINVOICE" property="pinvoice"/>
 		<result column="SMSKIND" property="smskind"/>
-		<result column="TITLE" property="smslmstit"/>
+		<result column="TITLE" property="title"/>
+		<result column="MSG_TITLE" property="smslmstit"/>
 		<result column="REGDT" property="regdt"/>
-		<result column="KAKAO_CODE" property="tmplid"/>
+		<result column="TMPLID" property="tmplid"/>
 		<result column="PROFILE_KEY" property="profile"/>
-		<result column="REQDTTM" property="reservedt"/>
+		<result column="RESERVEDT" property="reservedt"/>
+		<result column="BUTTON1" property="button1"/>
+		<result column="BUTTON2" property="button2"/>
+		<result column="BUTTON3" property="button3"/>
+		<result column="BUTTON4" property="button4"/>
+		<result column="BUTTON5" property="button5"/>
 	</resultMap>
 
 	<select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
 		SELECT
-		    SEQNO,
-		    'AT' as TYPE,
-		    MSG,
-		    MSG as MSG_SMS,
+			MESSAGE_MST_NO AS MSGID,
+			'AT' AS MSGTYPE,
+			MESSAGE_CONTENT AS MSG,
 			CASE
-				WHEN LENGTHB(MSG) &lt;= 90 THEN 'S'
-				ELSE 'L'
-			END AS SMSKIND,
-		    CASE
-		        WHEN DESTNO LIKE '82%' THEN DESTNO
-		        WHEN DESTNO LIKE '010%' THEN '82' || SUBSTR(DESTNO, 2, 15)
-		        ELSE '82' || SUBSTR(DESTNO, 2, 15)
-		    END AS DESTNO,
-		    CALLBACK,
-		    BILLID,
-			TITLE,
+				WHEN RECEIVER_PHONE_NO LIKE '82%' THEN RECEIVER_PHONE_NO
+				WHEN RECEIVER_PHONE_NO LIKE '010%' THEN '82' || SUBSTR(RECEIVER_PHONE_NO, 2,15)
+				ELSE '82' || SUBSTR(RECEIVER_PHONE_NO, 2,15)
+				END AS PHN,
+			BROF_CD AS PINVOICE,
+			MESSAGE_TITLE AS TITLE,
 			TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
-			KAKAO_CODE,
+			MSG_TEMPLATE_CD AS TMPLID,
+			SEND_EXPECTED_DT || SEND_EXPECTED_TIME AS RESERVEDT,
 			'${profile_key}' AS PROFILE_KEY,
 			CASE
-				WHEN REQDTTM IS NULL THEN '00000000000000'
-				ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
-			END AS REQDTTM
+				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 1) IS NOT NULL THEN
+					JSON_OBJECT(
+						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 1),
+						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 1),
+						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 1),
+						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 1)
+					)
+				ELSE NULL
+				END AS BUTTON1,
+			CASE
+				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 2) IS NOT NULL THEN
+					JSON_OBJECT(
+						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 2),
+						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 2),
+						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 2),
+						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 2)
+					)
+				ELSE NULL
+				END AS BUTTON2,
+			CASE
+				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 3) IS NOT NULL THEN
+					JSON_OBJECT(
+						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 3),
+						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 3),
+						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 3),
+						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 3)
+					)
+				ELSE NULL
+				END AS BUTTON3,
+			CASE
+				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 4) IS NOT NULL THEN
+					JSON_OBJECT(
+						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 4),
+						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 4),
+						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 4),
+						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 4)
+					)
+				ELSE NULL
+				END AS BUTTON4,
+			CASE
+				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 5) IS NOT NULL THEN
+					JSON_OBJECT(
+						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 5),
+						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 5),
+						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 5),
+						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 5)
+					)
+				ELSE NULL
+				END AS BUTTON5
 		FROM ${msg_table}
-		WHERE TYPE = '${msg_type}'
-			and STATUS = '101'
+		WHERE SEND_TYPE_CD = '${msg_type}'
+			AND MESSAGE_STATUS_CD = '01'
 	</select>
 	
 	<update id="req_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${msg_table}
-		set STATUS = '102'
-		where STATUS = '101'
-			and TYPE = '${msg_type}'
+		set MESSAGE_STATUS_CD = '02'
+		where MESSAGE_STATUS_CD = '01'
+			and SEND_TYPE_CD = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${msg_table}
-		set STATUS = '100'
-		where STATUS = '101'
-			and TYPE = '${msg_type}'
+		set MESSAGE_STATUS_CD = '00'
+		where MESSAGE_STATUS_CD = '01'
+			and SEND_TYPE_CD = '${msg_type}'
 	</update>
 
 </mapper>  

@@ -1,7 +1,10 @@
 package com.dhn.client.service;
 
 import com.dhn.client.AES256_GCM;
+import com.dhn.client.bean.ButtonJsonBean;
 import com.dhn.client.bean.KAORequestBean;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +51,55 @@ public class KAOService {
 			log.info("데이터 암호화 오류 : ",e.getMessage());
 		}
 		return kaoRequestBean;
+	}
+
+	public KAORequestBean Btn_form(KAORequestBean kaoRequestBean) {
+
+		String[] buttons = kaoRequestBean.getButton1().split("\\|");
+
+		if (buttons.length > 0) {
+			kaoRequestBean.setButton1(Btn_json(buttons[0],kaoRequestBean));
+		}
+		if (buttons.length > 1) {
+			kaoRequestBean.setButton2(Btn_json(buttons[1],kaoRequestBean));
+		}
+		if (buttons.length > 2) {
+			kaoRequestBean.setButton3(Btn_json(buttons[2],kaoRequestBean));
+		}
+		if (buttons.length > 3) {
+			kaoRequestBean.setButton4(Btn_json(buttons[3],kaoRequestBean));
+		}
+		if (buttons.length > 4) {
+			kaoRequestBean.setButton5(Btn_json(buttons[4],kaoRequestBean));
+		}
+
+		return kaoRequestBean;
+
+	}
+
+	private String Btn_json(String btn, KAORequestBean kaoRequestBean) {
+
+		String[] buttons = btn.split("\\^");
+
+		ButtonJsonBean btnjb = new ButtonJsonBean();
+		btnjb.setName(buttons[0]);
+		btnjb.setType(buttons[1]);
+		btnjb.setUrl_mobile(buttons[2]);
+		btnjb.setUrl_pc(buttons[3]);
+
+		String jsonString = "";
+
+		//kaoRequestBean.addUrlToMsgsms(buttons[3]);
+
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			jsonString = mapper.writeValueAsString(btnjb);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return jsonString;
 	}
 
 	 public GCMParameterSpec generateGCMParameterSpec() {

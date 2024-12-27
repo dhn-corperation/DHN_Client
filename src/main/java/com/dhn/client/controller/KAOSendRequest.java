@@ -58,7 +58,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
 		param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
-		param.setMsg_type("K");
+		param.setMsg_type("K1");
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -96,6 +96,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						}
 					}
 
+					log.info(_list.toString());
+
 					StringWriter sw = new StringWriter();
 					ObjectMapper om = new ObjectMapper();
 					om.writeValue(sw, _list);
@@ -123,7 +125,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						log.error("KAO 메세지 전송 오류(Response) : " + e.toString());
 						requestService.updateKAOSendInit(param);
 					}
-
 
 				}
 			}catch (Exception e){
