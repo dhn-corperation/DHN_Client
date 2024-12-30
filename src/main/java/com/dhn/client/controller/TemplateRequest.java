@@ -48,6 +48,12 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         if(isStart && !isCProc) {
             isCProc = true;
             log.info("CreateTemplate 실행");
+
+            try{
+
+            }catch (Exception e){
+
+            }
             isCProc = false;
         }
     }
@@ -57,6 +63,12 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         if(isStart && !isUProc) {
             isUProc = true;
             log.info("UpdateTemplate 실행");
+
+            try{
+
+            }catch (Exception e){
+
+            }
             isUProc = false;
         }
     }
@@ -66,6 +78,12 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         if(isStart && !isDProc) {
             isDProc = true;
             log.info("DeleteTemplate 실행");
+
+            try{
+
+            }catch (Exception e){
+
+            }
             isDProc = false;
         }
     }
@@ -75,6 +93,12 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         if(isStart && !isRProc) {
             isRProc = true;
             log.info("refreshTemplate 실행");
+
+            try{
+
+            }catch (Exception e){
+
+            }
             isRProc = false;
         }
     }
