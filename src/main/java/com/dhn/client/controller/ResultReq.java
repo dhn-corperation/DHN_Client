@@ -45,7 +45,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		
-		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server") + "/";
+		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		
 		isStart = true;
