@@ -32,6 +32,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setTmp_table(appContext.getEnvironment().getProperty("dhnclient.tmp_table"));
+        param.setBtn_table(appContext.getEnvironment().getProperty("dhnclient.btn_table"));
         param.setTmp_use(appContext.getEnvironment().getProperty("dhnclient.tmp_use"));
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
@@ -50,6 +51,9 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
             log.info("CreateTemplate 실행");
 
             try{
+                int cnt = templateReqSevice.selectTmpRequestCount(param);
+
+                log.info("{} 개",cnt);
 
             }catch (Exception e){
 

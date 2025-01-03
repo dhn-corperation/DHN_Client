@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.tmpl.mapper.SendRequest">
+
+    <select id = "req_tmpl_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        SELECT count(1) AS cnt
+        FROM ${tmp_table}
+        WHERE STATUS = '0'
+            AND DEL_YN = 'N'
+    </select>
+
+</mapper>
