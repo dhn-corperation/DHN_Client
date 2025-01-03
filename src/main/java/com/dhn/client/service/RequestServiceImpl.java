@@ -15,80 +15,24 @@ public class RequestServiceImpl implements RequestService {
 	@Autowired
 	private RequestDAO requestDAO;
 
-
 	@Override
-	public int selectKAORequestCount(SQLParameter param) throws Exception {
-		return requestDAO.selectKAORequestCount(param);
+	public int selectMessageRequestCount(SQLParameter param) throws Exception {
+		return requestDAO.selectMessageRequestCount(param);
 	}
 
 	@Override
-	public void updateKAOStatus(SQLParameter param) throws Exception {
-		requestDAO.updateKAOStatus(param);
+	public List<MessageRequestBean> selectMessageRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectMessageRequests(param);
 	}
 
 	@Override
-	public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
-		return requestDAO.selectKAORequests(param);
+	public void updateMessageComplete(SQLParameter param) throws Exception {
+		requestDAO.updateMessageComplete(param);
 	}
 
 	@Override
-	public void updateKAOSendComplete(SQLParameter param) throws Exception {
-		requestDAO.updateKAOSendComplete(param);
-	}
-
-	@Override
-	public void updateKAOSendInit(SQLParameter param) throws Exception {
-		requestDAO.updateKAOSendInit(param);
-	}
-
-	@Override
-	public int selectPUSHRequestCount(SQLParameter param) throws Exception {
-		return requestDAO.selectPUSHRequestCount(param);
-	}
-
-	@Override
-	public void updatePUSHStatus(SQLParameter param) throws Exception {
-		requestDAO.updatePUSHStatus(param);
-	}
-
-	@Override
-	public List<PUSHRequestBean> selectPUSHRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectPUSHRequests(param);
-	}
-
-	@Override
-	public void updatePUSHSendComplete(SQLParameter param) throws Exception {
-		requestDAO.updatePUSHSendComplete(param);
-	}
-
-	@Override
-	public void updatePUSHSendInit(SQLParameter param) throws Exception {
-		requestDAO.updatePUSHSendInit(param);
-	}
-
-	@Override
-	public int selectMSGRequestCount(SQLParameter param) throws Exception {
-		return requestDAO.selectMSGRequestCount(param);
-	}
-
-	@Override
-	public void updateMSGStatus(SQLParameter param) throws Exception {
-		requestDAO.updateMSGStatus(param);
-	}
-
-	@Override
-	public List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectMSGRequests(param);
-	}
-
-	@Override
-	public void updateMSGSendComplete(SQLParameter param) throws Exception {
-		requestDAO.updateMSGSendComplete(param);
-	}
-
-	@Override
-	public void updateMSGSendInit(SQLParameter param) throws Exception {
-		requestDAO.updateMSGSendInit(param);
+	public void updateMessageInit(SQLParameter param) throws Exception {
+		requestDAO.updateMessageInit(param);
 	}
 
 	@Override

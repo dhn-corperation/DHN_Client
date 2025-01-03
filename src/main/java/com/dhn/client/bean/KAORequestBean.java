@@ -43,6 +43,11 @@ public class KAORequestBean {
 	private String att_items;
 	private String att_coupon;
 	private String crypto;
-	private String realsendflag;
+	private String pushid;
+	private String appkey;
+	private String appsecret;
+	private String applink;
+	private String applaunch;
+	private String atchfilesn;
 	  
 }

@@ -1,28 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.dhn.client.push.mapper.SendRequest">
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.message.mapper.SendRequest">
 
-    <select id = "req_push_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+    <select id = "req_message_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
         select count(1) as cnt
         from ${msg_table}
         where REQDTTM &gt;= '2024-12-01 00:00:00'
           AND NVL(REQDTTM, sysdate) &lt;= sysdate
           and STATUS = '100'
-          and TYPE = '${msg_type}'
     </select>
 
-    <update id = 'req_push_status_update' parameterType="com.dhn.client.bean.SQLParameter">
-        UPDATE ${msg_table}
-        SET STATUS = '101'
-        WHERE REQDTTM &gt;= '2024-12-01 00:00:00'
-          AND NVL(REQDTTM, sysdate) &lt;= sysdate
-          and STATUS = '100'
-          and TYPE = '${msg_type}'
-          and ROWNUM &lt;= 500
-    </update>
-
-    <resultMap id="RequestTable" type="com.dhn.client.bean.PUSHRequestBean">
+    <resultMap id="RequestTable" type="com.dhn.client.bean.MessageRequestBean">
         <result column="SEQNO" property="msgid"/>
         <result column="TYPE" property="messagetype"/>
         <result column="MSG" property="msg"/>
@@ -44,21 +33,21 @@
         <result column="APP_LAUNCH" property="applaunch"/>
     </resultMap>
 
-    <select id="req_push_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+    <select id="req_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
         SELECT
             SEQNO,
-            'AP' as TYPE,
+            TYPE,
             MSG,
             MSG as MSG_SMS,
             CASE
                 WHEN LENGTHB(MSG) &lt;= 90 THEN 'S'
                 ELSE 'L'
-                END AS SMSKIND,
+            END AS SMSKIND,
             CASE
                 WHEN DESTNO LIKE '82%' THEN DESTNO
                 WHEN DESTNO LIKE '010%' THEN '82' || SUBSTR(DESTNO, 2, 15)
                 ELSE '82' || SUBSTR(DESTNO, 2, 15)
-                END AS DESTNO,
+            END AS DESTNO,
             CALLBACK,
             BILLID,
             TITLE,
@@ -77,26 +66,24 @@
             APP_LAUNCH
         FROM ${msg_table}
         WHERE REQDTTM &gt;= '2024-12-01 00:00:00'
-          and STATUS = '101'
-          AND TYPE = '${msg_type}'
+          and STATUS = '100'
+          and ROWNUM &lt;= 3
     </select>
 
-    <update id="req_push_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
+    <update id="req_message_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         update ${msg_table}
         set STATUS = '102'
         where REQDTTM &gt;= '2024-12-01 00:00:00'
-          AND NVL(REQDTTM, sysdate) &lt;= sysdate
-          and STATUS = '101'
-          and TYPE = '${msg_type}'
+          and NVL(REQDTTM, sysdate) &lt;= sysdate
+          and SEQNO in (${messageid})
     </update>
 
-    <update id="req_push_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
+    <update id="req_message_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
         update ${msg_table}
         set STATUS = '100'
         where REQDTTM &gt;= '2024-12-01 00:00:00'
-          AND NVL(REQDTTM, sysdate) &lt;= sysdate
-          and STATUS = '101'
-          and TYPE = '${msg_type}'
+          and NVL(REQDTTM, sysdate) &lt;= sysdate
+          and SEQNO in (${messageid})
     </update>
 
-</mapper>  
+</mapper>

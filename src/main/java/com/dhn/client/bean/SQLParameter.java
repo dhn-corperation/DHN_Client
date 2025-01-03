@@ -17,4 +17,5 @@ public class SQLParameter {
 	private String file2;
 	private String file3;
 	private String msgid;
+	private String messageid;
 }
