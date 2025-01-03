@@ -18,5 +18,6 @@ public class SQLParameter {
 	private String file1;
 	private String file2;
 	private String file3;
+	private String tmplid;
 	private String msgid;
 }

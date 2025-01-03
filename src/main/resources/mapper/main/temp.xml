@@ -8,6 +8,69 @@
         FROM ${tmp_table}
         WHERE STATUS = '0'
             AND DEL_YN = 'N'
+            AND MSG_TEMPLATE_TYPE = 'K1'
     </select>
+
+    <resultMap id="TmplData" type="com.dhn.client.bean.TmplData">
+        <result column="tmplid" property="tmplid"/>
+        <result column="profilekey" property="senderKey"/>
+        <result column="tmplcode" property="templateCode"/>
+        <result column="tmpltype" property="tmpltype"/>
+        <result column="tmplname" property="templateName"/>
+        <result column="tmplmsgtype" property="templateMessageType"/>
+        <result column="tmplemtype" property="templateEmphasizeType"/>
+        <result column="tmplcontent" property="templateContent"/>
+    </resultMap>
+
+    <select id="req_tmpl_data" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "TmplData">
+        SELECT
+            MSG_TEMPLATE_NO AS tmplid,
+            '${profile_key}' AS profilekey,
+            MSG_TEMPLATE_CD AS tmplcode,
+            KAKAO_TEMPLATE_TYPE AS tmpltype,
+            MSG_TEMPLATE_NM AS tmplname,
+            'BA' AS tmplmsgtype,
+            'NONE' AS tmplemtype,
+            MSG_TEMPLATE_DATA AS tmplcontent
+        FROM ${tmp_table}
+        WHERE STATUS = '0'
+          AND DEL_YN = 'N'
+          AND MSG_TEMPLATE_TYPE = 'K1'
+        ORDER BY MSG_TEMPLATE_NO
+    </select>
+
+    <resultMap id="BtnData" type="com.dhn.client.bean.ButtonBean">
+        <result column="btnname" property="name"/>
+        <result column="linktype" property="linkType"/>
+        <result column="linkmo" property="linkMo"/>
+        <result column="linkpc" property="linkPc"/>
+        <result column="linkand" property="linkAnd"/>
+        <result column="linkios" property="linkIos"/>
+    </resultMap>
+
+    <select id="req_btn_list" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "BtnData">
+        SELECT
+            KAKAO_BTN_TYPE AS linktype,
+            KAKAO_BTN_NM AS btnname,
+            WEB_PC_LINK AS linkpc,
+            WEB_MOBILE_LINK AS linkmo,
+            APP_ANDROID_LINK AS linkand,
+            APP_IOS_LINK AS linkios
+        FROM ${btn_table}
+        WHERE MSG_TEMPLATE_NO = '${tmplid}'
+    </select>
+
+    <update id="update_tmpl_fail" parameterType="com.dhn.client.bean.SQLParameter">
+        update ${tmp_table}
+        set STATUS = '2'
+        where MSG_TEMPLATE_NO = '${tmplid}'
+    </update>
+
+    <update id="update_tmpl_success" parameterType="com.dhn.client.bean.SQLParameter">
+        update ${tmp_table}
+        set STATUS = '4',
+            KAKAO_INS_STATUS = 'INS'
+        where MSG_TEMPLATE_NO = '${tmplid}'
+    </update>
 
 </mapper>

@@ -1,14 +1,21 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.bean.*;
 import com.dhn.client.service.TemplateReqSevice;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import java.io.StringWriter;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -33,6 +40,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setTmp_table(appContext.getEnvironment().getProperty("dhnclient.tmp_table"));
         param.setBtn_table(appContext.getEnvironment().getProperty("dhnclient.btn_table"));
+        param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
         param.setTmp_use(appContext.getEnvironment().getProperty("dhnclient.tmp_use"));
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
@@ -44,51 +52,103 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         }
     }
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 500)
     private void CreateTemplate() {
         if(isStart && !isCProc) {
             isCProc = true;
             log.info("CreateTemplate 실행");
 
             try{
-                int cnt = templateReqSevice.selectTmpRequestCount(param);
+                int cnt = templateReqSevice.selectTmplRequestCount(param);
 
-                log.info("{} 개",cnt);
+                if(cnt > 0) {
+                    log.info("템플릿 등록 시작");
+
+                    TmplData tmplData = templateReqSevice.selectTmplData(param);
+
+                    param.setTmplid(tmplData.getTmplid());
+
+                    TmplRequestBean tmplRequestBean = new TmplRequestBean();
+                    tmplRequestBean.setSenderKey(tmplData.getSenderKey());
+                    tmplRequestBean.setTemplateCode(tmplData.getTemplateCode());
+                    tmplRequestBean.setTemplateName(tmplData.getTemplateName());
+                    tmplRequestBean.setTemplateMessageType(tmplData.getTemplateMessageType());
+                    tmplRequestBean.setTemplateEmphasizeType(tmplData.getTemplateEmphasizeType());
+                    tmplRequestBean.setTemplateContent(tmplData.getTemplateContent());
+
+                    if(tmplData.getTmpltype().equalsIgnoreCase("B")){
+                        List<ButtonBean> btnList = templateReqSevice.selectBtnList(param);
+
+                        tmplRequestBean.setButtons(btnList);
+                    }
+
+                    StringWriter sw = new StringWriter();
+                    ObjectMapper om = new ObjectMapper();
+                    om.writeValue(sw, tmplRequestBean);
+
+                    HttpHeaders header = new HttpHeaders();
+
+                    header.setContentType(MediaType.APPLICATION_JSON);
+                    header.set("userid", userid);
+
+                    RestTemplate rt = new RestTemplate();
+                    HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+                    try {
+                        ResponseEntity<String> response = rt.postForEntity(dhnServer + "template/create", entity, String.class);
+                        Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                        log.info(res.toString());
+                        if (response.getStatusCode() == HttpStatus.OK) {
+                            if(res.get("code").equals("200")){
+                                log.info("템플릿 등록 완료 후 검수요청 시작");
+
+                                TmplinspectionBean tmplinspectionBean = new TmplinspectionBean();
+                                tmplinspectionBean.setSenderKey(tmplRequestBean.getSenderKey());
+                                tmplinspectionBean.setTemplateCode(tmplRequestBean.getTemplateCode());
+
+                                sw = new StringWriter();
+                                om = new ObjectMapper();
+                                om.writeValue(sw, tmplinspectionBean);
+
+                                rt = new RestTemplate();
+                                entity = new HttpEntity<String>(sw.toString(), header);
+
+                                try{
+                                    response = rt.postForEntity(dhnServer + "/template/request", entity, String.class);
+                                    res = om.readValue(response.getBody().toString(), Map.class);
+                                    log.info(res.toString());
+                                    if (response.getStatusCode() == HttpStatus.OK) {
+                                        if(res.get("code").equals("200")){
+                                            templateReqSevice.updateTmplSuccess(param);
+                                            log.info("템플릿 검수요청 완료(" + response.getStatusCode() + ") 템플릿 코드 : "+ tmplinspectionBean.getTemplateCode());
+                                        }else{
+                                            templateReqSevice.updateTmplfail(param);
+                                            log.info("템플릿 검수요청 오류(KAKAO) : " + res.get("code") + " / " + res.get("message"));
+                                        }
+                                    }else{
+                                        log.error("템플릿 검수요청 오류(Http ERR) : " + res.toString());
+                                    }
+                                }catch (Exception e){
+                                    log.error("템플릿 검수요청 오류(Response) : " + e.toString());
+                                }
+
+                            }else{
+                                templateReqSevice.updateTmplfail(param);
+                                log.info("템플릿 등록 오류(KAKAO) : " + res.get("code") + " / " + res.get("message"));
+                            }
+                        } else {
+                            log.error("템플릿 등록 오류(Http ERR) : " + res.toString());
+                        }
+                    } catch (Exception e) {
+                        log.error("템플릿 등록 오류(Response) : " + e.toString());
+                    }
+
+                }
 
             }catch (Exception e){
-
+                log.error("템플릿 등록 오류(Send) : " + e.toString());
             }
             isCProc = false;
-        }
-    }
-
-    @Scheduled(fixedDelay = 60000)
-    private void UpdateTemplate() {
-        if(isStart && !isUProc) {
-            isUProc = true;
-            log.info("UpdateTemplate 실행");
-
-            try{
-
-            }catch (Exception e){
-
-            }
-            isUProc = false;
-        }
-    }
-
-    @Scheduled(fixedDelay = 60000)
-    private void DeleteTemplate() {
-        if(isStart && !isDProc) {
-            isDProc = true;
-            log.info("DeleteTemplate 실행");
-
-            try{
-
-            }catch (Exception e){
-
-            }
-            isDProc = false;
         }
     }
 
