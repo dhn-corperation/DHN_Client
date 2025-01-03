@@ -67,7 +67,7 @@
         FROM ${msg_table}
         WHERE REQDTTM &gt;= '2024-12-01 00:00:00'
           and STATUS = '100'
-          and ROWNUM &lt;= 3
+          and ROWNUM &lt;= 500
     </select>
 
     <update id="req_message_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">

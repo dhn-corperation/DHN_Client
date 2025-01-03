@@ -68,6 +68,7 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
                 int cnt = requestService.selectMessageRequestCount(param);
 
                 if(cnt > 0){
+                    log.info("메세지 데이터 조회 시작");
 
                     List<MessageRequestBean> _list = requestService.selectMessageRequests(param);
 
@@ -79,10 +80,7 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
                             messageRequestBean.setMessagetype("AP");
                         }else if(messageRequestBean.getMessagetype().equalsIgnoreCase("K")){
                             messageRequestBean.setMessagetype("AT");
-                        }else {
-                            messageRequestBean.setMessagetype("PH");
                         }
-
 
                     }
 
@@ -116,6 +114,7 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
                         Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                         log.info(res.toString());
                         if (response.getStatusCode() == HttpStatus.OK) {
+                            log.info("메세지 상태 102 Update 시작");
                             requestService.updateMessageComplete(param);
                             log.info("메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
                         } else {
@@ -130,7 +129,7 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                 }
             }catch (Exception e){
-                log.error("MSG 메세지 전송 오류(Send) : " + e.toString());
+                log.error("메세지 전송 오류(Send) : " + e.toString());
             }
 
             isProc = false;
