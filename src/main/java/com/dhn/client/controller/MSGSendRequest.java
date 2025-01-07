@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -74,6 +75,7 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                     log.info("메세지 전송 시작(" + _list.size() + " 건)");
 
+                    List<String> messageidList = new ArrayList<>();
                     for (MessageRequestBean messageRequestBean : _list) {
 
                         if(messageRequestBean.getMessagetype().equalsIgnoreCase("P")){
@@ -81,15 +83,22 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
                         }else if(messageRequestBean.getMessagetype().equalsIgnoreCase("K")){
                             messageRequestBean.setMessagetype("AT");
                         }
+                        param.setMsgid(messageRequestBean.getMsgid());
+                        messageidList.add(messageRequestBean.getMsgid());
+                        requestService.updateMessageStatus(param);
 
                     }
 
+                    /*
                     String messageid = _list.stream()
                             .map(MessageRequestBean::getMsgid)
                             .map(msgid -> "'" + msgid + "'")
                             .collect(Collectors.joining(","));
 
                     param.setMessageid(messageid);
+                     */
+
+                    param.setMessageid(messageidList);
 
                     if(!crypto.isEmpty() && !crypto.equals("")){
                         for (MessageRequestBean messageRequestBean : _list) {
@@ -114,16 +123,16 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
                         Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                         log.info(res.toString());
                         if (response.getStatusCode() == HttpStatus.OK) {
-                            log.info("메세지 상태 102 Update 시작");
-                            requestService.updateMessageComplete(param);
+                            //log.info("메세지 상태 102 Update 시작");
+                            //requestService.updateMessageComplete(param);
                             log.info("메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
                         } else {
                             log.error("메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
-                            //requestService.updateMessageInit(param);
+                            requestService.updateMessageInit(param);
                         }
                     } catch (Exception e) {
                         log.error("메세지 전송 오류(Response) : " + e.toString());
-                        //requestService.updateMessageInit(param);
+                        requestService.updateMessageInit(param);
                     }
 
 

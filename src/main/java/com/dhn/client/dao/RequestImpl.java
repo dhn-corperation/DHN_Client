@@ -4,11 +4,13 @@ import java.util.Collections;
 import java.util.List;
 
 import com.dhn.client.bean.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Slf4j
 public class RequestImpl implements RequestDAO{
 
 	@Autowired
@@ -39,5 +41,10 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void update_msg_log(Msg_Log ml) throws Exception {
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.log_update",ml);
+	}
+
+	@Override
+	public void updateMessageStatus(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.message.mapper.SendRequest.req_message_status",param);
 	}
 }

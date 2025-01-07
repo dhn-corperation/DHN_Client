@@ -39,4 +39,9 @@ public class RequestServiceImpl implements RequestService {
 	public void update_msg_log(Msg_Log ml) throws Exception {
 		requestDAO.update_msg_log(ml);
 	}
+
+	@Override
+	public void updateMessageStatus(SQLParameter param) throws Exception {
+		requestDAO.updateMessageStatus(param);
+	}
 }

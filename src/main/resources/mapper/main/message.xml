@@ -66,6 +66,7 @@
             APP_LAUNCH
         FROM ${msg_table}
         WHERE REQDTTM &gt;= '2024-12-01 00:00:00'
+          and NVL(REQDTTM, sysdate) &lt;= sysdate
           and STATUS = '100'
           and ROWNUM &lt;= 500
     </select>
@@ -75,7 +76,10 @@
         set STATUS = '102'
         where REQDTTM &gt;= '2024-12-01 00:00:00'
           and NVL(REQDTTM, sysdate) &lt;= sysdate
-          and SEQNO in (${messageid})
+          and SEQNO in
+        <foreach collection="messageid" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
     </update>
 
     <update id="req_message_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
@@ -83,7 +87,16 @@
         set STATUS = '100'
         where REQDTTM &gt;= '2024-12-01 00:00:00'
           and NVL(REQDTTM, sysdate) &lt;= sysdate
-          and SEQNO in (${messageid})
+          and SEQNO in
+        <foreach collection="messageid" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
+    </update>
+
+    <update id="req_message_status" parameterType="com.dhn.client.bean.SQLParameter">
+        update ${msg_table}
+        set STATUS = '102'
+        where SEQNO = '${msgid}'
     </update>
 
 </mapper>

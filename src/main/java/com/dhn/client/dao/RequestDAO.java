@@ -16,4 +16,5 @@ public interface RequestDAO {
 
 	void update_msg_log(Msg_Log ml) throws Exception;
 
+    void updateMessageStatus(SQLParameter param) throws Exception;
 }
