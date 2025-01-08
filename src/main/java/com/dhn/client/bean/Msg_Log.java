@@ -8,10 +8,10 @@ public class Msg_Log {
 	private String log_table;
 	private String msgid;
 	private String msg_type;
-	private String send_type;
-	private String code;
-	private String tel_code;
 	private String real_send_date;
+	private String response_date;
+	private String result_code;
+	private String result_msg;
 
 	
 	public Msg_Log(String msg_table, String log_table) {

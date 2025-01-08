@@ -16,7 +16,8 @@
 
 	<update id = 'req_kao_status_update' parameterType="com.dhn.client.bean.SQLParameter">
 		UPDATE ${msg_table}
-		SET MESSAGE_STATUS_CD = '01'
+		SET MESSAGE_STATUS_CD = '01',
+			MOD_DT = SYSTIMESTAMP
 		WHERE MESSAGE_STATUS_CD = '00'
 			AND SEND_TYPE_CD = '${msg_type}'
 		    AND (
@@ -120,14 +121,16 @@
 	
 	<update id="req_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${msg_table}
-		set MESSAGE_STATUS_CD = '02'
+		set MESSAGE_STATUS_CD = '02',
+			MOD_DT = SYSTIMESTAMP
 		where MESSAGE_STATUS_CD = '01'
 			and SEND_TYPE_CD = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${msg_table}
-		set MESSAGE_STATUS_CD = '00'
+		set MESSAGE_STATUS_CD = '00',
+			MOD_DT = SYSTIMESTAMP
 		where MESSAGE_STATUS_CD = '01'
 			and SEND_TYPE_CD = '${msg_type}'
 	</update>

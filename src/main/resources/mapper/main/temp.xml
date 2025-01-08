@@ -128,7 +128,7 @@
           AND MSG_TEMPLATE_TYPE = 'K1'
     </select>
 
-    <update id="update_tmpl_represh" parameterType="com.dhn.client.bean.SQLParameter">
+    <update id="update_tmpl_refresh" parameterType="com.dhn.client.bean.SQLParameter">
         update ${tmp_table}
         set KAKAO_STATUS = '${tmplstatus}'
         where MSG_TEMPLATE_NO = '${tmplid}'

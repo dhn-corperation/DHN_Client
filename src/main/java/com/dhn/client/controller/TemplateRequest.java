@@ -54,7 +54,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         }
     }
 
-    @Scheduled(fixedDelay = 300000)
+    @Scheduled(fixedDelay = 60000)
     private void CreateTemplate() {
         if(isStart && !isCProc) {
             isCProc = true;
@@ -156,7 +156,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         }
     }
 
-    @Scheduled(fixedDelay = 500)
+    @Scheduled(fixedDelay = 300000)
     private void inspectionTemplate() {
         if(isStart && !isIProc) {
             isRProc = true;
@@ -230,8 +230,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         }
     }
 
-    //@Scheduled(cron = "0 0 1 * * *")
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(cron = "0 0 1 * * *")
     private void refreshTemplate() {
         if(isStart && !isRProc) {
             isRProc = true;

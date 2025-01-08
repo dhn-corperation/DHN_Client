@@ -71,5 +71,6 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void update_msg_log(Msg_Log ml) throws Exception {
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.log_update",ml);
+		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.log_delete",ml);
 	}
 }

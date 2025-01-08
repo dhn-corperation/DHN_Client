@@ -21,6 +21,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 @Slf4j
 public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
@@ -30,6 +33,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String dhnServer;
 	private String userid;
 	private static int procCnt = 0;
+	private Map<String, String> _msgCode = new HashMap<>();
+	private Map<String, String> _kaoCode = new HashMap<>();
 	private String msgTable = "";
 	private String logTable = "";
 
@@ -45,14 +50,75 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		
-		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server") + "/";
+		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-		
+
+		_kaoCode.put("0000","0000");
+		_kaoCode.put("3000","2001");
+		_kaoCode.put("1006","3005");
+		_kaoCode.put("1001","3023");
+		_kaoCode.put("1003","3024");
+		_kaoCode.put("3019","3027");
+		_kaoCode.put("3012","3030");
+		_kaoCode.put("3013","3031");
+		_kaoCode.put("3014","3032");
+		_kaoCode.put("3015","3033");
+		_kaoCode.put("3016","3034");
+		_kaoCode.put("1002","3040");
+		_kaoCode.put("1004","3041");
+		_kaoCode.put("1007","3044");
+		_kaoCode.put("1011","3048");
+		_kaoCode.put("3006","3049");
+		_kaoCode.put("3019","3050");
+		_kaoCode.put("3005","3060");
+		_kaoCode.put("1012","3062");
+		_kaoCode.put("1030","3063");
+		_kaoCode.put("9998","9998");
+		_kaoCode.put("9999","9999");
+		_kaoCode.put("3008","1002");
+		_kaoCode.put("3018","E999");
+
+		_msgCode.put("0000","0000");
+		_msgCode.put("7003","2100");
+		_msgCode.put("7050","2101");
+		_msgCode.put("7028","2103");
+		_msgCode.put("7060","2104");
+		_msgCode.put("7087","2106");
+		_msgCode.put("7086","2107");
+		_msgCode.put("7022","232");
+		_msgCode.put("7001","233");
+		_msgCode.put("7095","249");
+		_msgCode.put("7093","250");
+		_msgCode.put("7061","263");
+		_msgCode.put("7055","408");
+		_msgCode.put("7015","101");
+		_msgCode.put("7013","102");
+		_msgCode.put("7014","103");
+		_msgCode.put("7056","108");
+		_msgCode.put("7057","112");
+		_msgCode.put("7084","113");
+		_msgCode.put("7053","114");
+		_msgCode.put("7088","115");
+		_msgCode.put("7051","116");
+		_msgCode.put("7023","201");
+		_msgCode.put("7008","204");
+		_msgCode.put("7009","205");
+		_msgCode.put("7010","206");
+		_msgCode.put("7005","213");
+		_msgCode.put("7076","216");
+		_msgCode.put("7098","39");
+		_msgCode.put("7099","1");
+		_msgCode.put("7078","21");
+		_msgCode.put("7075","94");
+		_msgCode.put("7096","4008");
+		_msgCode.put("7074","4306");
+		_msgCode.put("7021","4307");
+		_msgCode.put("7029","5300");
+		_msgCode.put("7011","8011");
+
 		isStart = true;
 	}
-	
 
-	/*
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc && procCnt < 10) {
@@ -116,8 +182,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		}
 	}
 
-	 */
-
 
 	private void ResultProc(JSONArray json, int _pc) {
 		
@@ -128,7 +192,20 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			_ml.setMsgid(ent.getString("msgid"));
 			_ml.setMsg_type(ent.getString("message_type").toUpperCase());
 
+			String code = "0000";
 
+			if(ent.getString("message_type").equalsIgnoreCase("AT")){
+				code = _kaoCode.getOrDefault(ent.getString("code"),"E999");
+				_ml.setReal_send_date(ent.getString("res_dt"));
+				_ml.setResult_msg(ent.getString("message"));
+
+			}else{
+				code = _msgCode.getOrDefault(ent.getString("code"),"8011");
+				_ml.setReal_send_date(ent.getString("res_dt"));
+				_ml.setResult_msg(ent.getString("message"));
+			}
+
+			_ml.setResult_code(code);
 
 			try {
 				requestService.update_msg_log(_ml);

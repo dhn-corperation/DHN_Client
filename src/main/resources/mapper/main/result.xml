@@ -3,14 +3,19 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dhn.client.result.mapper.SendRequest">
     <update id="log_update" parameterType="com.dhn.client.bean.Msg_Log">
-        update ${msg_table}
-            set RSLTDTTM = '${real_send_date}',
-                REPDTTM = SYSDATE,
-                STATUS = '103',
-                TELCODE = '${tel_code}',
-                TYPE_FINAL = '${send_type}',
-                RESULT = '${code}'
-        where SEQNO = '${msgid}'
+        update ${log_table}
+            set SEND_DT = '${real_send_date}',
+                SEND_RESULT_DT = SYSTIMESTAMP,
+                MESSAGE_STATUS_CD = '03',
+                SEND_RESULT_CD = '${result_code}',
+                SEND_RESULT_MESSAGE = '${result_msg}',
+                MOD_DT = SYSTIMESTAMP
+        where MESSAGE_MST_NO = '${msgid}'
     </update>
+
+    <delete id="log_delete" parameterType="com.dhn.client.bean.Msg_Log">
+        delete from ${msg_table}
+        where MESSAGE_MST_NO = '${msgid}'
+    </delete>
 
 </mapper>

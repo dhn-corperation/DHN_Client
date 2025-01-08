@@ -28,6 +28,7 @@ public interface RequestService {
 
 	void updateMSGSendInit(SQLParameter param) throws Exception;
 
+	// 결과처리
 	void update_msg_log(Msg_Log ml) throws Exception;
 
 }
