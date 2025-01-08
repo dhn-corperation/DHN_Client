@@ -23,7 +23,7 @@ public class TemplateReqServiceImpl implements TemplateReqSevice{
     }
 
     @Override
-    public TmplData selectTmplData(SQLParameter param) throws Exception {
+    public List<TmplData> selectTmplData(SQLParameter param) throws Exception {
         return templateReqDAO.selectTmplData(param);
     }
 
@@ -40,5 +40,40 @@ public class TemplateReqServiceImpl implements TemplateReqSevice{
     @Override
     public void updateTmplSuccess(SQLParameter param) throws Exception {
         templateReqDAO.updateTmplSuccess(param);
+    }
+
+    @Override
+    public int selectInsRequestCount(SQLParameter param) throws Exception {
+        return templateReqDAO.selectInsRequestCount(param);
+    }
+
+    @Override
+    public List<TmplData> selectTmplInsData(SQLParameter param) throws Exception {
+        return templateReqDAO.selectTmplInsData(param);
+    }
+
+    @Override
+    public void updateTmplInsAPR(SQLParameter param) throws Exception {
+        templateReqDAO.updateTmplInsAPR(param);
+    }
+
+    @Override
+    public void updateTmplInsREJ(SQLParameter param) throws Exception {
+        templateReqDAO.updateTmplInsREJ(param);
+    }
+
+    @Override
+    public int selectRefreshTmplCount(SQLParameter param) throws Exception {
+        return templateReqDAO.selectRefreshTmplCount(param);
+    }
+
+    @Override
+    public List<TmplData> selectTmplRefreshData(SQLParameter param) throws Exception {
+        return templateReqDAO.selectTmplRefreshData(param);
+    }
+
+    @Override
+    public void updateTmplRefresh(SQLParameter param) throws Exception {
+        templateReqDAO.updateTmplRefresh(param);
     }
 }

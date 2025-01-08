@@ -16,14 +16,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 @Component
 @Slf4j
-public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent> {
+public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -38,26 +36,27 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     @Autowired
     private ApplicationContext appContext;
 
-
     @Autowired
     ScheduledAnnotationBeanPostProcessor posts;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
-        param.setMsg_type("M1");
+        param.setSmslms_use(appContext.getEnvironment().getProperty("dhnclient.smslms_use"));
+        param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
+        param.setMsg_type("99");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-        if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
-            log.info("SMS 초기화 완료");
+        if (param.getSmslms_use() != null && param.getSmslms_use().equalsIgnoreCase("Y")) {
+            log.info("SMS/LMS 초기화 완료");
             isStart = true;
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
     }
+
 
     @Scheduled(fixedDelay = 100)
     private void SendProcess() {
@@ -71,6 +70,12 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                     requestService.updateMSGStatus(param);
 
                     List<RequestBean> _list = requestService.selectMSGRequests(param);
+
+                    for (RequestBean requestBean : _list) {
+                        if(requestBean.getMsgsms().getBytes("EUC-KR").length > 90){
+                            requestBean.setSmskind("L");
+                        }
+                    }
 
                     StringWriter sw = new StringWriter();
                     ObjectMapper om = new ObjectMapper();
@@ -90,24 +95,22 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                         log.info(res.toString());
                         if (response.getStatusCode() == HttpStatus.OK) {
                             requestService.updateMSGSendComplete(param);
-                            log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
+                            log.info("SMS/LMS 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
                         } else {
-                            log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                            log.error("SMS/LMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
                             requestService.updateMSGSendInit(param);
                         }
                     } catch (Exception e) {
-                        log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
+                        log.error("SMS/LMS 메세지 전송 오류(Response) : " + e.toString());
                         requestService.updateMSGSendInit(param);
                     }
 
-
                 }
             }catch (Exception e){
-                log.error("SMS 메세지 전송 오류(Send) : " + e.toString());
+                log.error("SMS/LMS 메세지 전송 오류(Send) : " + e.toString());
             }
 
             isProc = false;
         }
     }
-
 }

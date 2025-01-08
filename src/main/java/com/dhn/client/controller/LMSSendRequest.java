@@ -2,7 +2,6 @@ package com.dhn.client.controller;
 
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.MSGService;
 import com.dhn.client.service.RequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -32,17 +31,12 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
-    private String crypto = "";
 
     @Autowired
     private RequestService requestService;
 
     @Autowired
     private ApplicationContext appContext;
-
-    @Autowired
-    private MSGService msgService;
-
 
     @Autowired
     ScheduledAnnotationBeanPostProcessor posts;
@@ -55,7 +49,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-        crypto = appContext.getEnvironment().getProperty("dhnclient.crypto");
 
         if (param.getLms_use() != null && param.getLms_use().equalsIgnoreCase("Y")) {
             log.info("LMS 초기화 완료");
@@ -70,10 +63,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
         if(isStart && !isProc) {
             isProc = true;
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-            LocalDateTime now = LocalDateTime.now();
-            String group_no = now.format(formatter);
-
             try{
                 int cnt = requestService.selectMSGRequestCount(param);
 
@@ -81,12 +70,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                     requestService.updateMSGStatus(param);
 
                     List<RequestBean> _list = requestService.selectMSGRequests(param);
-
-                    if(!crypto.isEmpty() && !crypto.equals("")){
-                        for (RequestBean requestBean : _list) {
-                            requestBean = msgService.encryption(requestBean, crypto);
-                        }
-                    }
 
                     StringWriter sw = new StringWriter();
                     ObjectMapper om = new ObjectMapper();

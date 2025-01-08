@@ -36,7 +36,6 @@
         WHERE STATUS = '0'
           AND DEL_YN = 'N'
           AND MSG_TEMPLATE_TYPE = 'K1'
-        ORDER BY MSG_TEMPLATE_NO
     </select>
 
     <resultMap id="BtnData" type="com.dhn.client.bean.ButtonBean">
@@ -58,6 +57,7 @@
             APP_IOS_LINK AS linkios
         FROM ${btn_table}
         WHERE MSG_TEMPLATE_NO = '${tmplid}'
+        ORDER BY KAKAO_BTN_NO ASC
     </select>
 
     <update id="update_tmpl_fail" parameterType="com.dhn.client.bean.SQLParameter">
@@ -70,6 +70,67 @@
         update ${tmp_table}
         set STATUS = '4',
             KAKAO_INS_STATUS = 'INS'
+        where MSG_TEMPLATE_NO = '${tmplid}'
+    </update>
+
+    <select id = "req_ins_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        SELECT count(1) AS cnt
+        FROM ${tmp_table}
+        WHERE STATUS = '4'
+          AND DEL_YN = 'N'
+          AND MSG_TEMPLATE_TYPE = 'K1'
+    </select>
+
+    <select id="req_ins_list" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "TmplData">
+        SELECT
+            MSG_TEMPLATE_NO AS tmplid,
+            '${profile_key}' AS profilekey,
+            MSG_TEMPLATE_CD AS tmplcode
+        FROM ${tmp_table}
+        WHERE STATUS = '4'
+          AND DEL_YN = 'N'
+          AND MSG_TEMPLATE_TYPE = 'K1'
+    </select>
+
+    <update id="update_tmpl_apr" parameterType="com.dhn.client.bean.SQLParameter">
+        update ${tmp_table}
+        set STATUS = '1',
+            KAKAO_INS_STATUS = 'COM',
+            KAKAO_STATUS = '${tmplstatus}'
+        where MSG_TEMPLATE_NO = '${tmplid}'
+    </update>
+
+    <update id="update_tmpl_rej" parameterType="com.dhn.client.bean.SQLParameter">
+        update ${tmp_table}
+        set STATUS = '3',
+            KAKAO_INS_STATUS = 'REJ',
+            REJECT_MEMO = '${rej_memo}',
+            KAKAO_STATUS = '${tmplstatus}'
+        where MSG_TEMPLATE_NO = '${tmplid}'
+    </update>
+
+    <select id = "req_refresh_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        SELECT count(1) AS cnt
+        FROM ${tmp_table}
+        WHERE STATUS = '1'
+          AND DEL_YN = 'N'
+          AND MSG_TEMPLATE_TYPE = 'K1'
+    </select>
+
+    <select id="req_refresh_list" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "TmplData">
+        SELECT
+            MSG_TEMPLATE_NO AS tmplid,
+            '${profile_key}' AS profilekey,
+            MSG_TEMPLATE_CD AS tmplcode
+        FROM ${tmp_table}
+        WHERE STATUS = '1'
+          AND DEL_YN = 'N'
+          AND MSG_TEMPLATE_TYPE = 'K1'
+    </select>
+
+    <update id="update_tmpl_represh" parameterType="com.dhn.client.bean.SQLParameter">
+        update ${tmp_table}
+        set KAKAO_STATUS = '${tmplstatus}'
         where MSG_TEMPLATE_NO = '${tmplid}'
     </update>
 

@@ -11,11 +11,25 @@ public interface TemplateReqSevice {
 
     int selectTmplRequestCount(SQLParameter param) throws Exception;
 
-    TmplData selectTmplData(SQLParameter param) throws Exception;
+    List<TmplData> selectTmplData(SQLParameter param) throws Exception;
 
     List<ButtonBean> selectBtnList(SQLParameter param) throws Exception;
 
     void updateTmplfail(SQLParameter param) throws Exception;
 
     void updateTmplSuccess(SQLParameter param) throws Exception;
+
+    int selectInsRequestCount(SQLParameter param) throws Exception;
+
+    List<TmplData> selectTmplInsData(SQLParameter param) throws Exception;
+
+    void updateTmplInsAPR(SQLParameter param) throws Exception;
+
+    void updateTmplInsREJ(SQLParameter param) throws Exception;
+
+    int selectRefreshTmplCount(SQLParameter param) throws Exception;
+
+    List<TmplData> selectTmplRefreshData(SQLParameter param) throws Exception;
+
+    void updateTmplRefresh(SQLParameter param) throws Exception;
 }

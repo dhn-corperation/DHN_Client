@@ -25,8 +25,8 @@ public class TemplateReqImpl implements TemplateReqDAO{
     }
 
     @Override
-    public TmplData selectTmplData(SQLParameter param) throws Exception {
-        return sqlSession.selectOne("com.dhn.client.tmpl.mapper.SendRequest.req_tmpl_data",param);
+    public List<TmplData> selectTmplData(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.tmpl.mapper.SendRequest.req_tmpl_data",param);
     }
 
     @Override
@@ -42,5 +42,40 @@ public class TemplateReqImpl implements TemplateReqDAO{
     @Override
     public void updateTmplSuccess(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.tmpl.mapper.SendRequest.update_tmpl_success",param);
+    }
+
+    @Override
+    public int selectInsRequestCount(SQLParameter param) throws Exception {
+        return sqlSession.selectOne("com.dhn.client.tmpl.mapper.SendRequest.req_ins_count",param);
+    }
+
+    @Override
+    public List<TmplData> selectTmplInsData(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.tmpl.mapper.SendRequest.req_ins_list",param);
+    }
+
+    @Override
+    public void updateTmplInsAPR(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.tmpl.mapper.SendRequest.update_tmpl_apr",param);
+    }
+
+    @Override
+    public void updateTmplInsREJ(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.tmpl.mapper.SendRequest.update_tmpl_rej",param);
+    }
+
+    @Override
+    public int selectRefreshTmplCount(SQLParameter param) throws Exception {
+        return sqlSession.selectOne("com.dhn.client.tmpl.mapper.SendRequest.req_refresh_count",param);
+    }
+
+    @Override
+    public List<TmplData> selectTmplRefreshData(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.tmpl.mapper.SendRequest.req_refresh_list",param);
+    }
+
+    @Override
+    public void updateTmplRefresh(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.tmpl.mapper.SendRequest.update_tmpl_refresh",param);
     }
 }

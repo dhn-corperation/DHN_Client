@@ -11,6 +11,7 @@ public class SQLParameter {
 	private String kakao_use;
 	private String sms_use;
 	private String lms_use;
+	private String smslms_use;
 	private String tmp_use;
 	private String group_no;
 	private String msg_type;
@@ -20,4 +21,6 @@ public class SQLParameter {
 	private String file3;
 	private String tmplid;
 	private String msgid;
+	private String tmplstatus;
+	private String rej_memo;
 }

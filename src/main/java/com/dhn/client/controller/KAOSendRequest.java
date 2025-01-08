@@ -22,7 +22,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.dhn.client.bean.KAORequestBean;
 import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.KAOService;
 import com.dhn.client.service.RequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -38,17 +37,12 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
-	private String crypto = "";
 
 	@Autowired
 	private RequestService requestService;
 
 	@Autowired
 	private ApplicationContext appContext;
-	
-	@Autowired
-	private KAOService kaoService;
-
 
 	@Autowired
 	ScheduledAnnotationBeanPostProcessor posts;
@@ -62,7 +56,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-		crypto = appContext.getEnvironment().getProperty("dhnclient.crypto");
 
 		if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
 			log.info("KAO 초기화 완료");
@@ -77,10 +70,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private void SendProcess() {
 		if(isStart && !isProc) {
 			isProc = true;
-			
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-			LocalDateTime now = LocalDateTime.now();
-			String group_no = now.format(formatter);
 
 			try{
 				int cnt = requestService.selectKAORequestCount(param);
@@ -89,12 +78,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 					requestService.updateKAOStatus(param);
 
 					List<KAORequestBean> _list = requestService.selectKAORequests(param);
-
-					if(!crypto.isEmpty() && !crypto.equals("")){
-						for (KAORequestBean kaoRequestBean : _list) {
-							kaoRequestBean = kaoService.encryption(kaoRequestBean, crypto);
-						}
-					}
 
 					StringWriter sw = new StringWriter();
 					ObjectMapper om = new ObjectMapper();

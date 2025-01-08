@@ -126,7 +126,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			
 			Msg_Log _ml = new Msg_Log(msgTable, logTable);
 			_ml.setMsgid(ent.getString("msgid"));
-
 			_ml.setMsg_type(ent.getString("message_type").toUpperCase());
 
 
