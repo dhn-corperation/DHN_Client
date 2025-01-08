@@ -58,7 +58,6 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
     private void CreateTemplate() {
         if(isStart && !isCProc) {
             isCProc = true;
-            log.info("CreateTemplate 실행");
 
             try{
                 int cnt = templateReqSevice.selectTmplRequestCount(param);
