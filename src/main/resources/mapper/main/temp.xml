@@ -104,7 +104,7 @@
         update ${tmp_table}
         set STATUS = '3',
             KAKAO_INS_STATUS = 'REJ',
-            REJECT_MEMO = '${rej_memo}',
+            REJECT_MEMO = #{rej_memo},
             KAKAO_STATUS = '${tmplstatus}'
         where MSG_TEMPLATE_NO = '${tmplid}'
     </update>

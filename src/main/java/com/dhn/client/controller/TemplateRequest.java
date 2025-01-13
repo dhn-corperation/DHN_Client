@@ -99,10 +99,10 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                         try {
                             ResponseEntity<String> response = rt.postForEntity(dhnServer + "template/create", entity, String.class);
                             Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                            log.info(res.toString());
+//                            log.info(res.toString());
                             if (response.getStatusCode() == HttpStatus.OK) {
                                 if(res.get("code").equals("200")){
-                                    log.info("템플릿 등록 완료 후 검수요청 시작");
+                                    log.info("템플릿 등록 완료 후 검수요청 시작(" + response.getStatusCode() + ")  템플릿 Code : " + tmplRequestBean.getTemplateCode());
 
                                     TmplinspectionBean tmplinspectionBean = new TmplinspectionBean();
                                     tmplinspectionBean.setSenderKey(tmplRequestBean.getSenderKey());
@@ -118,31 +118,31 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                     try{
                                         response = rt.postForEntity(dhnServer + "/template/request", entity, String.class);
                                         res = om.readValue(response.getBody().toString(), Map.class);
-                                        log.info(res.toString());
+//                                        log.info(res.toString());
                                         if (response.getStatusCode() == HttpStatus.OK) {
                                             if(res.get("code").equals("200")){
                                                 templateReqSevice.updateTmplSuccess(param);
-                                                log.info("템플릿 검수요청 완료(" + response.getStatusCode() + ") 템플릿 코드 : "+ tmplinspectionBean.getTemplateCode());
+                                                log.info("템플릿 검수요청 완료(" + response.getStatusCode() + ") 템플릿 Code : "+ tmplinspectionBean.getTemplateCode());
                                             }else{
                                                 templateReqSevice.updateTmplfail(param);
-                                                log.info("템플릿 검수요청 오류(KAKAO) : " + res.get("code") + " / " + res.get("message"));
+                                                log.info("템플릿 검수요청 오류(KAKAO) : " + tmplinspectionBean.getTemplateCode() + " / " + res.get("code") + " / " + res.get("message"));
                                             }
                                         }else{
-                                            log.error("템플릿 검수요청 오류(Http ERR) : " + res.toString());
+                                            log.error("템플릿 검수요청 오류(Http ERR) : " + tmplinspectionBean.getTemplateCode() + " / " + res.toString());
                                         }
                                     }catch (Exception e){
-                                        log.error("템플릿 검수요청 오류(Response) : " + e.toString());
+                                        log.error("템플릿 검수요청 오류(Response) : " + tmplinspectionBean.getTemplateCode() + " / "  + e.toString());
                                     }
 
                                 }else{
                                     templateReqSevice.updateTmplfail(param);
-                                    log.info("템플릿 등록 오류(KAKAO) : " + res.get("code") + " / " + res.get("message"));
+                                    log.info("템플릿 등록 오류(KAKAO) : " + tmplRequestBean.getTemplateCode() + " / "  + res.get("code") + " / " + res.get("message"));
                                 }
                             } else {
-                                log.error("템플릿 등록 오류(Http ERR) : " + res.toString());
+                                log.error("템플릿 등록 오류(Http ERR) : "  + tmplRequestBean.getTemplateCode() + " / "  + res.toString());
                             }
                         } catch (Exception e) {
-                            log.error("템플릿 등록 오류(Response) : " + e.toString());
+                            log.error("템플릿 등록 오류(Response) : "  + tmplRequestBean.getTemplateCode() + " / "  + e.toString());
                         }
                     }
 
@@ -155,7 +155,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         }
     }
 
-    @Scheduled(fixedDelay = 300000)
+    @Scheduled(cron = "0 35 * * * *")
     private void inspectionTemplate() {
         if(isStart && !isIProc) {
             isRProc = true;
@@ -191,17 +191,15 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 
                             //log.info(res.toString());
                             if(res.get("code").equals("200")){
-                                // "data" 객체가 LinkedHashMap으로 처리됨
                                 Map<String, Object> data = (Map<String, Object>) res.get("data");
 
-                                // inspectionStatus 추출
                                 String inspectionStatus = data.get("inspectionStatus").toString();
                                 String status = data.get("status").toString();
 
                                 if(inspectionStatus.equalsIgnoreCase("APR")){
                                     param.setTmplstatus(status);
                                     templateReqSevice.updateTmplInsAPR(param);
-                                    log.info("템플릿 검수 승인 템플릿코드 : {}",tmplData.getTemplateCode());
+                                    log.info("템플릿 검수 승인 템플릿 Code : " + tmplData.getTemplateCode());
                                 }else if(inspectionStatus.equalsIgnoreCase("REJ")){
                                     param.setTmplstatus(status);
                                     List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
@@ -209,14 +207,14 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                         param.setRej_memo(comment.get("content").toString());
                                     }
                                     templateReqSevice.updateTmplInsREJ(param);
-                                    log.info("템플릿 검수 반려 템플릿코드 : {}",tmplData.getTemplateCode());
+                                    log.info("템플릿 검수 반려 템플릿코드 : " + tmplData.getTemplateCode());
                                 }
 
                             }else{
-                                log.error("템플릿 검수결과 조회 오류(Http ERR) : " + res.toString());
+                                log.error("템플릿 검수결과 조회 오류(Http ERR) : " + tmplData.getTemplateCode() + " / " + res.toString());
                             }
                         } catch (Exception e) {
-                            log.error("템플릿 검수결과 조회 오류(Response) : " + e.toString());
+                            log.error("템플릿 검수결과 조회 오류(Response) : " + tmplData.getTemplateCode() + " / " + e.toString());
                         }
 
                     }
@@ -270,13 +268,13 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                 String status = data.get("status").toString();
                                 param.setTmplstatus(status);
                                 templateReqSevice.updateTmplRefresh(param);
-                                log.info("템플릿 상태 갱신 완료 템플릿코드 : {}",tmplData.getTemplateCode());
+                                log.info("템플릿 상태 갱신 완료 템플릿코드 : " + tmplData.getTemplateCode());
 
                             }else{
-                                log.error("템플릿 상태 갱신 조회 오류(Http ERR) : " + res.toString());
+                                log.error("템플릿 상태 갱신 조회 오류(Http ERR) : " + tmplData.getTemplateCode() + " / " + res.toString());
                             }
                         } catch (Exception e) {
-                            log.error("템플릿 상태 갱신 조회 오류(Response) : " + e.toString());
+                            log.error("템플릿 상태 갱신 조회 오류(Response) : " + tmplData.getTemplateCode() + " / " + e.toString());
                         }
 
                     }
