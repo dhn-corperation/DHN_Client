@@ -155,7 +155,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         }
     }
 
-    @Scheduled(cron = "0 35 * * * *")
+    @Scheduled(cron = "0 30 * * * *")
     private void inspectionTemplate() {
         if(isStart && !isIProc) {
             isRProc = true;
