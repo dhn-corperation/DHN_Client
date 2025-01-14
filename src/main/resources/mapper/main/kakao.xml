@@ -17,7 +17,8 @@
 	<update id = 'req_kao_status_update' parameterType="com.dhn.client.bean.SQLParameter">
 		UPDATE ${msg_table}
 		SET MESSAGE_STATUS_CD = '01',
-			MOD_DT = SYSTIMESTAMP
+			MOD_DT = SYSTIMESTAMP,
+			MOD_ID = '${mod_id}'
 		WHERE MESSAGE_STATUS_CD = '00'
 			AND SEND_TYPE_CD = '${msg_type}'
 		    AND (
@@ -33,6 +34,7 @@
 		<result column="MSG" property="msg"/>
 		<result column="MSG_SMS" property="msgsms"/>
 		<result column="PHN" property="phn"/>
+		<result column="ADFLAG" property="adflag"/>
 		<result column="CALLBACK" property="smssender"/>
 		<result column="PINVOICE" property="pinvoice"/>
 		<result column="SMSKIND" property="smskind"/>
@@ -64,6 +66,7 @@
 			MSG_TEMPLATE_CD AS TMPLID,
 			SEND_EXPECTED_DT || SEND_EXPECTED_TIME AS RESERVEDT,
 			'${profile_key}' AS PROFILEKEY,
+			AD_FLAG AS ADFLAG,
 			CASE
 				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 1) IS NOT NULL THEN
 					JSON_OBJECT(
@@ -122,7 +125,8 @@
 	<update id="req_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${msg_table}
 		set MESSAGE_STATUS_CD = '02',
-			MOD_DT = SYSTIMESTAMP
+			MOD_DT = SYSTIMESTAMP,
+			MOD_ID = '${mod_id}'
 		where MESSAGE_STATUS_CD = '01'
 			and SEND_TYPE_CD = '${msg_type}'
 	</update>
@@ -130,7 +134,8 @@
 	<update id="req_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${msg_table}
 		set MESSAGE_STATUS_CD = '00',
-			MOD_DT = SYSTIMESTAMP
+			MOD_DT = SYSTIMESTAMP,
+			MOD_ID = '${mod_id}'
 		where MESSAGE_STATUS_CD = '01'
 			and SEND_TYPE_CD = '${msg_type}'
 	</update>

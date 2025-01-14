@@ -43,7 +43,7 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setSmslms_use(appContext.getEnvironment().getProperty("dhnclient.smslms_use"));
-        param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
+        param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
         param.setMsg_type("99");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");

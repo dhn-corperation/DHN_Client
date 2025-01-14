@@ -9,7 +9,8 @@
                 MESSAGE_STATUS_CD = '03',
                 SEND_RESULT_CD = '${result_code}',
                 SEND_RESULT_MESSAGE = '${result_msg}',
-                MOD_DT = SYSTIMESTAMP
+                MOD_DT = SYSTIMESTAMP,
+                MOD_ID = '${mod_id}'
         where MESSAGE_MST_NO = '${msgid}'
     </update>
 

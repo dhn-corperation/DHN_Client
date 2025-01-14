@@ -46,6 +46,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
+        param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
         param.setMsg_type("M1");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");

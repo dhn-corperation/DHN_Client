@@ -62,14 +62,18 @@
 
     <update id="update_tmpl_fail" parameterType="com.dhn.client.bean.SQLParameter">
         update ${tmp_table}
-        set STATUS = '2'
+        set STATUS = '2',
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = '${mod_id}'
         where MSG_TEMPLATE_NO = '${tmplid}'
     </update>
 
     <update id="update_tmpl_success" parameterType="com.dhn.client.bean.SQLParameter">
         update ${tmp_table}
         set STATUS = '4',
-            KAKAO_INS_STATUS = 'INS'
+            KAKAO_INS_STATUS = 'INS',
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = '${mod_id}'
         where MSG_TEMPLATE_NO = '${tmplid}'
     </update>
 
@@ -96,7 +100,9 @@
         update ${tmp_table}
         set STATUS = '1',
             KAKAO_INS_STATUS = 'COM',
-            KAKAO_STATUS = '${tmplstatus}'
+            KAKAO_STATUS = '${tmplstatus}',
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = '${mod_id}'
         where MSG_TEMPLATE_NO = '${tmplid}'
     </update>
 
@@ -105,7 +111,9 @@
         set STATUS = '3',
             KAKAO_INS_STATUS = 'REJ',
             REJECT_MEMO = #{rej_memo},
-            KAKAO_STATUS = '${tmplstatus}'
+            KAKAO_STATUS = '${tmplstatus}',
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = '${mod_id}'
         where MSG_TEMPLATE_NO = '${tmplid}'
     </update>
 
@@ -130,7 +138,9 @@
 
     <update id="update_tmpl_refresh" parameterType="com.dhn.client.bean.SQLParameter">
         update ${tmp_table}
-        set KAKAO_STATUS = '${tmplstatus}'
+        set KAKAO_STATUS = '${tmplstatus}',
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = '${mod_id}'
         where MSG_TEMPLATE_NO = '${tmplid}'
     </update>
 

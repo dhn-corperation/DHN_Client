@@ -8,6 +8,7 @@ public class SQLParameter {
 	private String log_table;
 	private String tmp_table;
 	private String btn_table;
+	private String mod_id;
 	private String kakao_use;
 	private String sms_use;
 	private String lms_use;
