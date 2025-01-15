@@ -37,6 +37,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private Map<String, String> _kaoCode = new HashMap<>();
 	private String msgTable = "";
 	private String logTable = "";
+	private String mod_id = "";
 
 	@Autowired
 	private RequestService requestService;
@@ -49,8 +50,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
-		
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
+		mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
 		_kaoCode.put("0000","0000");
@@ -188,6 +189,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			JSONObject ent = json.getJSONObject(i);
 			
 			Msg_Log _ml = new Msg_Log(msgTable, logTable);
+			_ml.setMod_id(mod_id);
 			_ml.setMsgid(ent.getString("msgid"));
 			_ml.setMsg_type(ent.getString("message_type").toUpperCase());
 

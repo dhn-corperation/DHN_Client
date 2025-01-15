@@ -12,6 +12,7 @@ public class Msg_Log {
 	private String response_date;
 	private String result_code;
 	private String result_msg;
+	private String mod_id;
 
 	
 	public Msg_Log(String msg_table, String log_table) {
