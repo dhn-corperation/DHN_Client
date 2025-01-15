@@ -80,11 +80,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					List<KAORequestBean> _list = requestService.selectKAORequests(param);
 
-					for (KAORequestBean kaoRequestBean : _list) {
-					    kaoRequestBean.setRealsendflag("1");
-					}
-
-
 					StringWriter sw = new StringWriter();
 					ObjectMapper om = new ObjectMapper();
 					om.writeValue(sw, _list);
