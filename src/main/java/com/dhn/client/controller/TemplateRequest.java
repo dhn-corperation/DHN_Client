@@ -50,7 +50,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
         if (param.getTmp_use() != null && param.getTmp_use().equalsIgnoreCase("Y")) {
-            log.info("Tmp 초기화 완료");
+            log.info("TMP 초기화 완료");
             isStart = true;
         }
     }
