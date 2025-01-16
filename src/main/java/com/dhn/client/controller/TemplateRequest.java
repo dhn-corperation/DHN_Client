@@ -129,9 +129,11 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                                 log.info("템플릿 검수요청 오류(KAKAO) : " + tmplinspectionBean.getTemplateCode() + " / " + res.get("code") + " / " + res.get("message"));
                                             }
                                         }else{
+                                            templateReqSevice.updateTmplfail(param);
                                             log.error("템플릿 검수요청 오류(Http ERR) : " + tmplinspectionBean.getTemplateCode() + " / " + res.toString());
                                         }
                                     }catch (Exception e){
+                                        templateReqSevice.updateTmplfail(param);
                                         log.error("템플릿 검수요청 오류(Response) : " + tmplinspectionBean.getTemplateCode() + " / "  + e.toString());
                                     }
 
@@ -197,12 +199,12 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                 String inspectionStatus = data.get("inspectionStatus").toString();
                                 String status = data.get("status").toString();
 
+                                param.setTmplstatus(status);
+
                                 if(inspectionStatus.equalsIgnoreCase("APR")){
-                                    param.setTmplstatus(status);
                                     templateReqSevice.updateTmplInsAPR(param);
                                     log.info("템플릿 검수 승인 템플릿 Code : " + tmplData.getTemplateCode());
                                 }else if(inspectionStatus.equalsIgnoreCase("REJ")){
-                                    param.setTmplstatus(status);
                                     List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
                                     for (Map<String, Object> comment : comments) {
                                         param.setRej_memo(comment.get("content").toString());
