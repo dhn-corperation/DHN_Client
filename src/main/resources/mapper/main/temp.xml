@@ -20,6 +20,7 @@
         <result column="tmplmsgtype" property="templateMessageType"/>
         <result column="tmplemtype" property="templateEmphasizeType"/>
         <result column="tmplcontent" property="templateContent"/>
+        <result column="kakaostatus" property="templateStatus"/>
     </resultMap>
 
     <select id="req_tmpl_data" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "TmplData">
@@ -111,7 +112,7 @@
         set STATUS = '3',
             KAKAO_INS_STATUS = 'REJ',
             REJECT_MEMO = #{rej_memo},
-            KAKAO_STATUS = #{tmplstatus},
+            KAKAO_STATUS = '${tmplstatus}',
             MOD_DT = SYSTIMESTAMP,
             MOD_ID = #{mod_id}
         where MSG_TEMPLATE_NO = '${tmplid}'
@@ -129,7 +130,8 @@
         SELECT
             MSG_TEMPLATE_NO AS tmplid,
             '${profile_key}' AS profilekey,
-            MSG_TEMPLATE_CD AS tmplcode
+            MSG_TEMPLATE_CD AS tmplcode,
+            KAKAO_STATUS AS kakaostatus
         FROM ${tmp_table}
         WHERE STATUS = '1'
           AND DEL_YN = 'N'

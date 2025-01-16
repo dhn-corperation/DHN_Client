@@ -152,7 +152,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                 }
 
             }catch (Exception e){
-                log.error("템플릿 등록 오류(Send) : " + e.toString());
+                log.error("템플릿 등록 오류(Data) : " + e.toString());
             }
             isCProc = false;
         }
@@ -193,26 +193,30 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                             Map<String, Object> res = om.readValue(response.getBody(), Map.class);
 
                             //log.info(res.toString());
-                            if(res.get("code").equals("200")){
-                                Map<String, Object> data = (Map<String, Object>) res.get("data");
+                            if (response.getStatusCode() == HttpStatus.OK) {
+                                if(res.get("code").equals("200")) {
+                                    Map<String, Object> data = (Map<String, Object>) res.get("data");
 
-                                String inspectionStatus = data.get("inspectionStatus").toString();
-                                String status = data.get("status").toString();
+                                    String inspectionStatus = data.get("inspectionStatus").toString();
+                                    String status = data.get("status").toString();
 
-                                param.setTmplstatus(status);
+                                    param.setTmplstatus(status);
 
-                                if(inspectionStatus.equalsIgnoreCase("APR")){
-                                    templateReqSevice.updateTmplInsAPR(param);
-                                    log.info("템플릿 검수 승인 템플릿 Code : " + tmplData.getTemplateCode());
-                                }else if(inspectionStatus.equalsIgnoreCase("REJ")){
-                                    List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
-                                    for (Map<String, Object> comment : comments) {
-                                        param.setRej_memo(comment.get("content").toString());
+                                    if (inspectionStatus.equalsIgnoreCase("APR")) {
+                                        templateReqSevice.updateTmplInsAPR(param);
+                                        log.info("템플릿 검수 승인 템플릿 Code : " + tmplData.getTemplateCode());
+                                    } else if (inspectionStatus.equalsIgnoreCase("REJ")) {
+                                        List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
+                                        for (Map<String, Object> comment : comments) {
+                                            param.setRej_memo(comment.get("content").toString());
+                                        }
+                                        templateReqSevice.updateTmplInsREJ(param);
+                                        log.info("템플릿 검수 반려 템플릿코드 : " + tmplData.getTemplateCode());
                                     }
-                                    templateReqSevice.updateTmplInsREJ(param);
-                                    log.info("템플릿 검수 반려 템플릿코드 : " + tmplData.getTemplateCode());
+                                }else{
+                                    templateReqSevice.updateTmplfail(param);
+                                    log.info("템플릿 검수결과 조회 오류(KAKAO) : " + tmplData.getTemplateCode() + " / "  + res.toString());
                                 }
-
                             }else{
                                 log.error("템플릿 검수결과 조회 오류(Http ERR) : " + tmplData.getTemplateCode() + " / " + res.toString());
                             }
@@ -224,7 +228,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                     log.info("템플릿 검수결과 확인 종료");
                 }
             }catch (Exception e){
-                log.error("템플릿 검수결과 확인 오류(Send) : " + e.toString());
+                log.error("템플릿 검수결과 확인 오류(Data) : " + e.toString());
             }
             isRProc = false;
         }
@@ -265,14 +269,21 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                             Map<String, Object> res = om.readValue(response.getBody(), Map.class);
 
                             //log.info(res.toString());
-                            if(res.get("code").equals("200")){
-                                Map<String, Object> data = (Map<String, Object>) res.get("data");
-                                //String inspectionStatus = data.get("inspectionStatus").toString();
-                                String status = data.get("status").toString();
-                                param.setTmplstatus(status);
-                                templateReqSevice.updateTmplRefresh(param);
-                                log.info("템플릿 상태 갱신 완료 템플릿코드 : " + tmplData.getTemplateCode());
+                            if (response.getStatusCode() == HttpStatus.OK) {
+                                if(res.get("code").equals("200")) {
+                                    Map<String, Object> data = (Map<String, Object>) res.get("data");
+                                    //String inspectionStatus = data.get("inspectionStatus").toString();
+                                    String status = data.get("status").toString();
 
+                                    if(status.equalsIgnoreCase(tmplData.getTemplateStatus())) {
+                                        param.setTmplstatus(status);
+                                        templateReqSevice.updateTmplRefresh(param);
+                                    }
+                                    log.info("템플릿 상태 갱신 완료 템플릿코드 : " + tmplData.getTemplateCode());
+                                }else{
+                                    templateReqSevice.updateTmplfail(param);
+                                    log.info("템플릿 상태 갱신 조회 오류(KAKAO) : " + tmplData.getTemplateCode() + " / "  + res.toString());
+                                }
                             }else{
                                 log.error("템플릿 상태 갱신 조회 오류(Http ERR) : " + tmplData.getTemplateCode() + " / " + res.toString());
                             }
@@ -284,7 +295,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                     log.info("템플릿 상태 갱신 종료 {}건",tmplList.size());
                 }
             }catch (Exception e){
-                log.error("템플릿 상태 갱신 오류(Send) : " + e.toString());
+                log.error("템플릿 상태 갱신 오류(Data) : " + e.toString());
             }
             isRProc = false;
         }

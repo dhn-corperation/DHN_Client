@@ -14,5 +14,6 @@ public class TmplData {
     private String templateMessageType;
     private String templateEmphasizeType;
     private String templateContent;
+    private String templateStatus;
     private List<ButtonBean> buttons;
 }
