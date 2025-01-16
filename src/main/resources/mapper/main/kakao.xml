@@ -18,7 +18,7 @@
 		UPDATE ${msg_table}
 		SET MESSAGE_STATUS_CD = '01',
 			MOD_DT = SYSTIMESTAMP,
-			MOD_ID = '${mod_id}'
+			MOD_ID = #{mod_id}
 		WHERE MESSAGE_STATUS_CD = '00'
 			AND SEND_TYPE_CD = '${msg_type}'
 		    AND (
@@ -130,7 +130,7 @@
 		update ${msg_table}
 		set MESSAGE_STATUS_CD = '02',
 			MOD_DT = SYSTIMESTAMP,
-			MOD_ID = '${mod_id}'
+			MOD_ID = #{mod_id}
 		where MESSAGE_STATUS_CD = '01'
 			and SEND_TYPE_CD = '${msg_type}'
 	</update>
@@ -139,7 +139,7 @@
 		update ${msg_table}
 		set MESSAGE_STATUS_CD = '00',
 			MOD_DT = SYSTIMESTAMP,
-			MOD_ID = '${mod_id}'
+			MOD_ID = #{mod_id}
 		where MESSAGE_STATUS_CD = '01'
 			and SEND_TYPE_CD = '${msg_type}'
 	</update>
