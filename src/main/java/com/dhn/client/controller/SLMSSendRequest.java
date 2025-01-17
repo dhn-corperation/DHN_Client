@@ -31,6 +31,7 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
+    private static String role;
 
     @Autowired
     private RequestService requestService;
@@ -118,5 +119,10 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
 
             isProc = false;
         }
+    }
+
+    static public void setIsStart(boolean _flag) {
+        log.info(role + " LMS Sender Request is  change : " + _flag);
+        isStart = _flag;
     }
 }

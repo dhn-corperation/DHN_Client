@@ -24,4 +24,8 @@ public class SQLParameter {
 	private String msgid;
 	private String tmplstatus;
 	private String rej_memo;
+	private String role;
+	private String role_type;
+	private String alive_status;
+
 }

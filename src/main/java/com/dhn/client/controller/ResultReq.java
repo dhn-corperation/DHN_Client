@@ -40,6 +40,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String logTable = "";
 	private String mod_id = "";
 	private String result_use = "N";
+	private static String role;
 
 	@Autowired
 	private RequestService requestService;
@@ -228,6 +229,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		log.info("결과 수신 완료 : " + json.length() + " 건");		
 		procCnt--;
 		
+	}
+
+	static public void setIsStart(boolean _flag) {
+		log.info(role + " Result Request is  change : " + _flag);
+		isStart = _flag;
 	}
 
 }

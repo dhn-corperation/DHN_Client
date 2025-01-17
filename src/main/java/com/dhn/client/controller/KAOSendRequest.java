@@ -37,6 +37,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
+	private static String role;
 
 	@Autowired
 	private RequestService requestService;
@@ -119,6 +120,11 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			isProc = false;
 		}
+	}
+
+	static public void setIsStart(boolean _flag) {
+		log.info(role + " KAKAO Sender Request is change : " + _flag);
+		isStart = _flag;
 	}
 
 }

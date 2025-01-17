@@ -31,6 +31,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
     private SQLParameter param = new SQLParameter();
     private String dhnServer;
     private String userid;
+    private static String role;
 
     @Autowired
     private TemplateReqSevice templateReqSevice;
@@ -305,5 +306,10 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
             }
             isRProc = false;
         }
+    }
+
+    static public void setIsStart(boolean _flag) {
+        log.info(role + " TMP Sender Request is  change : " + _flag);
+        isStart = _flag;
     }
 }

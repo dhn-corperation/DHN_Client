@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.alive.mapper.SendRequest">
+
+    <select id="alive_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        select count(1) as cnt
+        from alive_monitoring
+        where role_type = '${role_type}'
+    </select>
+
+    <insert id="alive_insert" parameterType="com.dhn.client.bean.SQLParameter">
+        insert into alive_monitoring(role, updated_date, status, role_type) values('${role}', sysdate, 'MS', '${role_type}')
+    </insert>
+
+    <select id="alive_status" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.AliveStatusBean">
+        select role, nvl(status, 'MS') as status
+        from alive_monitoring
+        where role_type = '${role_type}'
+    </select>
+
+    <insert id="alive_update" parameterType="com.dhn.client.bean.SQLParameter">
+        update alive_monitoring
+        set role = '${role}'
+          ,updated_date = sysdate
+          ,status = '${alive_status}'
+        where role_type = '${role_type}'
+    </insert>
+
+
+</mapper>
