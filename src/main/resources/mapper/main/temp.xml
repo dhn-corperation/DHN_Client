@@ -64,6 +64,7 @@
     <update id="update_tmpl_fail" parameterType="com.dhn.client.bean.SQLParameter">
         update ${tmp_table}
         set STATUS = '2',
+            REJECT_MEMO = #{rej_memo},
             MOD_DT = SYSTIMESTAMP,
             MOD_ID = #{mod_id}
         where MSG_TEMPLATE_NO = '${tmplid}'

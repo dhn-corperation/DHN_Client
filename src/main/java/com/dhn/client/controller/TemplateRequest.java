@@ -55,7 +55,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         }
     }
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 5000)
     private void CreateTemplate() {
         if(isStart && !isCProc) {
             isCProc = true;
@@ -125,19 +125,23 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                                 templateReqSevice.updateTmplSuccess(param);
                                                 log.info("템플릿 검수요청 완료(" + response.getStatusCode() + ") 템플릿 Code : "+ tmplinspectionBean.getTemplateCode());
                                             }else{
+                                                param.setRej_memo(res.get("message"));
                                                 templateReqSevice.updateTmplfail(param);
                                                 log.info("템플릿 검수요청 오류(KAKAO) : " + tmplinspectionBean.getTemplateCode() + " / " + res.get("code") + " / " + res.get("message"));
                                             }
                                         }else{
+                                            param.setRej_memo("카카오 인증 서버에 연결할 수 없습니다.");
                                             templateReqSevice.updateTmplfail(param);
                                             log.error("템플릿 검수요청 오류(Http ERR) : " + tmplinspectionBean.getTemplateCode() + " / " + res.toString());
                                         }
                                     }catch (Exception e){
+                                        param.setRej_memo("카카오 인증 서버에 연결할 수 없습니다.");
                                         templateReqSevice.updateTmplfail(param);
                                         log.error("템플릿 검수요청 오류(Response) : " + tmplinspectionBean.getTemplateCode() + " / "  + e.toString());
                                     }
 
                                 }else{
+                                    param.setRej_memo(res.get("message"));
                                     templateReqSevice.updateTmplfail(param);
                                     log.info("템플릿 등록 오류(KAKAO) : " + tmplRequestBean.getTemplateCode() + " / "  + res.get("code") + " / " + res.get("message"));
                                 }
@@ -214,6 +218,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                         log.info("템플릿 검수 반려 템플릿코드 : " + tmplData.getTemplateCode());
                                     }
                                 }else{
+                                    param.setRej_memo(res.get("message").toString());
                                     templateReqSevice.updateTmplfail(param);
                                     log.info("템플릿 검수결과 조회 오류(KAKAO) : " + tmplData.getTemplateCode() + " / "  + res.toString());
                                 }
@@ -281,6 +286,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                     }
                                     log.info("템플릿 상태 갱신 완료 템플릿코드 : " + tmplData.getTemplateCode());
                                 }else{
+                                    param.setRej_memo(res.get("message").toString());
                                     templateReqSevice.updateTmplfail(param);
                                     log.info("템플릿 상태 갱신 조회 오류(KAKAO) : " + tmplData.getTemplateCode() + " / "  + res.toString());
                                 }
