@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -38,12 +39,16 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String msgTable = "";
 	private String logTable = "";
 	private String mod_id = "";
+	private String result_use = "N";
 
 	@Autowired
 	private RequestService requestService;
 	
 	@Autowired
 	private ApplicationContext appContext;
+
+	@Autowired
+	ScheduledAnnotationBeanPostProcessor posts;
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -53,6 +58,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
 		mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+		result_use = appContext.getEnvironment().getProperty("dhnclient.result_use");
 
 		_kaoCode.put("0000","0000");
 		_kaoCode.put("3000","2001");
@@ -116,7 +122,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		_msgCode.put("7029","5300");
 		_msgCode.put("7011","8011");
 
-		isStart = true;
+		if (result_use != null && result_use.equalsIgnoreCase("Y")) {
+			log.info("RESULT 초기화 완료");
+			isStart = true;
+		} else {
+			posts.postProcessBeforeDestruction(this, null);
+		}
 	}
 
 	@Scheduled(fixedDelay = 100)
