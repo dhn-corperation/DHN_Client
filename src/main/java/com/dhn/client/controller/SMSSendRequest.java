@@ -65,6 +65,10 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
         if(isStart && !isProc) {
             isProc = true;
 
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+            LocalDateTime now = LocalDateTime.now();
+            String group_no = now.format(formatter);
+
             try{
                 int cnt = requestService.selectMSGRequestCount(param);
 

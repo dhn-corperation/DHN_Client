@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +64,10 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
     private void SendProcess() {
         if(isStart && !isProc) {
             isProc = true;
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+            LocalDateTime now = LocalDateTime.now();
+            String group_no = now.format(formatter);
 
             try{
                 int cnt = requestService.selectMSGRequestCount(param);
