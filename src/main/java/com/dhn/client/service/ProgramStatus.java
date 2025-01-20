@@ -29,6 +29,7 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
         SLMSSendRequest.isStart = false;
         TemplateRequest.isStart = false;
         ResultReq.isStart = false;
+        AliveMonitoring.isStart = false;
 
         log.info("프로그램 종료 처리 중.....");
         try {

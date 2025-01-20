@@ -130,7 +130,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	}
 
 	static public void setIsStart(boolean _flag) {
-		log.info(role + " KAKAO Sender Request is change : " + _flag);
+		log.info(role + " KAO Process is change : " + _flag);
 		isStart = _flag;
 	}
 

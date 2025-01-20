@@ -124,7 +124,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     }
 
     static public void setIsStart(boolean _flag) {
-        log.info(role + " SMS Sender Request is  change : " + _flag);
+        log.info(role + " SMS Process is  change : " + _flag);
         isStart = _flag;
     }
 

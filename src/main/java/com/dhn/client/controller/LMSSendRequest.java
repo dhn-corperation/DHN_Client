@@ -123,7 +123,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     }
 
     static public void setIsStart(boolean _flag) {
-        log.info(role + " LMS Sender Request is  change : " + _flag);
+        log.info(role + " LMS Process is  change : " + _flag);
         isStart = _flag;
     }
 

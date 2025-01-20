@@ -322,7 +322,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
     }
 
     static public void setIsStart(boolean _flag) {
-        log.info(role + " TMP Sender Request is  change : " + _flag);
+        log.info(role + " Template Process is  change : " + _flag);
         isStart = _flag;
     }
 }
