@@ -80,7 +80,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                     if(_as.getStatus() != null && _as.getStatus().equalsIgnoreCase("MS")) {
                         param.setAlive_status(_as.getStatus().toUpperCase());
                         if(_as.getRole().equalsIgnoreCase("MASTER")) {
-                            aliveService.AliveUpdate(param);
 
                             if(kakao_use != null && kakao_use.equalsIgnoreCase("Y") && !KAOSendRequest.isStart) {
                                 KAOSendRequest.setIsStart(true);
@@ -151,6 +150,7 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                         if(isAlive == 0) {
                             AliveStatusBean _as = aliveService.getAliveStatus(param);
                             if(_as.getRole().equalsIgnoreCase("MASTER") && _as.getStatus().equalsIgnoreCase("MS")){
+
                                 if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
                                     KAOSendRequest.setIsStart(true);
                                 }
@@ -171,11 +171,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                                     TemplateRequest.setIsStart(true);
                                 }
 
-                                //ResultReq.setIsStart(true);
-
                                 param.setAlive_status("SS");
 
                                 aliveService.AliveUpdate(param);
+
                             } else if (_as.getStatus().equalsIgnoreCase("MW")){
                                 if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
                                     KAOSendRequest.setIsStart(false);
