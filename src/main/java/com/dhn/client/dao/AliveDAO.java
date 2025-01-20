@@ -12,4 +12,6 @@ public interface AliveDAO {
     AliveStatusBean getAliveStatus(SQLParameter param) throws Exception;
 
     void AliveUpdate(SQLParameter param) throws Exception;
+
+    int AliveLastCount(SQLParameter param) throws Exception;
 }

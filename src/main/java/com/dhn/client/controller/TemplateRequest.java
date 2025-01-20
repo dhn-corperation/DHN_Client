@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -31,6 +32,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
     private SQLParameter param = new SQLParameter();
     private String dhnServer;
     private String userid;
+    private String dual;
     private static String role;
 
     @Autowired
@@ -38,6 +40,9 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 
     @Autowired
     private ApplicationContext appContext;
+
+    @Autowired
+    ScheduledAnnotationBeanPostProcessor posts;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -49,10 +54,18 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+        dual = appContext.getEnvironment().getProperty("dhnclient.dual");
+        role = appContext.getEnvironment().getProperty("dhnclient.role");
 
         if (param.getTmp_use() != null && param.getTmp_use().equalsIgnoreCase("Y")) {
-            log.info("TMP 초기화 완료");
-            isStart = true;
+            if(dual != null && dual.equalsIgnoreCase("Y")){
+
+            }else{
+                log.info("TMP 초기화 완료");
+                isStart = true;
+            }
+        } else{
+            posts.postProcessBeforeDestruction(this, null);
         }
     }
 

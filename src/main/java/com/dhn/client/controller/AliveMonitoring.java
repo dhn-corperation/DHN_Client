@@ -47,6 +47,7 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
         lms_use = appContext.getEnvironment().getProperty("dhnclient.lms_use");
         slms_use = appContext.getEnvironment().getProperty("dhnclient.smslms_use");
         tmp_use = appContext.getEnvironment().getProperty("dhnclient.tmp_use");
+        role_type = appContext.getEnvironment().getProperty("dhnclient.role_type");
 
         if(dual != null && dual.equalsIgnoreCase("Y")) {
             isStart = true;
@@ -81,35 +82,129 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                         if(_as.getRole().equalsIgnoreCase("MASTER")) {
                             aliveService.AliveUpdate(param);
 
-                            if(kakao_use.equalsIgnoreCase("Y") && !KAOSendRequest.isStart) {
+                            if(kakao_use != null && kakao_use.equalsIgnoreCase("Y") && !KAOSendRequest.isStart) {
                                 KAOSendRequest.setIsStart(true);
                             }
 
-                            if(sms_use.equalsIgnoreCase("Y") && !SMSSendRequest.isStart) {
+                            if(sms_use != null && sms_use.equalsIgnoreCase("Y") && !SMSSendRequest.isStart) {
                                 SMSSendRequest.setIsStart(true);
                             }
 
-                            if(lms_use.equalsIgnoreCase("Y") && !LMSSendRequest.isStart) {
+                            if(lms_use != null && lms_use.equalsIgnoreCase("Y") && !LMSSendRequest.isStart) {
                                 LMSSendRequest.setIsStart(true);
                             }
 
-                            if (slms_use.equalsIgnoreCase("Y") && !SLMSSendRequest.isStart) {
+                            if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !SLMSSendRequest.isStart) {
                                 SLMSSendRequest.setIsStart(true);
                             }
 
-                            if (tmp_use.equalsIgnoreCase("Y") && !TemplateRequest.isStart) {
-                                tmp_use = tmp_use.toUpperCase();
+                            if (tmp_use != null && tmp_use.equalsIgnoreCase("Y") && !TemplateRequest.isStart) {
+                                TemplateRequest.setIsStart(true);
                             }
+
+                            if(!ResultReq.isStart){
+                                ResultReq.setIsStart( true);
+                            }
+
+                            aliveService.AliveUpdate(param);
 
                         } else {
 
+                            if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
+                                KAOSendRequest.setIsStart(true);
+                            }
+
+                            if(sms_use != null && sms_use.equalsIgnoreCase("Y")) {
+                                SMSSendRequest.setIsStart(true);
+                            }
+
+                            if(lms_use != null && lms_use.equalsIgnoreCase("Y")) {
+                                LMSSendRequest.setIsStart(true);
+                            }
+
+                            if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
+                                SLMSSendRequest.setIsStart(true);
+                            }
+
+                            if (tmp_use != null && tmp_use.equalsIgnoreCase("Y")) {
+                                TemplateRequest.setIsStart(true);
+                            }
+
+                            //ResultReq.setIsStart( true);
+
+                            aliveService.AliveUpdate(param);
+
                         }
                     } else if(_as.getStatus() != null && _as.getStatus().equalsIgnoreCase("SS")) {
-
+                        param.setAlive_status("MW");
+                        aliveService.AliveUpdate(param);
                     }
 
 
                 } else if( role != null && role.equalsIgnoreCase("SLAVE")) {
+
+                    int cnt = aliveService.AliveCount(param);
+
+                    if(cnt > 0){
+                        int isAlive = aliveService.AliveLastCount(param);
+
+                        if(isAlive == 0) {
+                            AliveStatusBean _as = aliveService.getAliveStatus(param);
+                            if(_as.getRole().equalsIgnoreCase("MASTER") && _as.getStatus().equalsIgnoreCase("MS")){
+                                if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
+                                    KAOSendRequest.setIsStart(true);
+                                }
+
+                                if(sms_use != null && sms_use.equalsIgnoreCase("Y")) {
+                                    SMSSendRequest.setIsStart(true);
+                                }
+
+                                if(lms_use != null && lms_use.equalsIgnoreCase("Y")) {
+                                    LMSSendRequest.setIsStart(true);
+                                }
+
+                                if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
+                                    SLMSSendRequest.setIsStart(true);
+                                }
+
+                                if (tmp_use != null && tmp_use.equalsIgnoreCase("Y")) {
+                                    TemplateRequest.setIsStart(true);
+                                }
+
+                                //ResultReq.setIsStart(true);
+
+                                param.setAlive_status("SS");
+
+                                aliveService.AliveUpdate(param);
+                            } else if (_as.getStatus().equalsIgnoreCase("MW")){
+                                if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
+                                    KAOSendRequest.setIsStart(false);
+                                }
+
+                                if(sms_use != null && sms_use.equalsIgnoreCase("Y")) {
+                                    SMSSendRequest.setIsStart(false);
+                                }
+
+                                if(lms_use != null && lms_use.equalsIgnoreCase("Y")) {
+                                    LMSSendRequest.setIsStart(false);
+                                }
+
+                                if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
+                                    SLMSSendRequest.setIsStart(false);
+                                }
+
+                                if (tmp_use != null && tmp_use.equalsIgnoreCase("Y")) {
+                                    TemplateRequest.setIsStart(false);
+                                }
+
+                                if(!KAOSendRequest.isStart && !SMSSendRequest.isStart && !LMSSendRequest.isStart && !SLMSSendRequest.isStart && !TemplateRequest.isStart){
+                                    param.setAlive_status("MS");
+                                    aliveService.AliveUpdate(param);
+                                }
+                            }
+                        }
+                    }
+
 
                 }
 

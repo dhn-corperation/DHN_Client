@@ -39,7 +39,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String msgTable = "";
 	private String logTable = "";
 	private String mod_id = "";
-	private String result_use = "N";
 	private static String role;
 
 	@Autowired
@@ -59,7 +58,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
 		mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-		result_use = appContext.getEnvironment().getProperty("dhnclient.result_use");
 
 		_kaoCode.put("0000","0000");
 		_kaoCode.put("3000","2001");
@@ -123,12 +121,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		_msgCode.put("7029","5300");
 		_msgCode.put("7011","8011");
 
-		if (result_use != null && result_use.equalsIgnoreCase("Y")) {
-			log.info("RESULT 초기화 완료");
-			isStart = true;
-		} else {
-			posts.postProcessBeforeDestruction(this, null);
-		}
+		isStart = true;
 	}
 
 	@Scheduled(fixedDelay = 100)

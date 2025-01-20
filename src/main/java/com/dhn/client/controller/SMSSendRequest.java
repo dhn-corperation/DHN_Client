@@ -31,6 +31,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
+    private String dual;
     private static String role;
 
     @Autowired
@@ -52,10 +53,16 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+        dual = appContext.getEnvironment().getProperty("dhnclient.dual");
+        role = appContext.getEnvironment().getProperty("dhnclient.role");
 
         if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
-            log.info("SMS 초기화 완료");
-            isStart = true;
+            if(dual != null && dual.equalsIgnoreCase("Y")){
+
+            }else{
+                log.info("SMS 초기화 완료");
+                isStart = true;
+            }
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }

@@ -31,6 +31,7 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
+    private String dual;
     private static String role;
 
     @Autowired
@@ -51,10 +52,16 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+        dual = appContext.getEnvironment().getProperty("dhnclient.dual");
+        role = appContext.getEnvironment().getProperty("dhnclient.role");
 
         if (param.getSmslms_use() != null && param.getSmslms_use().equalsIgnoreCase("Y")) {
-            log.info("SMS/LMS 초기화 완료");
-            isStart = true;
+            if(dual != null && dual.equalsIgnoreCase("Y")){
+
+            }else{
+                log.info("SMS/LMS 초기화 완료");
+                isStart = true;
+            }
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }

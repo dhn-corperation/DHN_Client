@@ -32,4 +32,9 @@ public class AliveServiceImpl implements AliveService{
     public void AliveUpdate(SQLParameter param) throws Exception {
         aliveDAO.AliveUpdate(param);
     }
+
+    @Override
+    public int AliveLastCount(SQLParameter param) throws Exception {
+        return aliveDAO.AliveLastCount(param);
+    }
 }

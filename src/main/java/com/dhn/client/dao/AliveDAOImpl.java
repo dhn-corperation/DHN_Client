@@ -14,8 +14,9 @@ public class AliveDAOImpl implements AliveDAO{
 
     @Override
     public int AliveCount(SQLParameter param) throws Exception {
-        int cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.alive_count", param);
-        return 0;
+        int cnt;
+        cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.alive_count", param);
+        return cnt;
     }
 
     @Override
@@ -35,5 +36,12 @@ public class AliveDAOImpl implements AliveDAO{
     @Override
     public void AliveUpdate(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.alive.mapper.SendRequest.alive_update", param);
+    }
+
+    @Override
+    public int AliveLastCount(SQLParameter param) throws Exception {
+        int cnt;
+        cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.alive_last_count", param);
+        return cnt;
     }
 }
