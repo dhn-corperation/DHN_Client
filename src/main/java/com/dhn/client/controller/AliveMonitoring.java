@@ -21,12 +21,12 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
     private String dual;
     private String role;
     private String role_type;
-
     private String kakao_use;
     private String sms_use;
     private String lms_use;
     private String slms_use;
     private String tmp_use;
+    private String alive_table;
 
     @Autowired
     private AliveService aliveService;
@@ -48,6 +48,7 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
         slms_use = appContext.getEnvironment().getProperty("dhnclient.smslms_use");
         tmp_use = appContext.getEnvironment().getProperty("dhnclient.tmp_use");
         role_type = appContext.getEnvironment().getProperty("dhnclient.role_type");
+        alive_table = appContext.getEnvironment().getProperty("dhnclient.alive_table");
 
         if(dual != null && dual.equalsIgnoreCase("Y")) {
             isStart = true;
@@ -66,6 +67,7 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                 SQLParameter param = new SQLParameter();
                 param.setRole(role);
                 param.setRole_type(role_type);
+                param.setAlive_table(alive_table);
 
                 if( role != null && role.equalsIgnoreCase("MASTER")) {
 

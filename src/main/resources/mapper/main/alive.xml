@@ -5,22 +5,22 @@
 
     <select id="alive_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         select count(1) as cnt
-        from alive_monitoring
+        from ${alive_table}
         where role_type = '${role_type}'
     </select>
 
     <insert id="alive_insert" parameterType="com.dhn.client.bean.SQLParameter">
-        insert into alive_monitoring(role, updated_date, status, role_type) values('${role}', sysdate, 'MS', '${role_type}')
+        insert into ${alive_table}(role, updated_date, status, role_type) values('${role}', sysdate, 'MS', '${role_type}')
     </insert>
 
     <select id="alive_status" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.AliveStatusBean">
         select role, nvl(status, 'MS') as status
-        from alive_monitoring
+        from ${alive_table}
         where role_type = '${role_type}'
     </select>
 
     <update id="alive_update" parameterType="com.dhn.client.bean.SQLParameter">
-        update alive_monitoring
+        update ${alive_table}
         set role = '${role}'
           ,updated_date = sysdate
           ,status = '${alive_status}'
@@ -29,7 +29,7 @@
 
     <select id="alive_last_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         select count(1) as cnt
-        from alive_monitoring
+        from ${alive_table}
         where updated_date &gt;= SYSDATE-(15/24/60/60)
         and role_type = '${role_type}'
     </select>
