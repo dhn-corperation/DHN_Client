@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.create.mapper.SendRequest">
+    <select id="logTableCheck" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        SELECT COUNT(1)
+        FROM ALL_TABLES
+        WHERE TABLE_NAME = UPPER(#{logTable})
+    </select>
+
+    <update id="createLogTable" parameterType="map">
+        CREATE TABLE "${logTable}" AS
+        SELECT * FROM "${msgTable}" WHERE 1=0
+    </update>
+
+    <select id="tableCheck" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        SELECT COUNT(1)
+        FROM ALL_TABLES
+        WHERE TABLE_NAME = UPPER(#{msg_table})
+    </select>
+
+    <update id="createTable" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE TABLE "${msg_table}" AS
+        SELECT * FROM "${main_table}" WHERE 1=0
+    </update>
+
+    <update id="createIndex1" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE INDEX "${msg_table}_PK_IDX" ON "${msg_table}" ("MESSAGE_MST_NO")
+    </update>
+
+    <update id="createIndex2" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE INDEX "${msg_table}_SELECT_IDX" ON "${msg_table}" ("MESSAGE_STATUS_CD", "SEND_TYPE_CD", "ETRS_MTCD","SEND_EXPECTED_DT","SEND_EXPECTED_TIME")
+    </update>
+
+</mapper>

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -52,6 +53,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+		param.setMain_table(appContext.getEnvironment().getProperty("dhnclient.main_table"));
 		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
 		param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
 		param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
@@ -66,8 +68,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			if(dual != null && dual.equalsIgnoreCase("Y")){
 
 			} else {
-				log.info("KAO 초기화 완료");
 				isStart = true;
+				log.info("KAO 초기화 완료");
 			}
 		} else {
 			posts.postProcessBeforeDestruction(this, null);

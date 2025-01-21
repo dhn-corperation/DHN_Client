@@ -31,4 +31,8 @@ public interface RequestService {
 	// 결과처리
 	void update_msg_log(Msg_Log ml) throws Exception;
 
+	// 테이블 생성
+	void logTableCheck(String msg_table, String log_table) throws Exception;
+
+	void tableCheck(SQLParameter param) throws Exception;
 }

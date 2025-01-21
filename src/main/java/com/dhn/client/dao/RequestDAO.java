@@ -27,4 +27,10 @@ public interface RequestDAO {
 	void updateMSGSendInit(SQLParameter param) throws Exception;
 
 	void update_msg_log(Msg_Log ml) throws Exception;
+
+    void logTableCheck(String msgTable, String logTable) throws Exception;
+
+	int tableCheck(SQLParameter param) throws Exception;
+
+	void tableCreate(SQLParameter param) throws Exception;
 }

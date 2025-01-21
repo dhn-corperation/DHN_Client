@@ -1,0 +1,41 @@
+package com.dhn.client.controller;
+
+import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.service.RequestService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
+import org.springframework.stereotype.Component;
+
+@Component
+@Slf4j
+@Order(1)
+public class CreateTable implements ApplicationListener<ContextRefreshedEvent> {
+
+    private SQLParameter param = new SQLParameter();
+
+    @Autowired
+    private RequestService requestService;
+
+    @Autowired
+    private ApplicationContext appContext;
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setMain_table(appContext.getEnvironment().getProperty("dhnclient.main_table"));
+        param.setLog_table(appContext.getEnvironment().getProperty("dhnclient.log_table"));
+
+        try{
+            requestService.tableCheck(param);
+            requestService.logTableCheck(param.getMsg_table(), param.getLog_table());
+            log.info("테이블 생성 준비 완료");
+        }catch (Exception e){
+            log.error(param.getMsg_table() + " / " + param.getLog_table() + " 테이블 생성 오류 : " + e.getMessage());
+        }
+    }
+}
