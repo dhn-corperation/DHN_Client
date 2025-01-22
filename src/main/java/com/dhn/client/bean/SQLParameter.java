@@ -2,6 +2,8 @@ package com.dhn.client.bean;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class SQLParameter {
 	private String msg_table;
@@ -18,7 +20,9 @@ public class SQLParameter {
 	private String tmp_use;
 	private String group_no;
 	private String msg_type;
-	private String profile_key;
+	private String bdpt_profile_key;
+	private String insure_profile_key;
+	private String nps_profile_key;
 	private String file1;
 	private String file2;
 	private String file3;
@@ -29,5 +33,5 @@ public class SQLParameter {
 	private String role;
 	private String role_type;
 	private String alive_status;
-
+	private List<String> msgid_list;
 }

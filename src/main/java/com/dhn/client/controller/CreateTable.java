@@ -32,10 +32,16 @@ public class CreateTable implements ApplicationListener<ContextRefreshedEvent> {
 
         try{
             requestService.tableCheck(param);
-            requestService.logTableCheck(param.getMsg_table(), param.getLog_table());
             log.info("테이블 생성 준비 완료");
         }catch (Exception e){
-            log.error(param.getMsg_table() + " / " + param.getLog_table() + " 테이블 생성 오류 : " + e.getMessage());
+            log.error(param.getMsg_table() + " 테이블 생성 오류 : " + e.getMessage());
+        }
+
+        try{
+            requestService.logTableCheck(param.getMsg_table(), param.getLog_table());
+            log.info("로그 테이블 생성 준비 완료");
+        }catch (Exception e){
+            log.error(param.getLog_table() + " 테이블 생성 오류 : " + e.getMessage());
         }
     }
 }

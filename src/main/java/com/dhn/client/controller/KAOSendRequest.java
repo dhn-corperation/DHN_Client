@@ -3,6 +3,7 @@ package com.dhn.client.controller;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +56,9 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setMain_table(appContext.getEnvironment().getProperty("dhnclient.main_table"));
 		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
-		param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
+		param.setBdpt_profile_key(appContext.getEnvironment().getProperty("dhnclient.bdpt_profile_key"));
+		param.setInsure_profile_key(appContext.getEnvironment().getProperty("dhnclient.insure_profile_key"));
+		param.setNps_profile_key(appContext.getEnvironment().getProperty("dhnclient.nps_profile_key"));
 		param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
 		param.setMsg_type("K1");
 
@@ -93,6 +96,12 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 					requestService.updateKAOStatus(param);
 
 					List<KAORequestBean> _list = requestService.selectKAORequests(param);
+					List<String> msg_list = new ArrayList<String>();
+
+					for (KAORequestBean kaoRequestBean : _list) {
+						msg_list.add(kaoRequestBean.getMsgid());
+					}
+					param.setMsgid_list(msg_list);
 
 					StringWriter sw = new StringWriter();
 					ObjectMapper om = new ObjectMapper();

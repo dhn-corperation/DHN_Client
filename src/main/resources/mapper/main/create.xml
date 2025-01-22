@@ -24,11 +24,11 @@
         SELECT * FROM "${main_table}" WHERE 1=0
     </update>
 
-    <update id="createIndex1" parameterType="com.dhn.client.bean.SQLParameter">
-        CREATE INDEX "${msg_table}_PK_IDX" ON "${msg_table}" ("MESSAGE_MST_NO")
+    <update id="createPrimaryKey" parameterType="com.dhn.client.bean.SQLParameter">
+        ALTER TABLE "${msg_table}" ADD CONSTRAINT MESSAGE_MST_NO_PK PRIMARY KEY("MESSAGE_MST_NO")
     </update>
 
-    <update id="createIndex2" parameterType="com.dhn.client.bean.SQLParameter">
+    <update id="createIndex1" parameterType="com.dhn.client.bean.SQLParameter">
         CREATE INDEX "${msg_table}_SELECT_IDX" ON "${msg_table}" ("MESSAGE_STATUS_CD", "SEND_TYPE_CD", "ETRS_MTCD","SEND_EXPECTED_DT","SEND_EXPECTED_TIME")
     </update>
 

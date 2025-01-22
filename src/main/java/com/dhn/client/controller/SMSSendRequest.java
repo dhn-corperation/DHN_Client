@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setMain_table(appContext.getEnvironment().getProperty("dhnclient.main_table"));
         param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
         param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
         param.setMsg_type("M1");
@@ -84,6 +86,13 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                     requestService.updateMSGStatus(param);
 
                     List<RequestBean> _list = requestService.selectMSGRequests(param);
+                    List<String> msg_list = new ArrayList<>();
+
+                    for (RequestBean bean : _list) {
+                        msg_list.add(bean.getMsgid());
+                    }
+
+                    param.setMsgid_list(msg_list);
 
                     StringWriter sw = new StringWriter();
                     ObjectMapper om = new ObjectMapper();

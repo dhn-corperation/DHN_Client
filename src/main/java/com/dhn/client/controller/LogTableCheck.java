@@ -17,6 +17,8 @@ public class LogTableCheck implements ApplicationListener<ContextRefreshedEvent>
     private boolean isProc = false;
     private String msg_table = "";
     private String log_table = "";
+    private String dual = "";
+    private static String role = "";
 
     @Autowired
     private ApplicationContext appContext;
@@ -29,10 +31,16 @@ public class LogTableCheck implements ApplicationListener<ContextRefreshedEvent>
 
         msg_table = appContext.getEnvironment().getProperty("msg_table");
         log_table = appContext.getEnvironment().getProperty("log_table");
+        dual = appContext.getEnvironment().getProperty("dhnclient.dual");
+        role = appContext.getEnvironment().getProperty("dhnclient.role");
 
-        log.info("LOG테이블 자동생성 초기화 완료");
+        if(dual != null && dual.equalsIgnoreCase("Y")){
 
-        isStart = true;
+        } else {
+            log.info("LOG테이블 자동생성 초기화 완료");
+            isStart = true;
+        }
+
     }
 
     @Scheduled(cron = "0 0 1 L * ?")
@@ -49,5 +57,10 @@ public class LogTableCheck implements ApplicationListener<ContextRefreshedEvent>
             }
             isProc = false;
         }
+    }
+
+    static public void setIsStart(boolean _flag) {
+        log.info(role + " LogTable create Process is change : " + _flag);
+        isStart = _flag;
     }
 }

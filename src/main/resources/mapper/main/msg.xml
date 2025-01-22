@@ -78,6 +78,17 @@
           and SEND_TYPE_CD = '${msg_type}'
     </update>
 
+    <update id="req_msg_sent_complete2" parameterType="com.dhn.client.bean.SQLParameter">
+        update ${main_table}
+        set MESSAGE_STATUS_CD = '02',
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = #{mod_id}
+        where MESSAGE_MST_NO IN
+        <foreach collection="msgid_list" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
+    </update>
+
     <update id="req_msg_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
         update ${msg_table}
         set MESSAGE_STATUS_CD = '00',

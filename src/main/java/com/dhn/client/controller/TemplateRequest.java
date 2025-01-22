@@ -48,7 +48,9 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setTmp_table(appContext.getEnvironment().getProperty("dhnclient.tmp_table"));
         param.setBtn_table(appContext.getEnvironment().getProperty("dhnclient.btn_table"));
-        param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
+        param.setBdpt_profile_key(appContext.getEnvironment().getProperty("dhnclient.bdpt_profile_key"));
+        param.setInsure_profile_key(appContext.getEnvironment().getProperty("dhnclient.insure_profile_key"));
+        param.setNps_profile_key(appContext.getEnvironment().getProperty("dhnclient.nps_profile_key"));
         param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
         param.setTmp_use(appContext.getEnvironment().getProperty("dhnclient.tmp_use"));
 

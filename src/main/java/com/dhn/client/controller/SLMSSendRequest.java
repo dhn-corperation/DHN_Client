@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,7 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setMain_table(appContext.getEnvironment().getProperty("dhnclient.main_table"));
         param.setSmslms_use(appContext.getEnvironment().getProperty("dhnclient.smslms_use"));
         param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
         param.setMsg_type("99");
@@ -84,12 +86,16 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
                     requestService.updateMSGStatus(param);
 
                     List<RequestBean> _list = requestService.selectMSGRequests(param);
+                    List<String> msg_list = new ArrayList<>();
 
                     for (RequestBean requestBean : _list) {
                         if(requestBean.getMsgsms().getBytes("EUC-KR").length > 90){
                             requestBean.setSmskind("L");
                         }
+                        msg_list.add(requestBean.getMsgid());
                     }
+
+                    param.setMsgid_list(msg_list);
 
                     StringWriter sw = new StringWriter();
                     ObjectMapper om = new ObjectMapper();

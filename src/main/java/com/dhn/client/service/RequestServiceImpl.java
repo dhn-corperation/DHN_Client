@@ -69,6 +69,11 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
+	public String select2ndFlag(Msg_Log ml) throws Exception {
+		return requestDAO.select2ndFlag(ml);
+	}
+
+	@Override
 	public void update_msg_log(Msg_Log ml) throws Exception {
 		requestDAO.update_msg_log(ml);
 	}
@@ -95,4 +100,26 @@ public class RequestServiceImpl implements RequestService {
 		}
 		requestDAO.tableCheck(param);
 	}
+
+	@Override
+	public int moveDataCount(SQLParameter param) throws Exception {
+		return requestDAO.moveDataCount(param);
+	}
+
+	@Override
+	public List<MoveData> moveDataSelect(SQLParameter param) throws Exception {
+		return requestDAO.moveDataSelect(param);
+	}
+
+	@Override
+	public void moveDataInsert(SQLParameter param) throws Exception {
+		requestDAO.moveDataInsert(param);
+	}
+
+	@Override
+	public void updateMoveStatus(SQLParameter param) throws Exception {
+		requestDAO.updateMoveStatus(param);
+	}
+
+
 }

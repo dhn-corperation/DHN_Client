@@ -38,6 +38,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private Map<String, String> _kaoCode = new HashMap<>();
 	private String msgTable = "";
 	private String logTable = "";
+	private String mainTable = "";
+	private String mainLogTable = "";
 	private String mod_id = "";
 	private static String role;
 
@@ -55,6 +57,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
+		mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
+		mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
 		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
 		mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -129,6 +133,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		if(isStart && !isProc && procCnt < 10) {
 			isProc = true;
 			procCnt++;
+
 			try {
 				ObjectMapper om = new ObjectMapper();
 				HttpHeaders header = new HttpHeaders();
@@ -172,6 +177,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 					} else {
 						log.info("결과 수신 오류 (Http Err) : " + response.getStatusCode());
+
 						procCnt--;
 					}
 				} catch(Exception ex) {
@@ -187,29 +193,44 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		}
 	}
 
-
 	private void ResultProc(JSONArray json, int _pc) {
 		
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
 			
-			Msg_Log _ml = new Msg_Log(msgTable, logTable);
+			Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
 			_ml.setMod_id(mod_id);
 			_ml.setMsgid(ent.getString("msgid"));
-			_ml.setMsg_type(ent.getString("message_type").toUpperCase());
+
+			_ml.setLog_date_table(logTable+"_"+ent.getString("reg_dt").substring(0,7).replace("-",""));
 
 			String code = "0000";
 
+			String flag = "N";
+
 			if(ent.getString("message_type").equalsIgnoreCase("AT")){
+
+				try{
+					flag = requestService.select2ndFlag(_ml);
+				}catch (Exception e){
+					log.info("알림톡 결과처리 2차여부 조회 오류 : " + e.getMessage());
+				}
 				code = _kaoCode.getOrDefault(ent.getString("code"),"E999");
 				_ml.setReal_send_date(ent.getString("res_dt"));
 				_ml.setResult_msg(ent.getString("message"));
-
+				_ml.setMsg_type("K1");
 			}else{
 				code = _msgCode.getOrDefault(ent.getString("code"),"8011");
 				_ml.setReal_send_date(ent.getString("remark2"));
 				_ml.setResult_msg(ent.getString("message"));
+				if(ent.getString("sms_kind").equalsIgnoreCase("S")){
+					_ml.setMsg_type("M1");
+				}else if(ent.getString("sms_kind").equalsIgnoreCase("L")){
+					_ml.setMsg_type("M2");
+				}
 			}
+
+			_ml.setFlag_2nd(flag);
 
 			_ml.setResult_code(code);
 

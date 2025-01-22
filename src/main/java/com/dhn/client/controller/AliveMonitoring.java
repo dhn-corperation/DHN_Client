@@ -104,7 +104,19 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                             }
 
                             if(!ResultReq.isStart){
-                                ResultReq.setIsStart( true);
+                                ResultReq.setIsStart(true);
+                            }
+
+                            if(!LogTableCheck.isStart){
+                                LogTableCheck.setIsStart(true);
+                            }
+
+                            if(!MessageMove.isStart){
+                                MessageMove.setIsStart(true);
+                            }
+
+                            if(!ResultReq.isStart){
+                                ResultReq.setIsStart(true);
                             }
 
                             aliveService.AliveUpdate(param);
@@ -131,7 +143,9 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                                 TemplateRequest.setIsStart(true);
                             }
 
-                            //ResultReq.setIsStart( true);
+                            LogTableCheck.setIsStart(true);
+                            MessageMove.setIsStart(true);
+                            ResultReq.setIsStart(true);
 
                             aliveService.AliveUpdate(param);
 
@@ -173,6 +187,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                                     TemplateRequest.setIsStart(true);
                                 }
 
+                                LogTableCheck.setIsStart(true);
+                                MessageMove.setIsStart(true);
+                                ResultReq.setIsStart(true);
+
                                 param.setAlive_status("SS");
 
                                 aliveService.AliveUpdate(param);
@@ -198,7 +216,11 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                                     TemplateRequest.setIsStart(false);
                                 }
 
-                                if(!KAOSendRequest.isStart && !SMSSendRequest.isStart && !LMSSendRequest.isStart && !SLMSSendRequest.isStart && !TemplateRequest.isStart){
+                                LogTableCheck.setIsStart(false);
+                                MessageMove.setIsStart(false);
+                                ResultReq.setIsStart(false);
+
+                                if(!KAOSendRequest.isStart && !SMSSendRequest.isStart && !LMSSendRequest.isStart && !SLMSSendRequest.isStart && !TemplateRequest.isStart && !LogTableCheck.isStart && !MessageMove.isStart && !ResultReq.isStart){
                                     param.setAlive_status("MS");
                                     aliveService.AliveUpdate(param);
                                 }

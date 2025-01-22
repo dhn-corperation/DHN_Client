@@ -29,10 +29,20 @@ public interface RequestService {
 	void updateMSGSendInit(SQLParameter param) throws Exception;
 
 	// 결과처리
+	String select2ndFlag(Msg_Log ml) throws Exception;
+
 	void update_msg_log(Msg_Log ml) throws Exception;
 
 	// 테이블 생성
 	void logTableCheck(String msg_table, String log_table) throws Exception;
 
 	void tableCheck(SQLParameter param) throws Exception;
+
+	int moveDataCount(SQLParameter param) throws Exception;
+
+	List<MoveData> moveDataSelect(SQLParameter param) throws Exception;
+
+	void moveDataInsert(SQLParameter param) throws Exception;
+
+	void updateMoveStatus(SQLParameter param) throws Exception;
 }
