@@ -63,8 +63,8 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
             if(dual != null && dual.equalsIgnoreCase("Y")){
 
             }else{
-                log.info("TMP 초기화 완료");
                 isStart = true;
+                log.info("TMP 초기화 완료");
             }
         } else{
             posts.postProcessBeforeDestruction(this, null);

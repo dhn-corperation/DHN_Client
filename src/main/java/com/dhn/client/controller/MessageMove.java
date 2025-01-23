@@ -48,7 +48,7 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
 
         } else {
             isStart = true;
-            log.info("KAO 초기화 완료");
+            log.info("Msg Move 초기화 완료");
         }
     }
 

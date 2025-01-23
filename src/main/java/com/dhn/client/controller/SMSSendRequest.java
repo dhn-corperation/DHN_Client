@@ -62,8 +62,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
             if(dual != null && dual.equalsIgnoreCase("Y")){
 
             }else{
-                log.info("SMS 초기화 완료");
                 isStart = true;
+                log.info("SMS 초기화 완료");
             }
         } else {
             posts.postProcessBeforeDestruction(this, null);

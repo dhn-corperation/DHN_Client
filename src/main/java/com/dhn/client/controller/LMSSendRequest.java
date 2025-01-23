@@ -61,8 +61,8 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
             if(dual != null && dual.equalsIgnoreCase("Y")){
 
             }else{
-                log.info("LMS 초기화 완료");
                 isStart = true;
+                log.info("LMS 초기화 완료");
             }
         } else {
             posts.postProcessBeforeDestruction(this, null);

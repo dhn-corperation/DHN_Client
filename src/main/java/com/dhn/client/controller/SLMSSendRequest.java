@@ -61,8 +61,8 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
             if(dual != null && dual.equalsIgnoreCase("Y")){
 
             }else{
-                log.info("SMS/LMS 초기화 완료");
                 isStart = true;
+                log.info("SMS/LMS 초기화 완료");
             }
         } else {
             posts.postProcessBeforeDestruction(this, null);

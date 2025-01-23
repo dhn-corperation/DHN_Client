@@ -52,6 +52,7 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
 
         if(dual != null && dual.equalsIgnoreCase("Y")) {
             isStart = true;
+            log.info("M/S 에이전트 이중화 준비 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }

@@ -37,8 +37,8 @@ public class LogTableCheck implements ApplicationListener<ContextRefreshedEvent>
         if(dual != null && dual.equalsIgnoreCase("Y")){
 
         } else {
-            log.info("LOG테이블 자동생성 초기화 완료");
             isStart = true;
+            log.info("LOG테이블 자동생성 초기화 완료");
         }
 
     }
