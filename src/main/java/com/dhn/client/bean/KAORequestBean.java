@@ -44,5 +44,9 @@ public class KAORequestBean {
 	private String att_coupon;
 	private String crypto;
 	private String realsendflag;
-	  
+	private String btnname;
+	private String btntype;
+	private String btnmo;
+	private String btnpc;
+
 }

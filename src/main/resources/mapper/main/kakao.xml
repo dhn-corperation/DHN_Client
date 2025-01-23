@@ -49,6 +49,10 @@
 		<result column="BUTTON3" property="button3"/>
 		<result column="BUTTON4" property="button4"/>
 		<result column="BUTTON5" property="button5"/>
+		<result column="BTN_TYPE" property="btntype"/>
+		<result column="BTN_NAME" property="btnname"/>
+		<result column="BTN_PC" property="btnpc"/>
+		<result column="BTN_MO" property="btnmo"/>
 	</resultMap>
 
 	<select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -68,66 +72,20 @@
 				WHEN ETRS_MTCD = '01' THEN '00000000000000'
 				WHEN ETRS_MTCD = '02' THEN SEND_EXPECTED_DT || SEND_EXPECTED_TIME
 				ELSE '00000000000000'
-			END AS RESERVEDT,
+				END AS RESERVEDT,
 			CASE
 				WHEN SYSTEM_CD = '4INSURE' THEN '${insure_profile_key}'
 				WHEN SYSTEM_CD = 'BDPT' THEN '${bdpt_profile_key}'
 				ELSE '${nps_profile_key}'
-			END AS PROFILEKEY,
+				END AS PROFILEKEY,
 			AD_FLAG AS ADFLAG,
-			CASE
-				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 1) IS NOT NULL THEN
-					JSON_OBJECT(
-						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 1),
-						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 1),
-						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 1),
-						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 1)
-					)
-				ELSE NULL
-				END AS BUTTON1,
-			CASE
-				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 2) IS NOT NULL THEN
-					JSON_OBJECT(
-						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 2),
-						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 2),
-						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 2),
-						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 2)
-					)
-				ELSE NULL
-				END AS BUTTON2,
-			CASE
-				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 3) IS NOT NULL THEN
-					JSON_OBJECT(
-						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 3),
-						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 3),
-						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 3),
-						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 3)
-					)
-				ELSE NULL
-				END AS BUTTON3,
-			CASE
-				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 4) IS NOT NULL THEN
-					JSON_OBJECT(
-						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 4),
-						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 4),
-						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 4),
-						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 4)
-					)
-				ELSE NULL
-				END AS BUTTON4,
-			CASE
-				WHEN REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 5) IS NOT NULL THEN
-					JSON_OBJECT(
-						'type' VALUE REGEXP_SUBSTR(BUTTON_TYPE, '[^|]+', 1, 5),
-						'name' VALUE REGEXP_SUBSTR(BUTTON_NAME, '[^|]+', 1, 5),
-						'url_pc' VALUE REGEXP_SUBSTR(URL_PC_IOS, '[^|]+', 1, 5),
-						'url_mobile' VALUE REGEXP_SUBSTR(URL_MOBILE_ANDROID, '[^|]+', 1, 5)
-					)
-				ELSE NULL
-				END AS BUTTON5
+			BUTTON_TYPE AS BTN_TYPE,
+			BUTTON_NAME AS BTN_NAME,
+			URL_PC_IOS AS BTN_PC,
+			URL_MOBILE_ANDROID as BTN_MO
 		FROM ${msg_table}
 		WHERE SEND_TYPE_CD = '${msg_type}'
-			AND MESSAGE_STATUS_CD = '01'
+		  AND MESSAGE_STATUS_CD = '01'
 	</select>
 	
 	<update id="req_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">

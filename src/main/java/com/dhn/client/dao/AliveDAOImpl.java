@@ -1,5 +1,6 @@
 package com.dhn.client.dao;
 
+import com.dhn.client.bean.AliveData;
 import com.dhn.client.bean.AliveStatusBean;
 import com.dhn.client.bean.SQLParameter;
 import org.apache.ibatis.session.SqlSession;
@@ -44,4 +45,33 @@ public class AliveDAOImpl implements AliveDAO{
         cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.alive_last_count", param);
         return cnt;
     }
+
+    @Override
+    public int selectAliveCount(SQLParameter param) throws Exception {
+        int cnt;
+        cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.select_alive_count", param);
+        return cnt;
+    }
+
+    @Override
+    public void aliveInsertData(SQLParameter param) throws Exception {
+        sqlSession.insert("com.dhn.client.alive.mapper.SendRequest.alive_insert_data", param);
+    }
+
+    @Override
+    public AliveData selectAliveData(SQLParameter param) throws Exception {
+        return sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.select_alive_data", param);
+    }
+
+    @Override
+    public void aliveUpdateDate(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.alive.mapper.SendRequest.alive_update_date", param);
+    }
+
+    @Override
+    public void aliveUpdateAgent(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.alive.mapper.SendRequest.alive_update_agent", param);
+    }
+
+
 }

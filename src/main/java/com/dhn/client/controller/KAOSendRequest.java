@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.dhn.client.bean.ButtonJsonBean;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -100,6 +102,49 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					for (KAORequestBean kaoRequestBean : _list) {
 						msg_list.add(kaoRequestBean.getMsgid());
+
+						if(kaoRequestBean.getBtnname() != null){
+							String[] btnname = kaoRequestBean.getBtnname().split("\\|");
+							String[] btntype = kaoRequestBean.getBtntype().split("\\|");
+							String[] btnmo = new String[5];
+							String[] btnpc = new String[5];
+							if(kaoRequestBean.getBtnmo() != null){
+								btnmo = kaoRequestBean.getBtnmo().split("\\|");
+							}else{
+								btnmo[0] = "";
+								btnmo[1] = "";
+								btnmo[2] = "";
+								btnmo[3] = "";
+								btnmo[4] = "";
+							}
+							if(kaoRequestBean.getBtnpc() != null){
+								btnpc = kaoRequestBean.getBtnpc().split("\\|");
+							}else{
+								btnpc[0] = "";
+								btnpc[1] = "";
+								btnpc[2] = "";
+								btnpc[3] = "";
+								btnpc[4] = "";
+							}
+
+							if(btnname.length > 0){
+								kaoRequestBean.setButton1(Btn_json(btnname[0],btntype[0],btnpc[0],btnmo[0]));
+							}
+							if(btnname.length > 1){
+								kaoRequestBean.setButton2(Btn_json(btnname[1],btntype[1],btnpc[1],btnmo[1]));
+							}
+							if(btnname.length > 2){
+								kaoRequestBean.setButton3(Btn_json(btnname[2],btntype[2],btnpc[2],btnmo[2]));
+							}
+							if(btnname.length > 3){
+								kaoRequestBean.setButton4(Btn_json(btnname[3],btntype[3],btnpc[3],btnmo[3]));
+							}
+							if(btnname.length > 4){
+								kaoRequestBean.setButton5(Btn_json(btnname[4],btntype[4],btnpc[4],btnmo[4]));
+							}
+
+						}
+
 					}
 					param.setMsgid_list(msg_list);
 
@@ -143,6 +188,32 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	static public void setIsStart(boolean _flag) {
 		log.info(role + " KAO Process is change : " + _flag);
 		isStart = _flag;
+	}
+
+	private String Btn_json(String btnname, String btntype, String btnpc, String btnmo) {
+
+
+		ButtonJsonBean btnjb = new ButtonJsonBean();
+		btnjb.setName(btnname);
+		btnjb.setType(btntype);
+		if(btntype.equalsIgnoreCase("AL")){
+			btnjb.setScheme_android(btnmo);
+			btnjb.setScheme_ios(btnpc);
+		} else {
+			btnjb.setUrl_mobile(btnmo);
+			btnjb.setUrl_pc(btnpc);
+		}
+
+		String jsonString = "";
+
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			jsonString = mapper.writeValueAsString(btnjb);
+		} catch (JsonProcessingException e) {
+			log.error("버튼 제조 에러 : " + e.toString());
+		}
+
+		return jsonString;
 	}
 
 }

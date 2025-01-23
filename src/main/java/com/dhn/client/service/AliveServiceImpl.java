@@ -1,5 +1,6 @@
 package com.dhn.client.service;
 
+import com.dhn.client.bean.AliveData;
 import com.dhn.client.bean.AliveStatusBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.dao.AliveDAO;
@@ -37,4 +38,30 @@ public class AliveServiceImpl implements AliveService{
     public int AliveLastCount(SQLParameter param) throws Exception {
         return aliveDAO.AliveLastCount(param);
     }
+
+    @Override
+    public int selectAliveCount(SQLParameter param) throws Exception {
+        return aliveDAO.selectAliveCount(param);
+    }
+
+    @Override
+    public void aliveInsertData(SQLParameter param) throws Exception {
+        aliveDAO.aliveInsertData(param);
+    }
+
+    @Override
+    public AliveData selectAliveData(SQLParameter param) throws Exception {
+        return aliveDAO.selectAliveData(param);
+    }
+
+    @Override
+    public void aliveUpdateDate(SQLParameter param) throws Exception {
+        aliveDAO.aliveUpdateDate(param);
+    }
+
+    @Override
+    public void aliveUpdateAgent(SQLParameter param) throws Exception {
+        aliveDAO.aliveUpdateAgent(param);
+    }
+
 }

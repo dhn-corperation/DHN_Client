@@ -1,5 +1,6 @@
 package com.dhn.client.dao;
 
+import com.dhn.client.bean.AliveData;
 import com.dhn.client.bean.AliveStatusBean;
 import com.dhn.client.bean.SQLParameter;
 
@@ -14,4 +15,14 @@ public interface AliveDAO {
     void AliveUpdate(SQLParameter param) throws Exception;
 
     int AliveLastCount(SQLParameter param) throws Exception;
+
+    int selectAliveCount(SQLParameter param) throws Exception;
+
+    void aliveInsertData(SQLParameter param) throws Exception;
+
+    AliveData selectAliveData(SQLParameter param) throws Exception;
+
+    void aliveUpdateDate(SQLParameter param) throws Exception;
+
+    void aliveUpdateAgent(SQLParameter param) throws Exception;
 }

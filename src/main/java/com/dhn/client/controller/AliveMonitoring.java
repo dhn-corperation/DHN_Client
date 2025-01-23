@@ -1,5 +1,6 @@
 package com.dhn.client.controller;
 
+import com.dhn.client.bean.AliveData;
 import com.dhn.client.bean.AliveStatusBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.AliveService;
@@ -70,176 +71,133 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                 param.setRole_type(role_type);
                 param.setAlive_table(alive_table);
 
-                if( role != null && role.equalsIgnoreCase("MASTER")) {
+                int cnt = aliveService.selectAliveCount(param);
 
-                    int cnt = aliveService.AliveCount(param);
-
-                    if(cnt == 0) {
-                        aliveService.AliveInsert(param);
-                    }
-
-                    AliveStatusBean _as = aliveService.getAliveStatus(param);
-
-                    if(_as.getStatus() != null && _as.getStatus().equalsIgnoreCase("MS")) {
-                        param.setAlive_status(_as.getStatus().toUpperCase());
-                        if(_as.getRole().equalsIgnoreCase("MASTER")) {
-
-                            if(kakao_use != null && kakao_use.equalsIgnoreCase("Y") && !KAOSendRequest.isStart) {
-                                KAOSendRequest.setIsStart(true);
-                            }
-
-                            if(sms_use != null && sms_use.equalsIgnoreCase("Y") && !SMSSendRequest.isStart) {
-                                SMSSendRequest.setIsStart(true);
-                            }
-
-                            if(lms_use != null && lms_use.equalsIgnoreCase("Y") && !LMSSendRequest.isStart) {
-                                LMSSendRequest.setIsStart(true);
-                            }
-
-                            if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !SLMSSendRequest.isStart) {
-                                SLMSSendRequest.setIsStart(true);
-                            }
-
-                            if (tmp_use != null && tmp_use.equalsIgnoreCase("Y") && !TemplateRequest.isStart) {
-                                TemplateRequest.setIsStart(true);
-                            }
-
-                            if(!ResultReq.isStart){
-                                ResultReq.setIsStart(true);
-                            }
-
-                            if(!LogTableCheck.isStart){
-                                LogTableCheck.setIsStart(true);
-                            }
-
-                            if(!MessageMove.isStart){
-                                MessageMove.setIsStart(true);
-                            }
-
-                            if(!ResultReq.isStart){
-                                ResultReq.setIsStart(true);
-                            }
-
-                            aliveService.AliveUpdate(param);
-
-                        } else {
-
-                            if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
-                                KAOSendRequest.setIsStart(true);
-                            }
-
-                            if(sms_use != null && sms_use.equalsIgnoreCase("Y")) {
-                                SMSSendRequest.setIsStart(true);
-                            }
-
-                            if(lms_use != null && lms_use.equalsIgnoreCase("Y")) {
-                                LMSSendRequest.setIsStart(true);
-                            }
-
-                            if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
-                                SLMSSendRequest.setIsStart(true);
-                            }
-
-                            if (tmp_use != null && tmp_use.equalsIgnoreCase("Y")) {
-                                TemplateRequest.setIsStart(true);
-                            }
-
-                            LogTableCheck.setIsStart(true);
-                            MessageMove.setIsStart(true);
-                            ResultReq.setIsStart(true);
-
-                            aliveService.AliveUpdate(param);
-
-                        }
-                    } else if(_as.getStatus() != null && _as.getStatus().equalsIgnoreCase("SS")) {
-                        param.setAlive_status("MW");
-                        aliveService.AliveUpdate(param);
-                    }
-
-
-                } else if( role != null && role.equalsIgnoreCase("SLAVE")) {
-
-                    int cnt = aliveService.AliveCount(param);
-
-                    if(cnt > 0){
-                        int isAlive = aliveService.AliveLastCount(param);
-
-                        if(isAlive == 0) {
-                            AliveStatusBean _as = aliveService.getAliveStatus(param);
-                            if(_as.getRole().equalsIgnoreCase("MASTER") && _as.getStatus().equalsIgnoreCase("MS")){
-
-                                if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
-                                    KAOSendRequest.setIsStart(true);
-                                }
-
-                                if(sms_use != null && sms_use.equalsIgnoreCase("Y")) {
-                                    SMSSendRequest.setIsStart(true);
-                                }
-
-                                if(lms_use != null && lms_use.equalsIgnoreCase("Y")) {
-                                    LMSSendRequest.setIsStart(true);
-                                }
-
-                                if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
-                                    SLMSSendRequest.setIsStart(true);
-                                }
-
-                                if (tmp_use != null && tmp_use.equalsIgnoreCase("Y")) {
-                                    TemplateRequest.setIsStart(true);
-                                }
-
-                                LogTableCheck.setIsStart(true);
-                                MessageMove.setIsStart(true);
-                                ResultReq.setIsStart(true);
-
-                                param.setAlive_status("SS");
-
-                                aliveService.AliveUpdate(param);
-
-                            } else if (_as.getStatus().equalsIgnoreCase("MW")){
-                                if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
-                                    KAOSendRequest.setIsStart(false);
-                                }
-
-                                if(sms_use != null && sms_use.equalsIgnoreCase("Y")) {
-                                    SMSSendRequest.setIsStart(false);
-                                }
-
-                                if(lms_use != null && lms_use.equalsIgnoreCase("Y")) {
-                                    LMSSendRequest.setIsStart(false);
-                                }
-
-                                if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
-                                    SLMSSendRequest.setIsStart(false);
-                                }
-
-                                if (tmp_use != null && tmp_use.equalsIgnoreCase("Y")) {
-                                    TemplateRequest.setIsStart(false);
-                                }
-
-                                LogTableCheck.setIsStart(false);
-                                MessageMove.setIsStart(false);
-                                ResultReq.setIsStart(false);
-
-                                if(!KAOSendRequest.isStart && !SMSSendRequest.isStart && !LMSSendRequest.isStart && !SLMSSendRequest.isStart && !TemplateRequest.isStart && !LogTableCheck.isStart && !MessageMove.isStart && !ResultReq.isStart){
-                                    param.setAlive_status("MS");
-                                    aliveService.AliveUpdate(param);
-                                }
-                            }
-                        }
-                    }
-
-
+                if(cnt == 0) {
+                    aliveService.aliveInsertData(param);
                 }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.error("Alive checked error : " + role);
+                AliveData aliveData = aliveService.selectAliveData(param);
+
+                if(aliveData.getRole().equalsIgnoreCase(role)){
+                    if(kakao_use != null && kakao_use.equalsIgnoreCase("Y") && !KAOSendRequest.isStart) {
+                        KAOSendRequest.setIsStart(true);
+                    }
+
+                    if(sms_use != null && sms_use.equalsIgnoreCase("Y") && !SMSSendRequest.isStart) {
+                        SMSSendRequest.setIsStart(true);
+                    }
+
+                    if(lms_use != null && lms_use.equalsIgnoreCase("Y") && !LMSSendRequest.isStart) {
+                        LMSSendRequest.setIsStart(true);
+                    }
+
+                    if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !SLMSSendRequest.isStart) {
+                        SLMSSendRequest.setIsStart(true);
+                    }
+
+                    if (tmp_use != null && tmp_use.equalsIgnoreCase("Y") && !TemplateRequest.isStart) {
+                        TemplateRequest.setIsStart(true);
+                    }
+
+                    if(!ResultReq.isStart){
+                        ResultReq.setIsStart(true);
+                    }
+
+                    if(!LogTableCheck.isStart){
+                        LogTableCheck.setIsStart(true);
+                    }
+
+                    if(!MessageMove.isStart){
+                        MessageMove.setIsStart(true);
+                    }
+
+                    if(!ResultReq.isStart){
+                        ResultReq.setIsStart(true);
+                    }
+
+                    aliveService.aliveUpdateDate(param);
+
+                }else{
+                    if(aliveData.getFlag().equalsIgnoreCase("Y")){
+                        if(kakao_use != null && kakao_use.equalsIgnoreCase("Y") && !KAOSendRequest.isStart) {
+                            KAOSendRequest.setIsStart(true);
+                        }
+
+                        if(sms_use != null && sms_use.equalsIgnoreCase("Y") && !SMSSendRequest.isStart) {
+                            SMSSendRequest.setIsStart(true);
+                        }
+
+                        if(lms_use != null && lms_use.equalsIgnoreCase("Y") && !LMSSendRequest.isStart) {
+                            LMSSendRequest.setIsStart(true);
+                        }
+
+                        if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !SLMSSendRequest.isStart) {
+                            SLMSSendRequest.setIsStart(true);
+                        }
+
+                        if (tmp_use != null && tmp_use.equalsIgnoreCase("Y") && !TemplateRequest.isStart) {
+                            TemplateRequest.setIsStart(true);
+                        }
+
+                        if(!ResultReq.isStart){
+                            ResultReq.setIsStart(true);
+                        }
+
+                        if(!LogTableCheck.isStart){
+                            LogTableCheck.setIsStart(true);
+                        }
+
+                        if(!MessageMove.isStart){
+                            MessageMove.setIsStart(true);
+                        }
+
+                        if(!ResultReq.isStart){
+                            ResultReq.setIsStart(true);
+                        }
+
+                        aliveService.aliveUpdateAgent(param);
+                    } else {
+                        if(KAOSendRequest.isStart) {
+                            KAOSendRequest.setIsStart(false);
+                        }
+
+                        if(SMSSendRequest.isStart) {
+                            SMSSendRequest.setIsStart(false);
+                        }
+
+                        if(LMSSendRequest.isStart) {
+                            LMSSendRequest.setIsStart(false);
+                        }
+
+                        if (SLMSSendRequest.isStart) {
+                            SLMSSendRequest.setIsStart(false);
+                        }
+
+                        if (TemplateRequest.isStart) {
+                            TemplateRequest.setIsStart(false);
+                        }
+
+                        if(LogTableCheck.isStart) {
+                            LogTableCheck.setIsStart(false);
+                        }
+
+                        if(MessageMove.isStart) {
+                            MessageMove.setIsStart(false);
+                        }
+
+                        if(ResultReq.isStart) {
+                            ResultReq.setIsStart(false);
+                        }
+                    }
+                }
+
+            }catch (Exception e) {
+                log.error("Alive checked error : " + role + " / " + e.getMessage());
             }
 
             isProc = false;
         }
     }
-
 
 }

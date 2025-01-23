@@ -189,6 +189,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					}
 				} catch(Exception ex) {
 					log.info("결과 수신 오류 (response Err): " + ex.toString());
+					Thread.sleep(10000);
 					procCnt--;
 				}
 				
