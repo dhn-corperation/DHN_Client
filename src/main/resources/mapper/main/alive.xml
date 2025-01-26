@@ -57,6 +57,7 @@
                 ELSE 'N'
             END AS FLAG
         FROM ${alive_table}
+        where role_type = '${role_type}'
     </select>
 
     <update id="alive_update_date" parameterType="com.dhn.client.bean.SQLParameter">

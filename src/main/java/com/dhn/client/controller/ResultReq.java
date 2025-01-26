@@ -64,6 +64,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		dual = appContext.getEnvironment().getProperty("dhnclient.dual");
+		role = appContext.getEnvironment().getProperty("dhnclient.role");
 
 		_kaoCode.put("0000","0000");
 		_kaoCode.put("3000","2001");
