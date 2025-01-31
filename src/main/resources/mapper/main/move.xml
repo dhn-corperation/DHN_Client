@@ -7,6 +7,7 @@
         SELECT count(1) AS cnt
         FROM ${main_table}
         WHERE MESSAGE_STATUS_CD = '00'
+          AND SEND_TYPE_CD IN ('K1','M1','M2','99')
           AND (
             ETRS_MTCD = '01'
                 OR (ETRS_MTCD = '02' AND TO_TIMESTAMP(SEND_EXPECTED_DT || SEND_EXPECTED_TIME, 'YYYYMMDDHH24MISS') &lt;= SYSTIMESTAMP)
@@ -21,6 +22,7 @@
         SELECT MESSAGE_MST_NO
         FROM ${main_table}
         WHERE MESSAGE_STATUS_CD = '00'
+          AND SEND_TYPE_CD IN ('K1','M1','M2','99')
           AND (
             ETRS_MTCD = '01'
                 OR (ETRS_MTCD = '02' AND TO_TIMESTAMP(SEND_EXPECTED_DT || SEND_EXPECTED_TIME, 'YYYYMMDDHH24MISS') &lt;= SYSTIMESTAMP)
