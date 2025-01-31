@@ -33,6 +33,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String userid;
     private String preGroupNo = "";
     private String dual;
+    private String dbug = "";;
     private static String role;
 
     @Autowired
@@ -56,6 +57,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         dual = appContext.getEnvironment().getProperty("dhnclient.dual");
         role = appContext.getEnvironment().getProperty("dhnclient.role");
+        dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
 
         if (param.getLms_use() != null && param.getLms_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -78,6 +80,10 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
             LocalDateTime now = LocalDateTime.now();
             String group_no = now.format(formatter);
 
+            if(dbug.equalsIgnoreCase("Y")){
+                log.info("LMS setting value : " + param.toString());
+            }
+
             try{
                 int cnt = requestService.selectMSGRequestCount(param);
 
@@ -89,6 +95,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                     for (RequestBean bean : _list) {
                         msg_list.add(bean.getMsgid());
+
                     }
 
                     param.setMsgid_list(msg_list);
@@ -96,6 +103,10 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                     StringWriter sw = new StringWriter();
                     ObjectMapper om = new ObjectMapper();
                     om.writeValue(sw, _list);
+
+                    if(dbug.equalsIgnoreCase("Y")){
+                        log.info("LMS data : " + sw.toString());
+                    }
 
                     HttpHeaders header = new HttpHeaders();
 

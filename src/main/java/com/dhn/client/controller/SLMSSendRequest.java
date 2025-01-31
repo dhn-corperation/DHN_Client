@@ -33,6 +33,7 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
     private String userid;
     private String preGroupNo = "";
     private String dual;
+    private String dbug = "";;
     private static String role;
 
     @Autowired
@@ -56,6 +57,7 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         dual = appContext.getEnvironment().getProperty("dhnclient.dual");
         role = appContext.getEnvironment().getProperty("dhnclient.role");
+        dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
 
         if (param.getSmslms_use() != null && param.getSmslms_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -79,6 +81,10 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
             LocalDateTime now = LocalDateTime.now();
             String group_no = now.format(formatter);
 
+            if(dbug.equalsIgnoreCase("Y")){
+                log.info("S/LMS setting value : " + param.toString());
+            }
+
             try{
                 int cnt = requestService.selectMSGRequestCount(param);
 
@@ -100,6 +106,10 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
                     StringWriter sw = new StringWriter();
                     ObjectMapper om = new ObjectMapper();
                     om.writeValue(sw, _list);
+
+                    if(dbug.equalsIgnoreCase("Y")){
+                        log.info("S/LMS data: " + sw.toString());
+                    }
 
                     HttpHeaders header = new HttpHeaders();
 

@@ -4,7 +4,7 @@
 <mapper namespace="com.dhn.client.move.mapper.SendRequest">
 
     <select id = "move_data_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-        SELECT count(1) AS cnt
+        SELECT count(*) AS cnt
         FROM ${main_table}
         WHERE MESSAGE_STATUS_CD = '00'
           AND SEND_TYPE_CD IN ('K1','M1','M2','99')
@@ -20,14 +20,17 @@
 
     <select id="move_data_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="moveData">
         SELECT MESSAGE_MST_NO
-        FROM ${main_table}
-        WHERE MESSAGE_STATUS_CD = '00'
+        FROM (
+          SELECT MESSAGE_MST_NO, ROWNUM AS RNUM
+          FROM ${main_table} WHERE MESSAGE_STATUS_CD = '00'
           AND SEND_TYPE_CD IN ('K1','M1','M2','99')
           AND (
             ETRS_MTCD = '01'
                 OR (ETRS_MTCD = '02' AND TO_TIMESTAMP(SEND_EXPECTED_DT || SEND_EXPECTED_TIME, 'YYYYMMDDHH24MISS') &lt;= SYSTIMESTAMP)
             )
-          AND ROWNUM &lt;= 500
+         ORDER BY ETRS_MTCD ASC
+         ) TB
+        WHERE TB.RNUM &lt;= 500
     </select>
 
     <insert id="move_data_insert" parameterType="com.dhn.client.bean.SQLParameter">

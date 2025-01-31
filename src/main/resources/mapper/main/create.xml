@@ -25,7 +25,7 @@
     </update>
 
     <update id="createPrimaryKey" parameterType="com.dhn.client.bean.SQLParameter">
-        ALTER TABLE "${msg_table}" ADD CONSTRAINT MESSAGE_MST_NO_PK PRIMARY KEY("MESSAGE_MST_NO")
+        ALTER TABLE "${msg_table}" ADD CONSTRAINT "${msg_table}_MST_NO_PK" PRIMARY KEY("MESSAGE_MST_NO")
     </update>
 
     <update id="createIndex1" parameterType="com.dhn.client.bean.SQLParameter">

@@ -42,6 +42,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String userid;
 	private String preGroupNo = "";
 	private String dual;
+	private String dbug = "";;
 	private static String role;
 
 	@Autowired
@@ -68,6 +69,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		dual = appContext.getEnvironment().getProperty("dhnclient.dual");
 		role = appContext.getEnvironment().getProperty("dhnclient.role");
+		dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
 
 		if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
 			if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -90,6 +92,10 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 			LocalDateTime now = LocalDateTime.now();
 			String group_no = now.format(formatter);
+
+			if(dbug.equalsIgnoreCase("Y")){
+				log.info("KAO setting value : " + param.toString());
+			}
 
 			try{
 				int cnt = requestService.selectKAORequestCount(param);
@@ -145,12 +151,17 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 						}
 
+
 					}
 					param.setMsgid_list(msg_list);
 
 					StringWriter sw = new StringWriter();
 					ObjectMapper om = new ObjectMapper();
 					om.writeValue(sw, _list);
+
+					if(dbug.equalsIgnoreCase("Y")){
+						log.info("KAO data : " + sw.toString());
+					}
 
 					HttpHeaders header = new HttpHeaders();
 

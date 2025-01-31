@@ -4,7 +4,7 @@
 <mapper namespace="com.dhn.client.kakao.mapper.SendRequest">
 
 	<select id = "req_kao_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-		SELECT count(1) AS cnt
+		SELECT count(MESSAGE_MST_NO) AS cnt
 		FROM ${msg_table}
 		WHERE MESSAGE_STATUS_CD = '00'
 			AND SEND_TYPE_CD = '${msg_type}'
@@ -91,6 +91,7 @@
 	<update id="req_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${msg_table}
 		set MESSAGE_STATUS_CD = '02',
+			SEND_DT = SYSTIMESTAMP,
 			MOD_DT = SYSTIMESTAMP,
 			MOD_ID = #{mod_id}
 		where MESSAGE_STATUS_CD = '01'
@@ -100,6 +101,7 @@
 	<update id="req_sent_complete2" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${main_table}
 		set MESSAGE_STATUS_CD = '02',
+		    SEND_DT = SYSTIMESTAMP,
 			MOD_DT = SYSTIMESTAMP,
 			MOD_ID = #{mod_id}
 		where MESSAGE_MST_NO IN

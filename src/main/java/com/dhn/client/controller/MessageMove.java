@@ -25,6 +25,7 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
     private String userid;
     private String preGroupNo = "";
     private String dual;
+    private String dbug = "";
     private static String role;
 
     @Autowired
@@ -39,6 +40,7 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setMain_table(appContext.getEnvironment().getProperty("dhnclient.main_table"));
         param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
+        dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
 
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         dual = appContext.getEnvironment().getProperty("dhnclient.dual");
@@ -57,8 +59,17 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
         if(isStart && !isProc) {
             isProc = true;
 
+            if(dbug.equalsIgnoreCase("Y")){
+                log.info("Move setting value : " + param.toString());
+            }
+
             try{
                 int cnt = requestService.moveDataCount(param);
+
+                if(dbug.equalsIgnoreCase("Y")){
+                    log.info("Move Cnt : " + cnt);
+                }
+
 
                 if(cnt > 0){
                     List<MoveData> _list = requestService.moveDataSelect(param);
@@ -66,6 +77,10 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
                     List<String> msgIdList = new ArrayList<>();
                     for(MoveData moveData : _list){
                         msgIdList.add(moveData.getMsgid());
+                    }
+
+                    if(dbug.equalsIgnoreCase("Y")){
+                        log.info("Move Data : " + param.getMsgid_list().toString());
                     }
 
                     param.setMsgid_list(msgIdList);

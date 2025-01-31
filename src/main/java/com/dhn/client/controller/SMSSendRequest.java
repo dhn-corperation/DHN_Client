@@ -33,6 +33,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String userid;
     private String preGroupNo = "";
     private String dual;
+    private String dbug = "";;
     private static String role;
 
     @Autowired
@@ -57,6 +58,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         dual = appContext.getEnvironment().getProperty("dhnclient.dual");
         role = appContext.getEnvironment().getProperty("dhnclient.role");
+        dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
+
 
         if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -79,6 +82,10 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
             LocalDateTime now = LocalDateTime.now();
             String group_no = now.format(formatter);
 
+            if(dbug.equalsIgnoreCase("Y")){
+                log.info("SMS setting value : " + param.toString());
+            }
+
             try{
                 int cnt = requestService.selectMSGRequestCount(param);
 
@@ -97,6 +104,10 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                     StringWriter sw = new StringWriter();
                     ObjectMapper om = new ObjectMapper();
                     om.writeValue(sw, _list);
+
+                    if(dbug.equalsIgnoreCase("Y")){
+                        log.info("LMS data : " + sw.toString());
+                    }
 
                     HttpHeaders header = new HttpHeaders();
 
