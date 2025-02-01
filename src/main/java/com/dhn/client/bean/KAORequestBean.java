@@ -48,5 +48,6 @@ public class KAORequestBean {
 	private String btntype;
 	private String btnmo;
 	private String btnpc;
-
+	private String syscd;
+	private String dateflag;
 }

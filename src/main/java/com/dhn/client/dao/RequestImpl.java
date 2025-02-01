@@ -40,7 +40,8 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateKAOSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param);
-		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2", param);
+//		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2", param);
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2_new", param);
 	}
 
 	@Override
@@ -68,7 +69,8 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateMSGSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete",param);
-		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2",param);
+//		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2",param);
+		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2_new",param);
 	}
 
 	@Override
@@ -90,7 +92,7 @@ public class RequestImpl implements RequestDAO{
 		if(ml.getFlag_2nd().equalsIgnoreCase("Y") && !ml.getResult_code().equalsIgnoreCase("0000")){
 			sqlSession.update("com.dhn.client.result.mapper.SendRequest.send_2nd_update",ml);
 		}else{
-			sqlSession.delete("com.dhn.client.result.mapper.SendRequest.log_delete",ml);
+//			sqlSession.delete("com.dhn.client.result.mapper.SendRequest.log_delete",ml);
 		}
 	}
 
@@ -160,12 +162,23 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void moveDataInsert(SQLParameter param) throws Exception {
-		sqlSession.insert("com.dhn.client.move.mapper.SendRequest.move_data_insert", param);
+//		sqlSession.insert("com.dhn.client.move.mapper.SendRequest.move_data_insert", param);
+		sqlSession.insert("com.dhn.client.move.mapper.SendRequest.move_data_insert_new", param);
 	}
 
 	@Override
 	public void updateMoveStatus(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.move.mapper.SendRequest.update_move_status", param);
+//		sqlSession.update("com.dhn.client.move.mapper.SendRequest.update_move_status", param);
+		sqlSession.update("com.dhn.client.move.mapper.SendRequest.update_move_status_new", param);
+	}
+
+	@Override
+	public void phnErrUpdateDelete(Msg_Log ml) throws Exception {
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_log_update",ml);
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_update",ml);
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_insert",ml);
+		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_delete",ml);
+//		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.phn_err_log_delete",ml);
 	}
 
 

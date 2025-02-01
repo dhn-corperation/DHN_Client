@@ -45,4 +45,6 @@ public interface RequestService {
 	void moveDataInsert(SQLParameter param) throws Exception;
 
 	void updateMoveStatus(SQLParameter param) throws Exception;
+
+    void phnErrUpdateDelete(Msg_Log ml) throws Exception;
 }

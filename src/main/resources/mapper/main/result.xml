@@ -65,4 +65,41 @@
         where MESSAGE_MST_NO = '${msgid}'
     </delete>
 
+    <update id="phn_err_log_update" parameterType="com.dhn.client.bean.Msg_Log">
+        update ${main_log_table}
+        set SEND_RESULT_DT = SYSTIMESTAMP,
+            MESSAGE_STATUS_CD = '91',
+            SEND_RESULT_CD = '${result_code}',
+            SEND_RESULT_MESSAGE = #{result_msg},
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = #{mod_id}
+        where MESSAGE_MST_NO in (${msgid})
+    </update>
+
+    <update id="phn_err_dhn_log_update" parameterType="com.dhn.client.bean.Msg_Log">
+        update ${msg_table}
+        set SEND_RESULT_DT = SYSTIMESTAMP,
+            MESSAGE_STATUS_CD = '91',
+            SEND_RESULT_CD = '${result_code}',
+            SEND_RESULT_MESSAGE = #{result_msg},
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = #{mod_id}
+        where MESSAGE_MST_NO in (${msgid})
+    </update>
+
+    <insert id="phn_err_dhn_log_insert" parameterType="com.dhn.client.bean.Msg_Log">
+        INSERT INTO ${log_date_table}
+        SELECT * FROM ${msg_table}
+        WHERE MESSAGE_MST_NO in (${msgid})
+    </insert>
+
+    <delete id="phn_err_dhn_log_delete" parameterType="com.dhn.client.bean.Msg_Log">
+        delete from ${msg_table}
+        where MESSAGE_MST_NO in (${msgid})
+    </delete>
+
+    <delete id="phn_err_log_delete" parameterType="com.dhn.client.bean.Msg_Log">
+        delete from ${main_table}
+        where MESSAGE_MST_NO in (${msgid})
+    </delete>
 </mapper>

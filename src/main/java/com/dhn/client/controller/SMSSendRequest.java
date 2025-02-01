@@ -1,10 +1,12 @@
 package com.dhn.client.controller;
 
+import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -32,9 +34,16 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
+    private int senderMaxLen = 20;
+    private int receiverMaxLen = 50;
     private String dual;
-    private String dbug = "";;
+    private String dbug = "N";
     private static String role;
+    private String msgTable = "";
+    private String logTable = "";
+    private String mainTable = "";
+    private String mainLogTable = "";
+    private String mod_id = "";
 
     @Autowired
     private RequestService requestService;
@@ -60,6 +69,11 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
         role = appContext.getEnvironment().getProperty("dhnclient.role");
         dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
 
+        msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
+        logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
+        mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
+        mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
+        mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
 
         if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -94,45 +108,132 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                     List<RequestBean> _list = requestService.selectMSGRequests(param);
                     List<String> msg_list = new ArrayList<>();
+                    List<String> phnerr_msgid = new ArrayList<>();
+                    List<String> syserr_msgid = new ArrayList<>();
+                    List<String> dateerr_msgid = new ArrayList<>();
+
+                    List<RequestBean> sendList = new ArrayList<>();
 
                     for (RequestBean bean : _list) {
+
+                        if(bean.getDateflag().equalsIgnoreCase("0")){
+                            dateerr_msgid.add(bean.getMsgid());
+                            continue;
+                        }
+
+                        if(StringUtils.isBlank(bean.getSyscd()) || StringUtils.isEmpty(bean.getSyscd())){
+                            syserr_msgid.add(bean.getMsgid());
+                            continue;
+                        }
+
+                        if(StringUtils.isBlank(bean.getSmssender())
+                                || StringUtils.length(bean.getSmssender()) > senderMaxLen
+                                || !bean.getSmssender().matches("^[0-9-]+$")){
+
+                            phnerr_msgid.add(bean.getMsgid());
+                            continue;
+                        }
+
+                        if(StringUtils.isBlank(bean.getPhn())
+                                || StringUtils.length(bean.getPhn()) > receiverMaxLen
+                                || !bean.getPhn().matches("^[0-9-]+$")){
+
+                            phnerr_msgid.add(bean.getMsgid());
+                            continue;
+                        }
+
+
                         msg_list.add(bean.getMsgid());
+
+                        sendList.add(bean);
                     }
 
-                    param.setMsgid_list(msg_list);
+                    DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMM");
+                    String ym = LocalDateTime.now().format(formatter2);
 
-                    StringWriter sw = new StringWriter();
-                    ObjectMapper om = new ObjectMapper();
-                    om.writeValue(sw, _list);
+                    if(phnerr_msgid.size() > 0){
+                        String strerrmsg = String.join(",", phnerr_msgid);
 
-                    if(dbug.equalsIgnoreCase("Y")){
-                        log.info("LMS data : " + sw.toString());
+                        Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+                        _ml.setMod_id(mod_id);
+                        _ml.setMsgid(strerrmsg);
+
+                        _ml.setLog_date_table(logTable+"_"+ym);
+
+                        _ml.setResult_code("U010");
+                        _ml.setResult_msg("번호 체크 오류처리");
+
+                        requestService.phnErrUpdateDelete(_ml);
                     }
 
-                    HttpHeaders header = new HttpHeaders();
+                    if(syserr_msgid.size() > 0){
+                        String syserrmsg = String.join(",", syserr_msgid);
 
-                    header.setContentType(MediaType.APPLICATION_JSON);
-                    header.set("userid", userid);
+                        Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+                        _ml.setMod_id(mod_id);
+                        _ml.setMsgid(syserrmsg);
 
-                    RestTemplate rt = new RestTemplate();
-                    HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+                        _ml.setLog_date_table(logTable+"_"+ym);
 
-                    try {
-                        ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                        Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                        log.info(res.toString());
-                        if (response.getStatusCode() == HttpStatus.OK) {
-                            requestService.updateMSGSendComplete(param);
-                            log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
-                        } else {
-                            log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                        _ml.setResult_code("U005");
+                        _ml.setResult_msg("등록되지 않은 시스템코드");
+
+                        requestService.phnErrUpdateDelete(_ml);
+                    }
+
+                    if(dateerr_msgid.size() > 0){
+                        String syserrmsg = String.join(",", dateerr_msgid);
+
+                        Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+                        _ml.setMod_id(mod_id);
+                        _ml.setMsgid(syserrmsg);
+
+                        _ml.setLog_date_table(logTable+"_"+ym);
+
+                        _ml.setResult_code("U009");
+                        _ml.setResult_msg("오늘보다 작은 발송일자 오류처리");
+
+                        requestService.phnErrUpdateDelete(_ml);
+                    }
+
+                    if(sendList.size() > 0){
+                        String strmsg = String.join(",", msg_list);
+
+                        param.setMsgid_list(msg_list);
+                        param.setStrmsgid(strmsg);
+
+                        StringWriter sw = new StringWriter();
+                        ObjectMapper om = new ObjectMapper();
+                        om.writeValue(sw, sendList);
+
+                        if(dbug.equalsIgnoreCase("Y")){
+                            log.info("LMS data : " + sw.toString());
+                        }
+
+                        HttpHeaders header = new HttpHeaders();
+
+                        header.setContentType(MediaType.APPLICATION_JSON);
+                        header.set("userid", userid);
+
+                        RestTemplate rt = new RestTemplate();
+                        HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+                        try {
+                            ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                            Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                            log.info(res.toString());
+                            if (response.getStatusCode() == HttpStatus.OK) {
+                                requestService.updateMSGSendComplete(param);
+                                log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
+                            } else {
+                                log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                                requestService.updateMSGSendInit(param);
+                            }
+                        } catch (Exception e) {
+                            log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
                             requestService.updateMSGSendInit(param);
                         }
-                    } catch (Exception e) {
-                        log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
-                        requestService.updateMSGSendInit(param);
                     }
-
 
                 }
             }catch (Exception e){

@@ -40,6 +40,7 @@
         <result column="MSGTITLE" property="smslmstit"/>
         <result column="REGDT" property="regdt"/>
         <result column="RESERVEDT" property="reservedt"/>
+        <result column="SYSCD" property="syscd"/>
     </resultMap>
 
     <select id="req_msg_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -55,7 +56,10 @@
             MESSAGE_CONTENT AS MSG,
             MESSAGE_CONTENT AS MSGSMS,
             RECEIVER_PHONE_NO AS PHN,
-            SENDER_PHONE_NO AS SENDER,
+            CASE
+                WHEN LENGTH(trim(SENDER_PHONE_NO)) > 0 AND TRIM(SENDER_PHONE_NO) IS NOT NULL THEN SENDER_PHONE_NO
+                ELSE '1355'
+            END AS SENDER,
             BROF_CD AS PINVOICE,
             MESSAGE_TITLE AS MSGTITLE,
             TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
@@ -63,8 +67,13 @@
                 WHEN ETRS_MTCD = '01' THEN '00000000000000'
 				WHEN ETRS_MTCD = '02' THEN SEND_EXPECTED_DT || SEND_EXPECTED_TIME
 				ELSE '00000000000000'
-            END AS RESERVEDT
-        FROM ${msg_table}
+            END AS RESERVEDT,
+            (SELECT SYSTEM_CD FROM TB_LINK_SYSTEM b WHERE b.SYSTEM_CD = a.SYSTEM_CD) AS SYSCD,
+            CASE
+                WHEN TO_DATE(SEND_EXPECTED_DT, 'YYYYMMDD') &lt; TRUNC(SYSDATE) THEN '0'
+                ELSE '1'
+            END AS DATEFLAG
+        FROM ${msg_table} a
         WHERE SEND_TYPE_CD = '${msg_type}'
           AND MESSAGE_STATUS_CD = '01'
     </select>
@@ -89,6 +98,15 @@
         <foreach collection="msgid_list" item="msgid" open="(" separator="," close=")">
             #{msgid}
         </foreach>
+    </update>
+
+    <update id="req_msg_sent_complete2_new" parameterType="com.dhn.client.bean.SQLParameter">
+        update ${main_table}
+        set MESSAGE_STATUS_CD = '02',
+        SEND_DT = SYSTIMESTAMP,
+        MOD_DT = SYSTIMESTAMP,
+        MOD_ID = #{mod_id}
+        where MESSAGE_MST_NO IN (${strmsgid})
     </update>
 
     <update id="req_msg_sent_init" parameterType="com.dhn.client.bean.SQLParameter">

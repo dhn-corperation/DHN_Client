@@ -36,6 +36,7 @@
 		<result column="PHN" property="phn"/>
 		<result column="ADFLAG" property="adflag"/>
 		<result column="CALLBACK" property="smssender"/>
+		<result column="SENDER" property="smssender"/>
 		<result column="PINVOICE" property="pinvoice"/>
 		<result column="SMSKIND" property="smskind"/>
 		<result column="TITLE" property="title"/>
@@ -53,6 +54,8 @@
 		<result column="BTN_NAME" property="btnname"/>
 		<result column="BTN_PC" property="btnpc"/>
 		<result column="BTN_MO" property="btnmo"/>
+		<result column="SYSCD" property="syscd"/>
+		<result column="DATEFLAG" property="dateflag"/>
 	</resultMap>
 
 	<select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -62,9 +65,13 @@
 			MESSAGE_CONTENT AS MSG,
 			CASE
 				WHEN RECEIVER_PHONE_NO LIKE '82%' THEN RECEIVER_PHONE_NO
-				WHEN RECEIVER_PHONE_NO LIKE '010%' THEN '82' || SUBSTR(RECEIVER_PHONE_NO, 2,15)
-				ELSE '82' || SUBSTR(RECEIVER_PHONE_NO, 2,15)
+				WHEN RECEIVER_PHONE_NO LIKE '010%' THEN '82' || SUBSTR(RECEIVER_PHONE_NO, 2)
+				ELSE '82' || SUBSTR(RECEIVER_PHONE_NO, 2)
 				END AS PHN,
+		    CASE
+				WHEN LENGTH(trim(SENDER_PHONE_NO)) > 0 AND TRIM(SENDER_PHONE_NO) IS NOT NULL THEN SENDER_PHONE_NO
+				ELSE '1355'
+		    END AS SENDER,
 			BROF_CD AS PINVOICE,
 			TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
 			MSG_TEMPLATE_CD AS TMPLID,
@@ -75,15 +82,20 @@
 				END AS RESERVEDT,
 			CASE
 				WHEN SYSTEM_CD = '4INSURE' THEN '${insure_profile_key}'
-				WHEN SYSTEM_CD = 'BDPT' THEN '${bdpt_profile_key}'
+				WHEN SYSTEM_CD = 'FIBP' THEN '${fibp_profile_key}'
 				ELSE '${nps_profile_key}'
 				END AS PROFILEKEY,
 			AD_FLAG AS ADFLAG,
 			BUTTON_TYPE AS BTN_TYPE,
 			BUTTON_NAME AS BTN_NAME,
 			URL_PC_IOS AS BTN_PC,
-			URL_MOBILE_ANDROID as BTN_MO
-		FROM ${msg_table}
+			URL_MOBILE_ANDROID as BTN_MO,
+			(SELECT SYSTEM_CD FROM TB_LINK_SYSTEM b WHERE b.SYSTEM_CD = a.SYSTEM_CD) AS SYSCD,
+			CASE
+				WHEN TO_DATE(SEND_EXPECTED_DT, 'YYYYMMDD') &lt; TRUNC(SYSDATE) THEN '0'
+				ELSE '1'
+			END AS DATEFLAG
+		FROM ${msg_table} a
 		WHERE SEND_TYPE_CD = '${msg_type}'
 		  AND MESSAGE_STATUS_CD = '01'
 	</select>
@@ -108,6 +120,15 @@
 		<foreach collection="msgid_list" item="msgid" open="(" separator="," close=")">
 			#{msgid}
 		</foreach>
+	</update>
+
+	<update id="req_sent_complete2_new" parameterType="com.dhn.client.bean.SQLParameter">
+		update ${main_table}
+		set MESSAGE_STATUS_CD = '02',
+		SEND_DT = SYSTIMESTAMP,
+		MOD_DT = SYSTIMESTAMP,
+		MOD_ID = #{mod_id}
+		where MESSAGE_MST_NO IN (${strmsgid})
 	</update>
 
 	<update id="req_sent_init" parameterType="com.dhn.client.bean.SQLParameter">

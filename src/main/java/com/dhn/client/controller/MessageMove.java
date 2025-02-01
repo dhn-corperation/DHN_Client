@@ -25,7 +25,7 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
     private String userid;
     private String preGroupNo = "";
     private String dual;
-    private String dbug = "";
+    private String dbug = "N";
     private static String role;
 
     @Autowired
@@ -83,7 +83,14 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
                         log.info("Move Data : " + param.getMsgid_list().toString());
                     }
 
+                    String strmsg = String.join(",", msgIdList);
+
+                    if(dbug.equalsIgnoreCase("Y")){
+                        log.info("Move msgid : " + strmsg);
+                    }
+
                     param.setMsgid_list(msgIdList);
+                    param.setStrmsgid(strmsg);
 
                     requestService.moveDataInsert(param);
                     requestService.updateMoveStatus(param);

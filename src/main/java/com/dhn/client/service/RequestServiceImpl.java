@@ -121,5 +121,10 @@ public class RequestServiceImpl implements RequestService {
 		requestDAO.updateMoveStatus(param);
 	}
 
+	@Override
+	public void phnErrUpdateDelete(Msg_Log ml) throws Exception {
+		requestDAO.phnErrUpdateDelete(ml);
+	}
+
 
 }

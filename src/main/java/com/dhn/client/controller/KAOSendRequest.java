@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.dhn.client.bean.ButtonJsonBean;
+import com.dhn.client.bean.Msg_Log;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -41,9 +43,16 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
+	private int senderMaxLen = 20;
+	private int receiverMaxLen = 50;
 	private String dual;
-	private String dbug = "";;
+	private String dbug = "N";
 	private static String role;
+	private String msgTable = "";
+	private String logTable = "";
+	private String mainTable = "";
+	private String mainLogTable = "";
+	private String mod_id = "";
 
 	@Autowired
 	private RequestService requestService;
@@ -59,7 +68,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setMain_table(appContext.getEnvironment().getProperty("dhnclient.main_table"));
 		param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
-		param.setBdpt_profile_key(appContext.getEnvironment().getProperty("dhnclient.bdpt_profile_key"));
+		param.setFibp_profile_key(appContext.getEnvironment().getProperty("dhnclient.fibp_profile_key"));
 		param.setInsure_profile_key(appContext.getEnvironment().getProperty("dhnclient.insure_profile_key"));
 		param.setNps_profile_key(appContext.getEnvironment().getProperty("dhnclient.nps_profile_key"));
 		param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
@@ -70,6 +79,12 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		dual = appContext.getEnvironment().getProperty("dhnclient.dual");
 		role = appContext.getEnvironment().getProperty("dhnclient.role");
 		dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
+
+		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
+		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
+		mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
+		mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
+		mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
 
 		if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
 			if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -105,8 +120,40 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					List<KAORequestBean> _list = requestService.selectKAORequests(param);
 					List<String> msg_list = new ArrayList<String>();
+					List<String> phnerr_msgid = new ArrayList<>();
+					List<String> syserr_msgid = new ArrayList<>();
+					List<String> dateerr_msgid = new ArrayList<>();
+
+					List<KAORequestBean> sendList = new ArrayList<>();
 
 					for (KAORequestBean kaoRequestBean : _list) {
+
+						if(kaoRequestBean.getDateflag().equalsIgnoreCase("0")){
+							dateerr_msgid.add(kaoRequestBean.getMsgid());
+							continue;
+						}
+
+						if(StringUtils.isBlank(kaoRequestBean.getSyscd()) || StringUtils.isEmpty(kaoRequestBean.getSyscd())){
+							syserr_msgid.add(kaoRequestBean.getMsgid());
+							continue;
+						}
+
+						if(StringUtils.isBlank(kaoRequestBean.getSmssender())
+								|| StringUtils.length(kaoRequestBean.getSmssender()) > senderMaxLen
+								|| !kaoRequestBean.getSmssender().matches("^[0-9-]+$")){
+
+							phnerr_msgid.add(kaoRequestBean.getMsgid());
+							continue;
+						}
+
+						if(StringUtils.isBlank(kaoRequestBean.getPhn())
+								|| StringUtils.length(kaoRequestBean.getPhn()) > receiverMaxLen
+								|| !kaoRequestBean.getPhn().matches("^[0-9-]+$")){
+
+							phnerr_msgid.add(kaoRequestBean.getMsgid());
+							continue;
+						}
+
 						msg_list.add(kaoRequestBean.getMsgid());
 
 						if(kaoRequestBean.getBtnname() != null){
@@ -152,39 +199,94 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						}
 
 
-					}
-					param.setMsgid_list(msg_list);
-
-					StringWriter sw = new StringWriter();
-					ObjectMapper om = new ObjectMapper();
-					om.writeValue(sw, _list);
-
-					if(dbug.equalsIgnoreCase("Y")){
-						log.info("KAO data : " + sw.toString());
+						sendList.add(kaoRequestBean);
 					}
 
-					HttpHeaders header = new HttpHeaders();
+					DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMM");
+					String ym = LocalDateTime.now().format(formatter2);
 
-					header.setContentType(MediaType.APPLICATION_JSON);
-					header.set("userid", userid);
+					if(phnerr_msgid.size() > 0){
+						String strerrmsg = String.join(",", phnerr_msgid);
 
-					RestTemplate rt = new RestTemplate();
-					HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+						Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+						_ml.setMod_id(mod_id);
+						_ml.setMsgid(strerrmsg);
 
-					try {
-						ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-						Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-						log.info(res.toString());
-						if (response.getStatusCode() == HttpStatus.OK) {
-							requestService.updateKAOSendComplete(param);
-							log.info("KAO 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
-						} else {
-							log.error("KAO 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+						_ml.setLog_date_table(logTable+"_"+ym);
+
+						_ml.setResult_code("U010");
+						_ml.setResult_msg("번호 체크 오류처리");
+
+						requestService.phnErrUpdateDelete(_ml);
+					}
+
+					if(syserr_msgid.size() > 0){
+						String syserrmsg = String.join(",", syserr_msgid);
+
+						Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+						_ml.setMod_id(mod_id);
+						_ml.setMsgid(syserrmsg);
+
+						_ml.setLog_date_table(logTable+"_"+ym);
+
+						_ml.setResult_code("U005");
+						_ml.setResult_msg("등록되지 않은 시스템코드");
+
+						requestService.phnErrUpdateDelete(_ml);
+					}
+
+					if(dateerr_msgid.size() > 0){
+						String syserrmsg = String.join(",", dateerr_msgid);
+
+						Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+						_ml.setMod_id(mod_id);
+						_ml.setMsgid(syserrmsg);
+
+						_ml.setLog_date_table(logTable+"_"+ym);
+
+						_ml.setResult_code("U009");
+						_ml.setResult_msg("오늘보다 작은 발송일자 오류처리");
+
+						requestService.phnErrUpdateDelete(_ml);
+					}
+
+					if(sendList.size() > 0){
+						String strmsg = String.join(",", msg_list);
+
+						param.setMsgid_list(msg_list);
+						param.setStrmsgid(strmsg);
+
+						StringWriter sw = new StringWriter();
+						ObjectMapper om = new ObjectMapper();
+						om.writeValue(sw, sendList);
+
+						if(dbug.equalsIgnoreCase("Y")){
+							log.info("KAO data : " + sw.toString());
+						}
+
+						HttpHeaders header = new HttpHeaders();
+
+						header.setContentType(MediaType.APPLICATION_JSON);
+						header.set("userid", userid);
+
+						RestTemplate rt = new RestTemplate();
+						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+						try {
+							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+							log.info(res.toString());
+							if (response.getStatusCode() == HttpStatus.OK) {
+								requestService.updateKAOSendComplete(param);
+								log.info("KAO 메세지 전송 완료(" + response.getStatusCode() + ") : "+ sendList.size() + " 건");
+							} else {
+								log.error("KAO 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+								requestService.updateKAOSendInit(param);
+							}
+						} catch (Exception e) {
+							log.error("KAO 메세지 전송 오류(Response) : " + e.toString());
 							requestService.updateKAOSendInit(param);
 						}
-					} catch (Exception e) {
-						log.error("KAO 메세지 전송 오류(Response) : " + e.toString());
-						requestService.updateKAOSendInit(param);
 					}
 
 				}

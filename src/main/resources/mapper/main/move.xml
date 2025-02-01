@@ -4,7 +4,7 @@
 <mapper namespace="com.dhn.client.move.mapper.SendRequest">
 
     <select id = "move_data_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-        SELECT count(*) AS cnt
+        SELECT count(MESSAGE_MST_NO) AS cnt
         FROM ${main_table}
         WHERE MESSAGE_STATUS_CD = '00'
           AND SEND_TYPE_CD IN ('K1','M1','M2','99')
@@ -20,17 +20,16 @@
 
     <select id="move_data_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="moveData">
         SELECT MESSAGE_MST_NO
-        FROM (
-          SELECT MESSAGE_MST_NO, ROWNUM AS RNUM
-          FROM ${main_table} WHERE MESSAGE_STATUS_CD = '00'
-          AND SEND_TYPE_CD IN ('K1','M1','M2','99')
-          AND (
-            ETRS_MTCD = '01'
-                OR (ETRS_MTCD = '02' AND TO_TIMESTAMP(SEND_EXPECTED_DT || SEND_EXPECTED_TIME, 'YYYYMMDDHH24MISS') &lt;= SYSTIMESTAMP)
+        FROM ${main_table}
+        WHERE MESSAGE_STATUS_CD = '00'
+            AND SEND_TYPE_CD IN ('K1','M1','M2','99')
+            AND (
+                ETRS_MTCD = '01'
+                OR
+                (ETRS_MTCD = '02' AND TO_TIMESTAMP(SEND_EXPECTED_DT || SEND_EXPECTED_TIME, 'YYYYMMDDHH24MISS') &lt;= SYSTIMESTAMP)
             )
-         ORDER BY ETRS_MTCD ASC
-         ) TB
-        WHERE TB.RNUM &lt;= 500
+        ORDER BY ETRS_MTCD ASC, SEND_EXPECTED_DT ASC, SEND_EXPECTED_TIME ASC
+        FETCH FIRST 500 ROWS ONLY
     </select>
 
     <insert id="move_data_insert" parameterType="com.dhn.client.bean.SQLParameter">
@@ -51,6 +50,20 @@
         <foreach collection="msgid_list" item="msgid" open="(" separator="," close=")">
             #{msgid}
         </foreach>
+    </update>
+
+    <insert id="move_data_insert_new" parameterType="com.dhn.client.bean.SQLParameter">
+        INSERT INTO ${msg_table}
+        SELECT * FROM ${main_table}
+        WHERE MESSAGE_MST_NO IN (${strmsgid})
+    </insert>
+
+    <update id="update_move_status_new" parameterType="com.dhn.client.bean.SQLParameter">
+        UPDATE ${main_table}
+        SET MESSAGE_STATUS_CD = '01',
+        MOD_DT = SYSTIMESTAMP,
+        MOD_ID = #{mod_id}
+        WHERE MESSAGE_MST_NO IN (${strmsgid})
     </update>
 
 
