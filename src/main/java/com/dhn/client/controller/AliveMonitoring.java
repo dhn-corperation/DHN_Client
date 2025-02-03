@@ -112,6 +112,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                         MessageMove.setIsStart(true);
                     }
 
+                    if(!MessageRtimeMove.isStart){
+                        MessageRtimeMove.setIsStart(true);
+                    }
+
                     if(!ResultReq.isStart){
                         ResultReq.setIsStart(true);
                     }
@@ -152,6 +156,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                             MessageMove.setIsStart(true);
                         }
 
+                        if(!MessageRtimeMove.isStart){
+                            MessageRtimeMove.setIsStart(true);
+                        }
+
                         if(!ResultReq.isStart){
                             ResultReq.setIsStart(true);
                         }
@@ -184,6 +192,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
 
                         if(MessageMove.isStart) {
                             MessageMove.setIsStart(false);
+                        }
+
+                        if(MessageRtimeMove.isStart) {
+                            MessageRtimeMove.setIsStart(false);
                         }
 
                         if(ResultReq.isStart) {

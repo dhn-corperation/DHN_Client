@@ -9,7 +9,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -17,7 +16,8 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
+public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEvent> {
+
     public static boolean isStart = false;
     private boolean isProc = false;
     private SQLParameter param = new SQLParameter();
@@ -50,7 +50,7 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
 
         } else {
             isStart = true;
-            log.info("Msg Real Time Move 초기화 완료");
+            log.info("Msg Move 초기화 완료");
         }
     }
 
@@ -60,19 +60,19 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
             isProc = true;
 
             if(dbug.equalsIgnoreCase("Y")){
-                log.info("Real Time Move setting value : " + param.toString());
+                log.info("Move setting value : " + param.toString());
             }
 
             try{
-                int cnt = requestService.moveDataCount(param);
+                int cnt = requestService.moveRtimeDataCount(param);
 
                 if(dbug.equalsIgnoreCase("Y")){
-                    log.info("Real Time Move Cnt : " + cnt);
+                    log.info("Move Cnt : " + cnt);
                 }
 
 
                 if(cnt > 0){
-                    List<MoveData> _list = requestService.moveDataSelect(param);
+                    List<MoveData> _list = requestService.moveRtimeDataSelect(param);
 
                     List<String> msgIdList = new ArrayList<>();
                     for(MoveData moveData : _list){
@@ -80,13 +80,13 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
                     }
 
                     if(dbug.equalsIgnoreCase("Y")){
-                        log.info("Real Time Move Data : " + param.getMsgid_list().toString());
+                        log.info("Move Data : " + param.getMsgid_list().toString());
                     }
 
                     String strmsg = String.join(",", msgIdList);
 
                     if(dbug.equalsIgnoreCase("Y")){
-                        log.info("Real Time Move msgid : " + strmsg);
+                        log.info("Move msgid : " + strmsg);
                     }
 
                     param.setMsgid_list(msgIdList);
@@ -95,13 +95,13 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
                     requestService.moveDataInsert(param);
                     requestService.updateMoveStatus(param);
 
-                    log.info("Real Time {} 건 발송테이블 INSERT 완료",_list.size());
+                    log.info("{} 건 발송테이블 INSERT 완료",_list.size());
 
 
                 }
 
             }catch (Exception e){
-                log.error("Data Real Time Move 오류 : " + e.toString());
+                log.error("Data Move 오류 : " + e.toString());
             }
 
             isProc = false;
@@ -109,7 +109,7 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
     }
 
     static public void setIsStart(boolean _flag) {
-        log.info(role + " MESSAGE Move Real Time Process is change : " + _flag);
+        log.info(role + " MESSAGE Move Process is change : " + _flag);
         isStart = _flag;
     }
 }

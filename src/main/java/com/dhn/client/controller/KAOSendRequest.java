@@ -96,6 +96,10 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		} else {
 			posts.postProcessBeforeDestruction(this, null);
 		}
+
+		if(dbug.equalsIgnoreCase("Y")){
+			log.info("KAO setting value : " + param.toString());
+		}
 	}
 
 
@@ -128,77 +132,94 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					for (KAORequestBean kaoRequestBean : _list) {
 
-						if(kaoRequestBean.getDateflag().equalsIgnoreCase("0")){
-							dateerr_msgid.add(kaoRequestBean.getMsgid());
-							continue;
-						}
+						try{
+							if(kaoRequestBean.getDateflag().equalsIgnoreCase("0")){
+								dateerr_msgid.add(kaoRequestBean.getMsgid());
+								continue;
+							}
 
-						if(StringUtils.isBlank(kaoRequestBean.getSyscd()) || StringUtils.isEmpty(kaoRequestBean.getSyscd())){
-							syserr_msgid.add(kaoRequestBean.getMsgid());
-							continue;
-						}
+							if(StringUtils.isBlank(kaoRequestBean.getSyscd()) || StringUtils.isEmpty(kaoRequestBean.getSyscd())){
+								syserr_msgid.add(kaoRequestBean.getMsgid());
+								continue;
+							}
 
-						if(StringUtils.isBlank(kaoRequestBean.getSmssender())
-								|| StringUtils.length(kaoRequestBean.getSmssender()) > senderMaxLen
-								|| !kaoRequestBean.getSmssender().matches("^[0-9-]+$")){
+							if(StringUtils.isBlank(kaoRequestBean.getSmssender())
+									|| StringUtils.length(kaoRequestBean.getSmssender()) > senderMaxLen
+									|| !kaoRequestBean.getSmssender().matches("^[0-9-]+$")){
 
-							phnerr_msgid.add(kaoRequestBean.getMsgid());
-							continue;
-						}
+								phnerr_msgid.add(kaoRequestBean.getMsgid());
+								continue;
+							}
 
-						if(StringUtils.isBlank(kaoRequestBean.getPhn())
-								|| StringUtils.length(kaoRequestBean.getPhn()) > receiverMaxLen
-								|| !kaoRequestBean.getPhn().matches("^[0-9-]+$")){
+							if(StringUtils.isBlank(kaoRequestBean.getPhn())
+									|| StringUtils.length(kaoRequestBean.getPhn()) > receiverMaxLen
+									|| !kaoRequestBean.getPhn().matches("^[0-9-]+$")){
 
-							phnerr_msgid.add(kaoRequestBean.getMsgid());
-							continue;
+								phnerr_msgid.add(kaoRequestBean.getMsgid());
+								continue;
+							}
+
+
+
+							if(kaoRequestBean.getBtnname() != null){
+
+								String[] btnname = kaoRequestBean.getBtnname().split("\\|",-1);
+								String[] btntype = kaoRequestBean.getBtntype() != null && !kaoRequestBean.getBtntype().isEmpty() ? kaoRequestBean.getBtntype().split("\\|",-1) : new String[btnname.length];
+
+								String[] btnmo = kaoRequestBean.getBtnmo() != null && !kaoRequestBean.getBtnmo().isEmpty() ? kaoRequestBean.getBtnmo().split("\\|",-1) : new String[btnname.length];
+								String[] btnpc = kaoRequestBean.getBtnpc() != null && !kaoRequestBean.getBtnpc().isEmpty() ? kaoRequestBean.getBtnpc().split("\\|",-1) : new String[btnname.length];
+
+								if (btntype.length < btnname.length) {
+									String[] tempBtntype = new String[btnname.length];
+									for (int i = 0; i < tempBtntype.length; i++) {
+										tempBtntype[i] = (i < btntype.length) ? btntype[i] : "";
+									}
+									btntype = tempBtntype;
+								}
+
+								if (btnpc.length < btnname.length) {
+									String[] tempBtnpc = new String[btnname.length];
+									for (int i = 0; i < tempBtnpc.length; i++) {
+										tempBtnpc[i] = (i < btnpc.length) ? btnpc[i] : "";
+									}
+									btnpc = tempBtnpc;
+								}
+
+								if (btnmo.length < btnname.length) {
+									String[] tempBtnmo = new String[btnname.length];
+									for (int i = 0; i < tempBtnmo.length; i++) {
+										tempBtnmo[i] = (i < btnmo.length) ? btnmo[i] : "";
+									}
+									btnmo = tempBtnmo;
+								}
+
+								if(btnname.length > 0){
+									kaoRequestBean.setButton1(Btn_json(btnname[0],btntype[0],btnpc[0],btnmo[0]));
+								}
+								if(btnname.length > 1){
+									kaoRequestBean.setButton2(Btn_json(btnname[1],btntype[1],btnpc[1],btnmo[1]));
+								}
+								if(btnname.length > 2){
+									kaoRequestBean.setButton3(Btn_json(btnname[2],btntype[2],btnpc[2],btnmo[2]));
+								}
+								if(btnname.length > 3){
+									kaoRequestBean.setButton4(Btn_json(btnname[3],btntype[3],btnpc[3],btnmo[3]));
+								}
+								if(btnname.length > 4){
+									kaoRequestBean.setButton5(Btn_json(btnname[4],btntype[4],btnpc[4],btnmo[4]));
+								}
+
+							}
+						}catch (Exception e){
+							Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+							_ml.setMod_id(mod_id);
+							_ml.setMsgid(kaoRequestBean.getMsgid());
+							_ml.setSource_err_msg(e.getMessage());
+							requestService.sourceErrUpdate(_ml);
+							log.error("KAO 데이터 제조 오류 발생 : " + e.getMessage());
 						}
 
 						msg_list.add(kaoRequestBean.getMsgid());
-
-						if(kaoRequestBean.getBtnname() != null){
-							String[] btnname = kaoRequestBean.getBtnname().split("\\|");
-							String[] btntype = kaoRequestBean.getBtntype().split("\\|");
-							String[] btnmo = new String[5];
-							String[] btnpc = new String[5];
-							if(kaoRequestBean.getBtnmo() != null){
-								btnmo = kaoRequestBean.getBtnmo().split("\\|");
-							}else{
-								btnmo[0] = "";
-								btnmo[1] = "";
-								btnmo[2] = "";
-								btnmo[3] = "";
-								btnmo[4] = "";
-							}
-							if(kaoRequestBean.getBtnpc() != null){
-								btnpc = kaoRequestBean.getBtnpc().split("\\|");
-							}else{
-								btnpc[0] = "";
-								btnpc[1] = "";
-								btnpc[2] = "";
-								btnpc[3] = "";
-								btnpc[4] = "";
-							}
-
-							if(btnname.length > 0){
-								kaoRequestBean.setButton1(Btn_json(btnname[0],btntype[0],btnpc[0],btnmo[0]));
-							}
-							if(btnname.length > 1){
-								kaoRequestBean.setButton2(Btn_json(btnname[1],btntype[1],btnpc[1],btnmo[1]));
-							}
-							if(btnname.length > 2){
-								kaoRequestBean.setButton3(Btn_json(btnname[2],btntype[2],btnpc[2],btnmo[2]));
-							}
-							if(btnname.length > 3){
-								kaoRequestBean.setButton4(Btn_json(btnname[3],btntype[3],btnpc[3],btnmo[3]));
-							}
-							if(btnname.length > 4){
-								kaoRequestBean.setButton5(Btn_json(btnname[4],btntype[4],btnpc[4],btnmo[4]));
-							}
-
-						}
-
-
 						sendList.add(kaoRequestBean);
 					}
 
@@ -218,6 +239,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						_ml.setResult_msg("번호 체크 오류처리");
 
 						requestService.phnErrUpdateDelete(_ml);
+						log.info("KAO {} 건 번호체크 오류", phnerr_msgid.size());
 					}
 
 					if(syserr_msgid.size() > 0){
@@ -233,6 +255,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						_ml.setResult_msg("등록되지 않은 시스템코드");
 
 						requestService.phnErrUpdateDelete(_ml);
+						log.info("KAO {} 건 미등록 시스템코드", syserr_msgid.size());
 					}
 
 					if(dateerr_msgid.size() > 0){
@@ -248,6 +271,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 						_ml.setResult_msg("오늘보다 작은 발송일자 오류처리");
 
 						requestService.phnErrUpdateDelete(_ml);
+						log.info("KAO {} 건 지난 발송일자", dateerr_msgid.size());
 					}
 
 					if(sendList.size() > 0){

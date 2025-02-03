@@ -17,6 +17,7 @@ public class Msg_Log {
 	private String mod_id;
 	private String flag_2nd;
 	private String log_date_table;
+	private String source_err_msg;
 
 	
 	public Msg_Log(String msg_table, String log_table, String main_table, String main_log_table) {

@@ -85,7 +85,7 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void update_msg_log(Msg_Log ml) throws Exception {
-		sqlSession.update("com.dhn.client.result.mapper.SendRequest.log_update",ml);
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.log_update",ml); // send 테이블 update MST는 update 제외 02로 유지하면서 code값 update
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_update",ml);
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_insert",ml);
 		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.dhn_log_delete",ml);
@@ -143,7 +143,8 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void tableCreate(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable", param);
+//		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable", param);
+		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable_new", param);
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createPrimaryKey", param);
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex1", param);
 	}
@@ -179,6 +180,23 @@ public class RequestImpl implements RequestDAO{
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_insert",ml);
 		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_delete",ml);
 //		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.phn_err_log_delete",ml);
+	}
+
+	@Override
+	public void sourceErrUpdate(Msg_Log ml) throws Exception {
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.source_err_log_update",ml);
+	}
+
+	@Override
+	public int moveRtimeDataCount(SQLParameter param) throws Exception {
+		int cnt;
+		cnt = sqlSession.selectOne("com.dhn.client.move.mapper.SendRequest.move_rtime_data_count", param);
+		return cnt;
+	}
+
+	@Override
+	public List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception {
+		return sqlSession.selectList("com.dhn.client.move.mapper.SendRequest.move_rtime_data_select", param);
 	}
 
 

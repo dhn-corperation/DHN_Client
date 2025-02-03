@@ -45,4 +45,10 @@ public interface RequestDAO {
 	void updateMoveStatus(SQLParameter param) throws Exception;
 
     void phnErrUpdateDelete(Msg_Log ml) throws Exception;
+
+	void sourceErrUpdate(Msg_Log ml) throws Exception;
+
+    int moveRtimeDataCount(SQLParameter param) throws Exception;
+
+	List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception;
 }

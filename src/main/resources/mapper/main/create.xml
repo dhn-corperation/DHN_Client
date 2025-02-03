@@ -24,12 +24,54 @@
         SELECT * FROM "${main_table}" WHERE 1=0
     </update>
 
+    <update id="createTable_new" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE TABLE "${msg_table}"
+        (	"SEND_EXPECTED_DT" VARCHAR2(8),
+             "MESSAGE_MST_NO" NUMBER NOT NULL ENABLE,
+             "SEND_EXPECTED_TIME" VARCHAR2(6),
+             "MSG_TEMPLATE_CD" VARCHAR2(30),
+             "ISND_RQRM_DT" VARCHAR2(8) DEFAULT TO_CHAR(SYSDATE, 'YYYYMMDD'),
+             "SEND_TYPE_CD" VARCHAR2(2),
+             "SENDER_ID" VARCHAR2(100),
+             "SENDER_NAME" VARCHAR2(256),
+             "BROF_CD" VARCHAR2(8),
+             "CUST_NAME" VARCHAR2(256),
+             "SENDER_PHONE_NO" VARCHAR2(256),
+             "RECEIVER_PHONE_NO" VARCHAR2(256),
+             "MESSAGE_TITLE" VARCHAR2(50),
+             "MESSAGE_CONTENT" VARCHAR2(4000),
+             "SEND_PRIORITY" NUMBER(2,0) DEFAULT 1,
+             "REG_TYPE_CD" VARCHAR2(8),
+             "ETRS_MTCD" VARCHAR2(2),
+             "MESSAGE_STATUS_CD" VARCHAR2(8) DEFAULT '00',
+             "SEND_DT" TIMESTAMP (6),
+             "SEND_RESULT_DT" TIMESTAMP (6),
+             "SEND_RESULT_CD" VARCHAR2(8),
+             "SEND_RESULT_MESSAGE" VARCHAR2(200),
+             "SYSTEM_CD" VARCHAR2(10),
+             "AD_FLAG" CHAR(1) DEFAULT 'N',
+             "BUTTON_NAME" VARCHAR2(500),
+             "BUTTON_TYPE" VARCHAR2(20),
+             "URL_MOBILE_ANDROID" VARCHAR2(1000),
+             "URL_PC_IOS" VARCHAR2(1000),
+             "CUST_INTG_CONT_NO" VARCHAR2(16),
+             "LINK_SEND_TYPE_CD" VARCHAR2(10),
+             "LINK_SEND_MST_NO" NUMBER,
+             "LINK_FIRST_SEND_TYPE_CD" VARCHAR2(2),
+             "LINK_LAST_SEND_TYPE_CD" VARCHAR2(2),
+             "LINK_LAST_SEND_SUCCESS_YN" VARCHAR2(1),
+             "MOD_DT" TIMESTAMP (6) DEFAULT SYSTIMESTAMP,
+             "MOD_ID" VARCHAR2(100),
+             "INTENAL_MESSAGE" VARCHAR2(4000)
+        )
+    </update>
+
     <update id="createPrimaryKey" parameterType="com.dhn.client.bean.SQLParameter">
         ALTER TABLE "${msg_table}" ADD CONSTRAINT "${msg_table}_MST_NO_PK" PRIMARY KEY("MESSAGE_MST_NO")
     </update>
 
     <update id="createIndex1" parameterType="com.dhn.client.bean.SQLParameter">
-        CREATE INDEX "${msg_table}_SELECT_IDX" ON "${msg_table}" ("MESSAGE_STATUS_CD", "SEND_TYPE_CD", "ETRS_MTCD","SEND_EXPECTED_DT","SEND_EXPECTED_TIME")
+        CREATE INDEX "${msg_table}_SELECT_IDX" ON "${msg_table}" ("MESSAGE_STATUS_CD", "SEND_TYPE_CD", "ETRS_MTCD", "REG_TYPE_CD", "SEND_EXPECTED_DT", "SEND_EXPECTED_TIME")
     </update>
 
 </mapper>

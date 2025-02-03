@@ -162,6 +162,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                         _ml.setResult_msg("번호 체크 오류처리");
 
                         requestService.phnErrUpdateDelete(_ml);
+                        log.info("LMS {} 건 번호체크 오류", phnerr_msgid.size());
                     }
 
                     if(syserr_msgid.size() > 0){
@@ -177,6 +178,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                         _ml.setResult_msg("등록되지 않은 시스템코드");
 
                         requestService.phnErrUpdateDelete(_ml);
+                        log.info("LMS {} 건 미등록 시스템코드", syserr_msgid.size());
                     }
 
                     if(dateerr_msgid.size() > 0){
@@ -192,6 +194,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                         _ml.setResult_msg("오늘보다 작은 발송일자 오류처리");
 
                         requestService.phnErrUpdateDelete(_ml);
+                        log.info("LMS {} 건 지난 발송일자", dateerr_msgid.size());
                     }
 
                     if(sendList.size() > 0){

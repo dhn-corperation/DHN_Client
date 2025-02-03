@@ -71,7 +71,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         }
     }
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 5000) // STATUS = 4를 가져가서 등록 및 검수
     private void CreateTemplate() {
         if(isStart && !isCProc) {
             isCProc = true;

@@ -49,9 +49,8 @@
     </delete>
 
     <update id="log_update" parameterType="com.dhn.client.bean.Msg_Log">
-        update ${main_log_table}
+        update ${main_table}
             set SEND_RESULT_DT = SYSTIMESTAMP,
-                MESSAGE_STATUS_CD = '03',
                 SEND_RESULT_CD = '${result_code}',
                 SEND_RESULT_MESSAGE = #{result_msg},
                 MOD_DT = SYSTIMESTAMP,
@@ -66,7 +65,7 @@
     </delete>
 
     <update id="phn_err_log_update" parameterType="com.dhn.client.bean.Msg_Log">
-        update ${main_log_table}
+        update ${main_table}
         set SEND_RESULT_DT = SYSTIMESTAMP,
             MESSAGE_STATUS_CD = '91',
             SEND_RESULT_CD = '${result_code}',
@@ -102,4 +101,13 @@
         delete from ${main_table}
         where MESSAGE_MST_NO in (${msgid})
     </delete>
+
+    <update id="source_err_log_update" parameterType="com.dhn.client.bean.Msg_Log">
+        update ${msg_table}
+        set MESSAGE_STATUS_CD = '99',
+            INTENAL_MESSAGE = #{source_err_msg},
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = #{mod_id}
+        where MESSAGE_MST_NO = '${msgid}'
+    </update>
 </mapper>

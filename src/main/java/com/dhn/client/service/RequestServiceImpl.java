@@ -126,5 +126,20 @@ public class RequestServiceImpl implements RequestService {
 		requestDAO.phnErrUpdateDelete(ml);
 	}
 
+	@Override
+	public void sourceErrUpdate(Msg_Log ml) throws Exception {
+		requestDAO.sourceErrUpdate(ml);
+	}
+
+	@Override
+	public int moveRtimeDataCount(SQLParameter param) throws Exception {
+		return requestDAO.moveRtimeDataCount(param);
+	}
+
+	@Override
+	public List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception {
+		return requestDAO.moveRtimeDataSelect(param);
+	}
+
 
 }
