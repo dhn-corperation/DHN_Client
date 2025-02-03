@@ -143,7 +143,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 
 
                         }
-                        
+
                         param.setTmplid(tmplData.getTmplid());
 
                         TmplRequestBean tmplRequestBean = new TmplRequestBean();
