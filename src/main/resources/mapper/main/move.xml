@@ -27,23 +27,6 @@
     </resultMap>
 
     <select id="move_data_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="moveData">
-        <!--
-        SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
-            MESSAGE_MST_NO
-        FROM ${main_table}
-        WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
-            AND MESSAGE_STATUS_CD = '00'
-            AND ETRS_MTCD = '02'
-            AND SEND_EXPECTED_DT || SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS')
-        ORDER BY ETRS_MTCD ASC,
-             CASE
-                 WHEN REG_TYPE_CD = '04' THEN '00'
-                 ELSE REG_TYPE_CD
-             END ASC,
-            SEND_EXPECTED_DT ASC, SEND_EXPECTED_TIME ASC
-        FETCH FIRST 500 ROWS ONLY
-        -->
-
         SELECT MESSAGE_MST_NO
         FROM TB_MESSAGE_SEND
         WHERE ROWID IN (
@@ -56,26 +39,10 @@
                 OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
                 ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
             FETCH FIRST 500 ROWS ONLY
-        ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
+        ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME, REG_DT
     </select>
 
     <select id="move_rtime_data_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="moveData">
-        <!--
-        SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
-            MESSAGE_MST_NO
-        FROM ${main_table}
-        WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
-          AND MESSAGE_STATUS_CD = '00'
-          AND ETRS_MTCD = '01'
-        ORDER BY ETRS_MTCD ASC,
-             CASE
-                 WHEN REG_TYPE_CD = '04' THEN '00'
-                 ELSE REG_TYPE_CD
-             END ASC,
-             SEND_EXPECTED_DT ASC, SEND_EXPECTED_TIME ASC
-        FETCH FIRST 500 ROWS ONLY
-        -->
-
         SELECT MESSAGE_MST_NO
         FROM ${main_table}
         WHERE ROWID IN (
@@ -86,7 +53,7 @@
               AND ETRS_MTCD = '01'
               ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
               FETCH FIRST 500 ROWS ONLY
-        ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
+        ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME, REG_DT
     </select>
 
     <insert id="move_data_insert" parameterType="com.dhn.client.bean.SQLParameter">
