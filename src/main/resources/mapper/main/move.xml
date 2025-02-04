@@ -7,8 +7,8 @@
         SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
             count(MESSAGE_MST_NO) AS cnt
         FROM ${main_table}
-        WHERE MESSAGE_STATUS_CD = '00'
-          AND SEND_TYPE_CD IN ('K1','M1','M2','99')
+        WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+          AND MESSAGE_STATUS_CD = '00'
           AND ETRS_MTCD = '02'
         AND SEND_EXPECTED_DT || SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS')
     </select>
@@ -17,8 +17,8 @@
         SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
             count(MESSAGE_MST_NO) AS cnt
         FROM ${main_table}
-        WHERE MESSAGE_STATUS_CD = '00'
-          AND SEND_TYPE_CD IN ('K1','M1','M2','99')
+        WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+          AND MESSAGE_STATUS_CD = '00'
           AND ETRS_MTCD = '01'
     </select>
 
@@ -27,11 +27,12 @@
     </resultMap>
 
     <select id="move_data_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="moveData">
+        <!--
         SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
             MESSAGE_MST_NO
         FROM ${main_table}
-        WHERE MESSAGE_STATUS_CD = '00'
-            AND SEND_TYPE_CD IN ('K1','M1','M2','99')
+        WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+            AND MESSAGE_STATUS_CD = '00'
             AND ETRS_MTCD = '02'
             AND SEND_EXPECTED_DT || SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS')
         ORDER BY ETRS_MTCD ASC,
@@ -41,14 +42,30 @@
              END ASC,
             SEND_EXPECTED_DT ASC, SEND_EXPECTED_TIME ASC
         FETCH FIRST 500 ROWS ONLY
+        -->
+
+        SELECT MESSAGE_MST_NO
+        FROM TB_MESSAGE_SEND
+        WHERE ROWID IN (
+            SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */ ROWID
+            FROM ${main_table}
+            WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+            AND MESSAGE_STATUS_CD = '00'
+            AND ETRS_MTCD = '02'
+            AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+                OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
+                ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
+            FETCH FIRST 500 ROWS ONLY
+        ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
     </select>
 
     <select id="move_rtime_data_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="moveData">
+        <!--
         SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
             MESSAGE_MST_NO
         FROM ${main_table}
-        WHERE MESSAGE_STATUS_CD = '00'
-          AND SEND_TYPE_CD IN ('K1','M1','M2','99')
+        WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+          AND MESSAGE_STATUS_CD = '00'
           AND ETRS_MTCD = '01'
         ORDER BY ETRS_MTCD ASC,
              CASE
@@ -57,6 +74,19 @@
              END ASC,
              SEND_EXPECTED_DT ASC, SEND_EXPECTED_TIME ASC
         FETCH FIRST 500 ROWS ONLY
+        -->
+
+        SELECT MESSAGE_MST_NO
+        FROM ${main_table}
+        WHERE ROWID IN (
+            SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */ ROWID
+            FROM ${main_table}
+            WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+              AND MESSAGE_STATUS_CD = '00'
+              AND ETRS_MTCD = '01'
+              ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
+              FETCH FIRST 500 ROWS ONLY
+        ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
     </select>
 
     <insert id="move_data_insert" parameterType="com.dhn.client.bean.SQLParameter">

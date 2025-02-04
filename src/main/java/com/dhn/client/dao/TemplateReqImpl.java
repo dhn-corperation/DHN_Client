@@ -78,4 +78,9 @@ public class TemplateReqImpl implements TemplateReqDAO{
     public void updateTmplRefresh(SQLParameter param) throws Exception {
         sqlSession.update("com.dhn.client.tmpl.mapper.SendRequest.update_tmpl_refresh",param);
     }
+
+    @Override
+    public void updateTmplrefreshfail(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.tmpl.mapper.SendRequest.update_tmpl_refresh_fail",param);
+    }
 }

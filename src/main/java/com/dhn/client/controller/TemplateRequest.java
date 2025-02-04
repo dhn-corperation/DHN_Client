@@ -101,13 +101,25 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 
                         if(tmplData.getTempInsStatus().equalsIgnoreCase("APL")){
 
-                            TmplinspectionBean deleteBean = new TmplinspectionBean();
-                            deleteBean.setTemplateCode(tmplData.getTemplateCode());
-                            deleteBean.setSenderKey(tmplData.getSenderKey());
+                            TmplUpdateBean tmplUpdateBean = new TmplUpdateBean();
+                            tmplUpdateBean.setSenderKey(tmplData.getSenderKey());
+                            tmplUpdateBean.setTemplateCode(tmplData.getTemplateCode());
+                            tmplUpdateBean.setNewSenderKey(tmplData.getSenderKey());
+                            tmplUpdateBean.setNewTemplateCode(tmplData.getTemplateCode());
+                            tmplUpdateBean.setNewTemplateName(tmplData.getTemplateName());
+                            tmplUpdateBean.setNewTemplateMessageType(tmplData.getTemplateMessageType());
+                            tmplUpdateBean.setNewTemplateEmphasizeType(tmplData.getTemplateEmphasizeType());
+                            tmplUpdateBean.setNewTemplateContent(tmplData.getTemplateContent());
+
+                            if(tmplData.getTmpltype().equalsIgnoreCase("B")){
+                                List<ButtonBean> btnList = templateReqSevice.selectBtnList(param);
+
+                                tmplUpdateBean.setButtons(btnList);
+                            }
 
                             sw = new StringWriter();
                             om = new ObjectMapper();
-                            om.writeValue(sw, deleteBean);
+                            om.writeValue(sw, tmplUpdateBean);
 
                             header = new HttpHeaders();
 
@@ -118,27 +130,27 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                             entity = new HttpEntity<String>(sw.toString(), header);
 
                             try{
-                                response = rt.postForEntity(dhnServer + "/template/delete", entity, String.class);
+                                response = rt.postForEntity(dhnServer + "/template/update", entity, String.class);
                                 res = om.readValue(response.getBody().toString(), Map.class);
 //                                        log.info(res.toString());
                                 if (response.getStatusCode() == HttpStatus.OK) {
                                     if(res.get("code").equals("200")){
                                         templateReqSevice.updateTmplSuccess(param);
-                                        log.info("템플릿 삭제요청 완료(" + response.getStatusCode() + ") 템플릿 Code : "+ deleteBean.getTemplateCode());
+                                        log.info("템플릿 수정요청 완료(" + response.getStatusCode() + ") 템플릿 Code : "+ tmplUpdateBean.getTemplateCode());
                                     }else if(!res.get("code").equals("508")){
                                         param.setRej_memo(res.get("message"));
                                         templateReqSevice.updateTmplfail(param);
-                                        log.error("템플릿 삭제요청 오류(KAKAO ERR) : " + deleteBean.getTemplateCode() + " / " + res.toString());
+                                        log.error("템플릿 수정요청 오류(KAKAO ERR) : " + tmplUpdateBean.getTemplateCode() + " / " + res.toString());
                                     }
                                 }else{
                                     param.setRej_memo("카카오 인증 서버에 연결할 수 없습니다.");
                                     templateReqSevice.updateTmplfail(param);
-                                    log.error("템플릿 삭제요청 오류(Http ERR) : " + deleteBean.getTemplateCode() + " / " + res.toString());
+                                    log.error("템플릿 수정요청 오류(Http ERR) : " + tmplUpdateBean.getTemplateCode() + " / " + res.toString());
                                 }
                             }catch (Exception e){
                                 param.setRej_memo("카카오 인증 서버에 연결할 수 없습니다.");
                                 templateReqSevice.updateTmplfail(param);
-                                log.error("템플릿 삭제요청 오류(Response) : " + deleteBean.getTemplateCode() + " / "  + e.toString());
+                                log.error("템플릿 수정요청 오류(Response) : " + tmplUpdateBean.getTemplateCode() + " / "  + e.toString());
                             }
 
 
@@ -362,7 +374,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                     log.info("템플릿 상태 갱신 완료 템플릿코드 : " + tmplData.getTemplateCode());
                                 }else{
                                     param.setRej_memo(res.get("message").toString());
-                                    templateReqSevice.updateTmplfail(param);
+                                    templateReqSevice.updateTmplrefreshfail(param);
                                     log.info("템플릿 상태 갱신 조회 오류(KAKAO) : " + tmplData.getTemplateCode() + " / "  + res.toString());
                                 }
                             }else{

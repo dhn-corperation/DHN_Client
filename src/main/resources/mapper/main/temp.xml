@@ -7,6 +7,7 @@
         SELECT count(1) AS cnt
         FROM ${tmp_table}
         WHERE STATUS = '0'
+            AND KAKAO_INS_STATUS &lt;&gt; 'INS'
             AND DEL_YN = 'N'
             AND MSG_TEMPLATE_TYPE = 'K1'
     </select>
@@ -27,7 +28,7 @@
     <select id="req_tmpl_data" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "TmplData">
         SELECT
             MSG_TEMPLATE_NO AS tmplid,
-            '${profile_key}' AS profilekey,
+            '${nps_profile_key}' AS profilekey,
             MSG_TEMPLATE_CD AS tmplcode,
             KAKAO_TEMPLATE_TYPE AS tmpltype,
             MSG_TEMPLATE_NM AS tmplname,
@@ -37,6 +38,7 @@
             KAKAO_INS_STATUS AS kaoinsstatus
         FROM ${tmp_table}
         WHERE STATUS = '0'
+          AND KAKAO_INS_STATUS &lt;&gt; 'INS'
           AND DEL_YN = 'N'
           AND MSG_TEMPLATE_TYPE = 'K1'
     </select>
@@ -92,7 +94,7 @@
     <select id="req_ins_list" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "TmplData">
         SELECT
             MSG_TEMPLATE_NO AS tmplid,
-            '${profile_key}' AS profilekey,
+            '${nps_profile_key}' AS profilekey,
             MSG_TEMPLATE_CD AS tmplcode
         FROM ${tmp_table}
         WHERE STATUS = '4'
@@ -132,7 +134,7 @@
     <select id="req_refresh_list" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "TmplData">
         SELECT
             MSG_TEMPLATE_NO AS tmplid,
-            '${profile_key}' AS profilekey,
+            '${nps_profile_key}' AS profilekey,
             MSG_TEMPLATE_CD AS tmplcode,
             KAKAO_STATUS AS kakaostatus
         FROM ${tmp_table}
@@ -144,6 +146,14 @@
     <update id="update_tmpl_refresh" parameterType="com.dhn.client.bean.SQLParameter">
         update ${tmp_table}
         set KAKAO_STATUS = '${tmplstatus}',
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = #{mod_id}
+        where MSG_TEMPLATE_NO = '${tmplid}'
+    </update>
+
+    <update id="update_tmpl_refresh_fail" parameterType="com.dhn.client.bean.SQLParameter">
+        update ${tmp_table}
+        set REJECT_MEMO = #{rej_memo},
             MOD_DT = SYSTIMESTAMP,
             MOD_ID = #{mod_id}
         where MSG_TEMPLATE_NO = '${tmplid}'

@@ -31,4 +31,6 @@ public interface TemplateReqDAO {
     List<TmplData> selectTmplRefreshData(SQLParameter param) throws Exception;
 
     void updateTmplRefresh(SQLParameter param) throws Exception;
+
+    void updateTmplrefreshfail(SQLParameter param) throws Exception;
 }
