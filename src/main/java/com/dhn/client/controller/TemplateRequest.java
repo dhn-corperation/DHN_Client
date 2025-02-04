@@ -48,6 +48,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setTmp_table(appContext.getEnvironment().getProperty("dhnclient.tmp_table"));
         param.setBtn_table(appContext.getEnvironment().getProperty("dhnclient.btn_table"));
+        param.setComment_table(appContext.getEnvironment().getProperty("dhnclient.comment_table"));
         param.setFibp_profile_key(appContext.getEnvironment().getProperty("dhnclient.sibp_profile_key"));
         param.setInsure_profile_key(appContext.getEnvironment().getProperty("dhnclient.insure_profile_key"));
         param.setNps_profile_key(appContext.getEnvironment().getProperty("dhnclient.nps_profile_key"));
@@ -294,13 +295,30 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                     param.setTmplstatus(status);
 
                                     if (inspectionStatus.equalsIgnoreCase("APR")) {
+                                        List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
+                                        for (Map<String, Object> comment : comments) {
+                                            param.setComment_id(comment.get("id").toString());
+                                            param.setComment_content(comment.get("content").toString());
+                                            param.setComment_userName(comment.get("userName").toString());
+                                            param.setComment_createdAt(comment.get("createdAt").toString());
+                                            param.setComment_status(comment.get("status").toString());
+
+                                            templateReqSevice.selectInsertComments(param);
+                                        }
                                         templateReqSevice.updateTmplInsAPR(param);
                                         log.info("템플릿 검수 승인 템플릿 Code : " + tmplData.getTemplateCode());
                                     } else if (inspectionStatus.equalsIgnoreCase("REJ")) {
                                         List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
                                         for (Map<String, Object> comment : comments) {
-                                            param.setRej_memo(comment.get("content").toString());
+                                            param.setComment_id(comment.get("id").toString());
+                                            param.setComment_content(comment.get("content").toString());
+                                            param.setComment_userName(comment.get("userName").toString());
+                                            param.setComment_createdAt(comment.get("createdAt").toString());
+                                            param.setComment_status(comment.get("status").toString());
+
+                                            templateReqSevice.selectInsertComments(param);
                                         }
+                                        param.setRej_memo("반려되었습니다.");
                                         templateReqSevice.updateTmplInsREJ(param);
                                         log.info("템플릿 검수 반려 템플릿코드 : " + tmplData.getTemplateCode());
                                     }
@@ -366,11 +384,28 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                     Map<String, Object> data = (Map<String, Object>) res.get("data");
                                     //String inspectionStatus = data.get("inspectionStatus").toString();
                                     String status = data.get("status").toString();
+                                    boolean block = Boolean.TRUE.equals(data.get("block"));
+                                    boolean dormant = Boolean.TRUE.equals(data.get("dormant"));
+
+                                    if(block){
+                                        param.setRej_memo("차단된 템플릿 입니다.");
+                                        templateReqSevice.updateTmplrefreshfail(param);
+                                        log.info("차단된 템플릿코드 : " + tmplData.getTemplateCode());
+                                        continue;
+                                    }
+
+                                    if(dormant){
+                                        param.setRej_memo("휴면 템플릿 입니다.");
+                                        templateReqSevice.updateTmplrefreshfail(param);
+                                        log.info("휴면처리된 템플릿코드 : " + tmplData.getTemplateCode());
+                                        continue;
+                                    }
 
                                     if(status.equalsIgnoreCase(tmplData.getTemplateStatus())) {
                                         param.setTmplstatus(status);
                                         templateReqSevice.updateTmplRefresh(param);
                                     }
+
                                     log.info("템플릿 상태 갱신 완료 템플릿코드 : " + tmplData.getTemplateCode());
                                 }else{
                                     param.setRej_memo(res.get("message").toString());

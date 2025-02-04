@@ -12,6 +12,7 @@ public class SQLParameter {
 	private String main_table;
 	private String alive_table;
 	private String btn_table;
+	private String comment_table;
 	private String mod_id;
 	private String kakao_use;
 	private String sms_use;
@@ -34,4 +35,11 @@ public class SQLParameter {
 	private String strmsgid;
 	private String sourceErrMsg;
 	private String sourceErrMsgid;
+	private String comment_id;
+	private String comment_content;
+	private String comment_userName;
+	private String comment_createdAt;
+	private String comment_status;
+
+
 }

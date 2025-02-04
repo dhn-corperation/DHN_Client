@@ -81,4 +81,9 @@ public class TemplateReqServiceImpl implements TemplateReqSevice{
     public void updateTmplrefreshfail(SQLParameter param) throws Exception {
         templateReqDAO.updateTmplrefreshfail(param);
     }
+
+    @Override
+    public void selectInsertComments(SQLParameter param) throws Exception {
+        templateReqDAO.selectInsertComments(param);
+    }
 }

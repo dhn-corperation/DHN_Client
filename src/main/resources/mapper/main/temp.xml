@@ -76,8 +76,7 @@
 
     <update id="update_tmpl_success" parameterType="com.dhn.client.bean.SQLParameter">
         update ${tmp_table}
-        set STATUS = '4',
-            KAKAO_INS_STATUS = 'INS',
+        set KAKAO_INS_STATUS = 'INS',
             MOD_DT = SYSTIMESTAMP,
             MOD_ID = #{mod_id}
         where MSG_TEMPLATE_NO = '${tmplid}'
@@ -86,7 +85,8 @@
     <select id = "req_ins_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
         SELECT count(1) AS cnt
         FROM ${tmp_table}
-        WHERE STATUS = '4'
+        WHERE STATUS = '0'
+          AND KAKAO_INS_STATUS = 'INS'
           AND DEL_YN = 'N'
           AND MSG_TEMPLATE_TYPE = 'K1'
     </select>
@@ -97,7 +97,8 @@
             '${nps_profile_key}' AS profilekey,
             MSG_TEMPLATE_CD AS tmplcode
         FROM ${tmp_table}
-        WHERE STATUS = '4'
+        WHERE STATUS = '0'
+          AND KAKAO_INS_STATUS = 'INS'
           AND DEL_YN = 'N'
           AND MSG_TEMPLATE_TYPE = 'K1'
     </select>
@@ -158,5 +159,33 @@
             MOD_ID = #{mod_id}
         where MSG_TEMPLATE_NO = '${tmplid}'
     </update>
+
+    <select id="select_comment_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        select count(1)
+        from ${comment_table}
+        where MSG_TEMPLATE_NO = '${tmplid}'
+          and COMMENT_ID = '${comment_id}'
+    </select>
+
+    <insert id="insert_comments" parameterType="com.dhn.client.bean.SQLParameter">
+        INSERT
+        INTO
+            ${comment_table}
+        (MSG_TEMPLATE_NO,
+         COMMENT_ID,
+         CONTENT,
+         STATUS,
+         USER_NAME,
+         REG_ID,
+         REG_DT)
+        VALUES('${tmplid}',
+               '${comment_id}',
+               #{comment_content},
+               '${comment_status}',
+               '${comment_userName}',
+               '',
+               TO_TIMESTAMP('${comment_createdAt}')
+           )
+    </insert>
 
 </mapper>

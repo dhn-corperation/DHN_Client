@@ -33,4 +33,6 @@ public interface TemplateReqDAO {
     void updateTmplRefresh(SQLParameter param) throws Exception;
 
     void updateTmplrefreshfail(SQLParameter param) throws Exception;
+
+    void selectInsertComments(SQLParameter param) throws Exception;
 }
