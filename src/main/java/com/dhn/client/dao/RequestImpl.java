@@ -89,11 +89,11 @@ public class RequestImpl implements RequestDAO{
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_update",ml);
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_insert",ml);
 		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.dhn_log_delete",ml);
+		/*
 		if(ml.getFlag_2nd().equalsIgnoreCase("Y") && !ml.getResult_code().equalsIgnoreCase("0000")){
 			sqlSession.update("com.dhn.client.result.mapper.SendRequest.send_2nd_update",ml);
-		}else{
-//			sqlSession.delete("com.dhn.client.result.mapper.SendRequest.log_delete",ml);
 		}
+		 */
 	}
 
 	@Override
