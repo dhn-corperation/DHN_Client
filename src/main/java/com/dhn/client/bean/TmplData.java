@@ -15,5 +15,6 @@ public class TmplData {
     private String templateEmphasizeType;
     private String templateContent;
     private String templateStatus;
+    private String tempInsStatus;
     private List<ButtonBean> buttons;
 }

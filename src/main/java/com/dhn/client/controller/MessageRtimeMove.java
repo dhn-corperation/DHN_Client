@@ -50,7 +50,7 @@ public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEve
 
         } else {
             isStart = true;
-            log.info("Msg Move 초기화 완료");
+            log.info("Real Time Msg Move 초기화 완료");
         }
     }
 
@@ -60,14 +60,14 @@ public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEve
             isProc = true;
 
             if(dbug.equalsIgnoreCase("Y")){
-                log.info("Move setting value : " + param.toString());
+                log.info("Real Time Move setting value : " + param.toString());
             }
 
             try{
                 int cnt = requestService.moveRtimeDataCount(param);
 
                 if(dbug.equalsIgnoreCase("Y")){
-                    log.info("Move Cnt : " + cnt);
+                    log.info("Real Time Move Cnt : " + cnt);
                 }
 
 
@@ -80,13 +80,13 @@ public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEve
                     }
 
                     if(dbug.equalsIgnoreCase("Y")){
-                        log.info("Move Data : " + param.getMsgid_list().toString());
+                        log.info("Move Real Time Data : " + param.getMsgid_list().toString());
                     }
 
                     String strmsg = String.join(",", msgIdList);
 
                     if(dbug.equalsIgnoreCase("Y")){
-                        log.info("Move msgid : " + strmsg);
+                        log.info("Move Real Time  msgid : " + strmsg);
                     }
 
                     param.setMsgid_list(msgIdList);
@@ -95,13 +95,13 @@ public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEve
                     requestService.moveDataInsert(param);
                     requestService.updateMoveStatus(param);
 
-                    log.info("{} 건 발송테이블 INSERT 완료",_list.size());
+                    log.info("Real Time {} 건 발송테이블 INSERT 완료",_list.size());
 
 
                 }
 
             }catch (Exception e){
-                log.error("Data Move 오류 : " + e.toString());
+                log.error("Real Time Data Move 오류 : " + e.toString());
             }
 
             isProc = false;
@@ -109,7 +109,7 @@ public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEve
     }
 
     static public void setIsStart(boolean _flag) {
-        log.info(role + " MESSAGE Move Process is change : " + _flag);
+        log.info(role + " MESSAGE Real Time  Move Process is change : " + _flag);
         isStart = _flag;
     }
 }
