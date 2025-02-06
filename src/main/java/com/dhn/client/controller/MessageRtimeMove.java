@@ -27,6 +27,12 @@ public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEve
     private String dual;
     private String dbug = "N";
     private static String role;
+    private String kakao_use;
+    private String sms_use;
+    private String lms_use;
+    private String smslms_use;
+
+    private List<String> msg_type = new ArrayList<>();
 
     @Autowired
     private RequestService requestService;
@@ -46,11 +52,37 @@ public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEve
         dual = appContext.getEnvironment().getProperty("dhnclient.dual");
         role = appContext.getEnvironment().getProperty("dhnclient.role");
 
+        kakao_use = appContext.getEnvironment().getProperty("dhnclient.kakao_use");
+        sms_use = appContext.getEnvironment().getProperty("dhnclient.sms_use");
+        lms_use = appContext.getEnvironment().getProperty("dhnclient.lms_use");
+        smslms_use = appContext.getEnvironment().getProperty("dhnclient.smslms_use");
+
+        if(kakao_use != null && kakao_use.equals("Y")){
+            msg_type.add("K1");
+        }
+
+        if(sms_use != null && sms_use.equals("Y")){
+            msg_type.add("M1");
+        }
+
+        if(lms_use != null && lms_use.equals("Y")){
+            msg_type.add("M2");
+        }
+
+        if(smslms_use != null && smslms_use.equals("Y")){
+            msg_type.add("99");
+        }
+
         if(dual != null && dual.equalsIgnoreCase("Y")){
 
         } else {
-            isStart = true;
-            log.info("Real Time Msg Move 초기화 완료");
+            if((kakao_use != null && kakao_use.equals("Y")) ||
+                    (sms_use != null && sms_use.equals("Y")) ||
+                    (lms_use != null && lms_use.equals("Y")) ||
+                    (smslms_use != null && smslms_use.equals("Y"))){
+                isStart = true;
+                log.info("Msg Move Real Time 초기화 완료");
+            }
         }
     }
 
@@ -60,14 +92,14 @@ public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEve
             isProc = true;
 
             if(dbug.equalsIgnoreCase("Y")){
-                log.info("Real Time Move setting value : " + param.toString());
+                log.info("Move Real Time setting value : " + param.toString());
             }
 
             try{
                 int cnt = requestService.moveRtimeDataCount(param);
 
                 if(dbug.equalsIgnoreCase("Y")){
-                    log.info("Real Time Move Cnt : " + cnt);
+                    log.info("Move Real Time Cnt : " + cnt);
                 }
 
 
@@ -86,7 +118,7 @@ public class MessageRtimeMove implements ApplicationListener<ContextRefreshedEve
                     String strmsg = String.join(",", msgIdList);
 
                     if(dbug.equalsIgnoreCase("Y")){
-                        log.info("Move Real Time  msgid : " + strmsg);
+                        log.info("Move Real Time msgid : " + strmsg);
                     }
 
                     param.setMsgid_list(msgIdList);

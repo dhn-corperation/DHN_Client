@@ -108,11 +108,17 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                         LogTableCheck.setIsStart(true);
                     }
 
-                    if(!MessageMove.isStart){
+                    if(!MessageMove.isStart && ((kakao_use != null && kakao_use.equals("Y")) ||
+                            (sms_use != null && sms_use.equals("Y")) ||
+                            (lms_use != null && lms_use.equals("Y")) ||
+                            (slms_use != null && slms_use.equals("Y")))){
                         MessageMove.setIsStart(true);
                     }
 
-                    if(!MessageRtimeMove.isStart){
+                    if(!MessageRtimeMove.isStart && ((kakao_use != null && kakao_use.equals("Y")) ||
+                            (sms_use != null && sms_use.equals("Y")) ||
+                            (lms_use != null && lms_use.equals("Y")) ||
+                            (slms_use != null && slms_use.equals("Y")))){
                         MessageRtimeMove.setIsStart(true);
                     }
 
@@ -152,11 +158,17 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                             LogTableCheck.setIsStart(true);
                         }
 
-                        if(!MessageMove.isStart){
+                        if(!MessageMove.isStart && ((kakao_use != null && kakao_use.equals("Y")) ||
+                                (sms_use != null && sms_use.equals("Y")) ||
+                                (lms_use != null && lms_use.equals("Y")) ||
+                                (slms_use != null && slms_use.equals("Y")))){
                             MessageMove.setIsStart(true);
                         }
 
-                        if(!MessageRtimeMove.isStart){
+                        if(!MessageRtimeMove.isStart && ((kakao_use != null && kakao_use.equals("Y")) ||
+                                (sms_use != null && sms_use.equals("Y")) ||
+                                (lms_use != null && lms_use.equals("Y")) ||
+                                (slms_use != null && slms_use.equals("Y")))){
                             MessageRtimeMove.setIsStart(true);
                         }
 
