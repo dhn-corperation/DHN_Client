@@ -84,6 +84,10 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
+
+        if(dbug.equalsIgnoreCase("Y")){
+            log.info("SMS/LMS setting value : " + param.toString());
+        }
     }
 
 
@@ -95,10 +99,6 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
             String group_no = now.format(formatter);
-
-            if(dbug.equalsIgnoreCase("Y")){
-                log.info("S/LMS setting value : " + param.toString());
-            }
 
             try{
                 int cnt = requestService.selectMSGRequestCount(param);

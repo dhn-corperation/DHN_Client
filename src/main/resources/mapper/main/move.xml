@@ -7,7 +7,7 @@
         SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
             count(MESSAGE_MST_NO) AS cnt
         FROM ${main_table}
-        WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+        WHERE SEND_TYPE_CD IN (${flag_msg_type})
           AND MESSAGE_STATUS_CD = '00'
           AND ETRS_MTCD = '02'
         AND SEND_EXPECTED_DT || SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS')
@@ -17,7 +17,7 @@
         SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
             count(MESSAGE_MST_NO) AS cnt
         FROM ${main_table}
-        WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+        WHERE SEND_TYPE_CD IN (${flag_msg_type})
           AND MESSAGE_STATUS_CD = '00'
           AND ETRS_MTCD = '01'
     </select>
@@ -28,11 +28,11 @@
 
     <select id="move_data_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="moveData">
         SELECT MESSAGE_MST_NO
-        FROM TB_MESSAGE_SEND
+        FROM ${main_table}
         WHERE ROWID IN (
             SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */ ROWID
             FROM ${main_table}
-            WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+            WHERE SEND_TYPE_CD IN (${flag_msg_type})
             AND MESSAGE_STATUS_CD = '00'
             AND ETRS_MTCD = '02'
             AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
@@ -48,7 +48,7 @@
         WHERE ROWID IN (
             SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */ ROWID
             FROM ${main_table}
-            WHERE SEND_TYPE_CD IN ('K1','M1','M2','99')
+            WHERE SEND_TYPE_CD IN (${flag_msg_type})
               AND MESSAGE_STATUS_CD = '00'
               AND ETRS_MTCD = '01'
               ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME

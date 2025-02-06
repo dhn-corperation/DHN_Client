@@ -28,6 +28,9 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
         SMSSendRequest.isStart = false;
         SLMSSendRequest.isStart = false;
         TemplateRequest.isStart = false;
+        LogTableCheck.isStart = false;
+        MessageMove.isStart = false;
+        MessageRtimeMove.isStart = false;
         ResultReq.isStart = false;
         AliveMonitoring.isStart = false;
 

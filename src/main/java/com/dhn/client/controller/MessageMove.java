@@ -73,6 +73,12 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
             msg_type.add("99");
         }
 
+        param.setFlag_msg_type("'"+String.join("','", msg_type)+"'");
+
+        if(dbug != null && dbug.equals("Y")){
+            log.info(param.toString());
+        }
+
         if(dual != null && dual.equalsIgnoreCase("Y")){
 
         } else {
@@ -84,16 +90,16 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
                 log.info("Msg Move 초기화 완료");
             }
         }
+
+        if(dbug.equalsIgnoreCase("Y")){
+            log.info("Move setting value : " + param.toString());
+        }
     }
 
     @Scheduled(fixedDelay = 100)
     private void MoveProcess() {
         if(isStart && !isProc) {
             isProc = true;
-
-            if(dbug.equalsIgnoreCase("Y")){
-                log.info("Move setting value : " + param.toString());
-            }
 
             try{
                 int cnt = requestService.moveDataCount(param);
@@ -110,9 +116,8 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
                     for(MoveData moveData : _list){
                         msgIdList.add(moveData.getMsgid());
                     }
-
                     if(dbug.equalsIgnoreCase("Y")){
-                        log.info("Move Data : " + param.getMsgid_list().toString());
+                        log.info("Move Data : " + msgIdList.toString());
                     }
 
                     String strmsg = String.join(",", msgIdList);

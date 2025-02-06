@@ -33,6 +33,7 @@ public class SQLParameter {
 	private String alive_status;
 	private List<String> msgid_list;
 	private String strmsgid;
+	private String flag_msg_type;
 	private String sourceErrMsg;
 	private String sourceErrMsgid;
 	private String comment_id;

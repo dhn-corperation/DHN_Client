@@ -34,6 +34,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
     private String userid;
     private String dual;
     private static String role;
+    private String dbug = "N";
 
     @Autowired
     private TemplateReqSevice templateReqSevice;
@@ -59,6 +60,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         dual = appContext.getEnvironment().getProperty("dhnclient.dual");
         role = appContext.getEnvironment().getProperty("dhnclient.role");
+        dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
 
         if (param.getTmp_use() != null && param.getTmp_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -69,6 +71,10 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
             }
         } else{
             posts.postProcessBeforeDestruction(this, null);
+        }
+
+        if(dbug.equalsIgnoreCase("Y")){
+            log.info("Template setting value : " + param.toString());
         }
     }
 

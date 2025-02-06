@@ -132,7 +132,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 		} else {
 			isStart = true;
-			log.info("KAO 초기화 완료");
+			log.info("Result 초기화 완료");
 		}
 	}
 

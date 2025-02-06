@@ -112,10 +112,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			LocalDateTime now = LocalDateTime.now();
 			String group_no = now.format(formatter);
 
-			if(dbug.equalsIgnoreCase("Y")){
-				log.info("KAO setting value : " + param.toString());
-			}
-
 			try{
 				int cnt = requestService.selectKAORequestCount(param);
 

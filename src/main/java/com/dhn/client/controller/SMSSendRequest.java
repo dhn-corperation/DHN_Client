@@ -85,6 +85,10 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
+
+        if(dbug.equalsIgnoreCase("Y")){
+            log.info("SMS setting value : " + param.toString());
+        }
     }
 
     @Scheduled(fixedDelay = 100)
@@ -95,10 +99,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
             String group_no = now.format(formatter);
-
-            if(dbug.equalsIgnoreCase("Y")){
-                log.info("SMS setting value : " + param.toString());
-            }
 
             try{
                 int cnt = requestService.selectMSGRequestCount(param);
