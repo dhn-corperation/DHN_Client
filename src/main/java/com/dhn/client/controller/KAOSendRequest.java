@@ -78,7 +78,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		dual = appContext.getEnvironment().getProperty("dhnclient.dual");
 		role = appContext.getEnvironment().getProperty("dhnclient.role");
-		dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
+		dbug = appContext.getEnvironment().getProperty("dhnclient.dbug","N");
 
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");

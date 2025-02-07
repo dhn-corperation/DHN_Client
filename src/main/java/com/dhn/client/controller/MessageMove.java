@@ -46,7 +46,7 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setMain_table(appContext.getEnvironment().getProperty("dhnclient.main_table"));
         param.setMod_id((appContext.getEnvironment().getProperty("dhnclient.mod_id")));
-        dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
+        dbug = appContext.getEnvironment().getProperty("dhnclient.dbug","N");
 
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         dual = appContext.getEnvironment().getProperty("dhnclient.dual");

@@ -60,7 +60,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         dual = appContext.getEnvironment().getProperty("dhnclient.dual");
         role = appContext.getEnvironment().getProperty("dhnclient.role");
-        dbug = appContext.getEnvironment().getProperty("dhnclient.dbug");
+        dbug = appContext.getEnvironment().getProperty("dhnclient.dbug","N");
 
         if (param.getTmp_use() != null && param.getTmp_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -92,10 +92,11 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                     List<TmplData> tmplDataList = templateReqSevice.selectTmplData(param);
 
                     for (TmplData tmplData : tmplDataList) {
-
-                        if(tmplData.getTempInsStatus().equalsIgnoreCase("INS")){
+                        if(tmplData.getTempInsStatus() != null && !tmplData.getTempInsStatus().isEmpty() && tmplData.getTempInsStatus().equalsIgnoreCase("INS")){
                             continue;
                         }
+
+                        param.setTmplid(tmplData.getTmplid());
 
                         StringWriter sw;
                         ObjectMapper om;
@@ -106,7 +107,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                         ResponseEntity<String> response;
                         Map<String, String> res;
 
-                        if(tmplData.getTempInsStatus().equalsIgnoreCase("APL")){
+                        if(tmplData.getTempInsStatus() != null && !tmplData.getTempInsStatus().isEmpty() && tmplData.getTempInsStatus().equalsIgnoreCase("APL")){
 
                             TmplUpdateBean tmplUpdateBean = new TmplUpdateBean();
                             tmplUpdateBean.setSenderKey(tmplData.getSenderKey());
@@ -144,6 +145,43 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                     if(res.get("code").equals("200")){
                                         templateReqSevice.updateTmplSuccess(param);
                                         log.info("템플릿 수정요청 완료(" + response.getStatusCode() + ") 템플릿 Code : "+ tmplUpdateBean.getTemplateCode());
+                                        log.info("템플릿 수정요청 완료 후 검수요청 시작(" + response.getStatusCode() + ")  템플릿 Code : " + tmplUpdateBean.getTemplateCode());
+
+                                        TmplinspectionBean tmplinspectionBean = new TmplinspectionBean();
+                                        tmplinspectionBean.setSenderKey(tmplUpdateBean.getSenderKey());
+                                        tmplinspectionBean.setTemplateCode(tmplUpdateBean.getTemplateCode());
+
+                                        sw = new StringWriter();
+                                        om = new ObjectMapper();
+                                        om.writeValue(sw, tmplinspectionBean);
+
+                                        rt = new RestTemplate();
+                                        entity = new HttpEntity<String>(sw.toString(), header);
+
+                                        try{
+                                            response = rt.postForEntity(dhnServer + "/template/request", entity, String.class);
+                                            res = om.readValue(response.getBody().toString(), Map.class);
+//                                        log.info(res.toString());
+                                            if (response.getStatusCode() == HttpStatus.OK) {
+                                                if(res.get("code").equals("200")){
+                                                    templateReqSevice.updateTmplSuccess(param);
+                                                    log.info("템플릿 검수요청 완료(" + response.getStatusCode() + ") 템플릿 Code : "+ tmplinspectionBean.getTemplateCode());
+                                                }else{
+                                                    param.setRej_memo(res.get("message"));
+                                                    templateReqSevice.updateTmplfail(param);
+                                                    log.info("템플릿 검수요청 오류(KAKAO) : " + tmplinspectionBean.getTemplateCode() + " / " + res.get("code") + " / " + res.get("message"));
+                                                }
+                                            }else{
+                                                param.setRej_memo("카카오 인증 서버에 연결할 수 없습니다.");
+                                                templateReqSevice.updateTmplfail(param);
+                                                log.error("템플릿 검수요청 오류(Http ERR) : " + tmplinspectionBean.getTemplateCode() + " / " + res.toString());
+                                            }
+                                        }catch (Exception e){
+                                            param.setRej_memo("카카오 인증 서버에 연결할 수 없습니다.");
+                                            templateReqSevice.updateTmplfail(param);
+                                            log.error("템플릿 검수요청 오류(Response) : " + tmplinspectionBean.getTemplateCode() + " / "  + e.toString());
+                                        }
+
                                     }else if(!res.get("code").equals("508")){
                                         param.setRej_memo(res.get("message"));
                                         templateReqSevice.updateTmplfail(param);
@@ -160,10 +198,8 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                 log.error("템플릿 수정요청 오류(Response) : " + tmplUpdateBean.getTemplateCode() + " / "  + e.toString());
                             }
 
-
+                            continue;
                         }
-
-                        param.setTmplid(tmplData.getTmplid());
 
                         TmplRequestBean tmplRequestBean = new TmplRequestBean();
                         tmplRequestBean.setSenderKey(tmplData.getSenderKey());

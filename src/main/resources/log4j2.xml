@@ -13,6 +13,16 @@
         </Console>
         <RollingFile name="File_Appender" fileName="logs/${logNm}.log" filePattern="logs/${logNm}_%d{yyyy-MM-dd}.log.gz">
             <PatternLayout pattern="${layoutPattern}"/>
+            <Filters>
+                <!-- ✅ 환경 변수로 SQL 유형별 로그 제어 -->
+                <RegexFilter regex=".*SELECT .*" onMatch="${sys:LOG_EXCLUDE_SELECT:-ACCEPT}" onMismatch="ACCEPT"/>
+                <RegexFilter regex=".*INSERT .*" onMatch="${sys:LOG_EXCLUDE_INSERT:-ACCEPT}" onMismatch="ACCEPT"/>
+                <RegexFilter regex=".*UPDATE .*" onMatch="${sys:LOG_EXCLUDE_UPDATE:-ACCEPT}" onMismatch="ACCEPT"/>
+                <RegexFilter regex=".*DELETE .*" onMatch="${sys:LOG_EXCLUDE_DELETE:-ACCEPT}" onMismatch="ACCEPT"/>
+                <RegexFilter regex=".*CREATE .*" onMatch="${sys:LOG_EXCLUDE_CREATE:-ACCEPT}" onMismatch="ACCEPT"/>
+                <RegexFilter regex=".*DROP .*" onMatch="${sys:LOG_EXCLUDE_DROP:-ACCEPT}" onMismatch="ACCEPT"/>
+                <RegexFilter regex=".*ALTER .*" onMatch="${sys:LOG_EXCLUDE_ALTER:-ACCEPT}" onMismatch="ACCEPT"/>
+            </Filters>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
@@ -34,10 +44,11 @@
             <AppenderRef ref="Console_Appender" />
             <AppenderRef ref="File_Appender"/>
         </Logger>
-        -->        
+        -->
         <Logger name="com.dhn" level="INFO" additivity="false">
             <AppenderRef ref="Console_Appender" />
             <AppenderRef ref="File_Appender"/>
         </Logger>
+
     </Loggers>
 </Configuration>

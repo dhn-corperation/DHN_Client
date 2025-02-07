@@ -18,6 +18,7 @@ public class LogTableCheck implements ApplicationListener<ContextRefreshedEvent>
     private String msg_table = "";
     private String log_table = "";
     private String dual = "";
+    private String kakao_use;
     private static String role = "";
 
     @Autowired
@@ -29,10 +30,11 @@ public class LogTableCheck implements ApplicationListener<ContextRefreshedEvent>
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
 
-        msg_table = appContext.getEnvironment().getProperty("msg_table");
-        log_table = appContext.getEnvironment().getProperty("log_table");
+        msg_table = appContext.getEnvironment().getProperty("dhnclient.msg_table");
+        log_table = appContext.getEnvironment().getProperty("dhnclient.log_table");
         dual = appContext.getEnvironment().getProperty("dhnclient.dual");
         role = appContext.getEnvironment().getProperty("dhnclient.role");
+        kakao_use = appContext.getEnvironment().getProperty("dhnclient.kakao_use");
 
         if(dual != null && dual.equalsIgnoreCase("Y")){
 
@@ -45,7 +47,18 @@ public class LogTableCheck implements ApplicationListener<ContextRefreshedEvent>
 
     @Scheduled(cron = "0 0 1 L * ?")
     public void createTable() {
+        if (kakao_use.equalsIgnoreCase("Y")) {
+            log.info("Log Table Create kakao_use 활성화 → 30초 대기 시작");
+            try {
+                Thread.sleep(30000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            log.info("Log Table Create kakao_use 활성화 → 30초 대기 완료 후 실행");
+        }
+
         log.info("로그 테이블 로그테이블 재확인 및 생성");
+
         if(isStart && !isProc){
             isProc = true;
             try{
