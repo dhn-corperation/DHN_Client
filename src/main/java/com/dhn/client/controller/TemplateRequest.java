@@ -202,9 +202,9 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 
                                                     try {
                                                         ResponseEntity<String> response2 = rt.getForEntity(uri, String.class);
-                                                        Map<String, Object> res2 = om.readValue(response.getBody(), Map.class);
+                                                        Map<String, Object> res2 = om.readValue(response2.getBody(), Map.class);
 
-                                                        //log.info(res.toString());
+                                                        log.info(res2.toString());
                                                         if (response.getStatusCode() == HttpStatus.OK) {
                                                             if(res.get("code").equals("200")) {
                                                                 Map<String, Object> data = (Map<String, Object>) res2.get("data");
@@ -354,7 +354,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 
                                                 try {
                                                     ResponseEntity<String> response2 = rt.getForEntity(uri, String.class);
-                                                    Map<String, Object> res2 = om.readValue(response.getBody(), Map.class);
+                                                    Map<String, Object> res2 = om.readValue(response2.getBody(), Map.class);
 
                                                     //log.info(res.toString());
                                                     if (response.getStatusCode() == HttpStatus.OK) {
@@ -422,7 +422,8 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
         }
     }
 
-    @Scheduled(cron = "0 30 * * * *")
+//    @Scheduled(cron = "0 30 * * * *")
+    @Scheduled(fixedDelay = 1000)
     private void inspectionTemplate() {
         if(isStart && !isIProc) {
             isRProc = true;
@@ -463,32 +464,33 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 
                                     String inspectionStatus = data.get("inspectionStatus").toString();
                                     String status = data.get("status").toString();
-
                                     param.setTmplstatus(status);
 
                                     if (inspectionStatus.equalsIgnoreCase("APR")) {
                                         List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
-                                        for (Map<String, Object> comment : comments) {
-                                            param.setComment_id(comment.get("id").toString());
-                                            param.setComment_content(comment.get("content").toString());
-                                            param.setComment_userName(comment.get("userName").toString());
-                                            param.setComment_createdAt(comment.get("createdAt").toString());
-                                            param.setComment_status(comment.get("status").toString());
+                                        if (comments != null && !comments.isEmpty()) {
+                                            for (Map<String, Object> comment : comments) {
+                                                param.setComment_id(comment.get("id").toString());
+                                                param.setComment_content(comment.get("content") != null ? comment.get("content").toString() : "");
+                                                param.setComment_userName(comment.get("userName") != null ? comment.get("userName").toString() : "");
+                                                param.setComment_status(comment.get("status") != null ? comment.get("status").toString() : "");
 
-                                            templateReqSevice.selectInsertComments(param);
+                                                templateReqSevice.selectInsertComments(param);
+                                            }
                                         }
                                         templateReqSevice.updateTmplInsAPR(param);
                                         log.info("템플릿 검수 승인 템플릿 Code : " + tmplData.getTemplateCode());
                                     } else if (inspectionStatus.equalsIgnoreCase("REJ")) {
                                         List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
-                                        for (Map<String, Object> comment : comments) {
-                                            param.setComment_id(comment.get("id").toString());
-                                            param.setComment_content(comment.get("content").toString());
-                                            param.setComment_userName(comment.get("userName").toString());
-                                            param.setComment_createdAt(comment.get("createdAt").toString());
-                                            param.setComment_status(comment.get("status").toString());
+                                        if (comments != null && !comments.isEmpty()) {
+                                            for (Map<String, Object> comment : comments) {
+                                                param.setComment_id(comment.get("id").toString());
+                                                param.setComment_content(comment.get("content") != null ? comment.get("content").toString() : "");
+                                                param.setComment_userName(comment.get("userName") != null ? comment.get("userName").toString() : "");
+                                                param.setComment_status(comment.get("status") != null ? comment.get("status").toString() : "");
 
-                                            templateReqSevice.selectInsertComments(param);
+                                                templateReqSevice.selectInsertComments(param);
+                                            }
                                         }
                                         param.setRej_memo("반려되었습니다.");
                                         templateReqSevice.updateTmplInsREJ(param);

@@ -211,6 +211,7 @@
         WHERE MSG_TEMPLATE_NO = '${tmplid}'
         AND STATUS = 'INQ'
         AND (LENGTH(trim(COMMENT_ID)) = 0 OR TRIM(COMMENT_ID) IS NULL)
+        ORDER BY REG_DT
     </select>
 
     <update id="update_comments" parameterType="com.dhn.client.bean.SQLParameter">
