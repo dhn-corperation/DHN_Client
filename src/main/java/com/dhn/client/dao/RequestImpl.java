@@ -198,6 +198,4 @@ public class RequestImpl implements RequestDAO{
 	public List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception {
 		return sqlSession.selectList("com.dhn.client.move.mapper.SendRequest.move_rtime_data_select", param);
 	}
-
-
 }

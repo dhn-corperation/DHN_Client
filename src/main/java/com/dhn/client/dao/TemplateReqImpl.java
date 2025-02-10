@@ -1,9 +1,6 @@
 package com.dhn.client.dao;
 
-import com.dhn.client.bean.ButtonBean;
-import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.bean.TmplData;
-import com.dhn.client.bean.TmplRequestBean;
+import com.dhn.client.bean.*;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -92,6 +89,21 @@ public class TemplateReqImpl implements TemplateReqDAO{
 
         if (cnt < 1) {
             sqlSession.insert("com.dhn.client.tmpl.mapper.SendRequest.insert_comments",param);
+        }
+    }
+
+    @Override
+    public List<TmplCommentBean> tmplCommentSelect(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.tmpl.mapper.SendRequest.tmpl_comment_list",param);
+    }
+
+    @Override
+    public void selectUpdateComments(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.tmpl.mapper.SendRequest.select_comment_count",param);
+
+        if (cnt < 1) {
+            sqlSession.insert("com.dhn.client.tmpl.mapper.SendRequest.update_comments",param);
         }
     }
 }

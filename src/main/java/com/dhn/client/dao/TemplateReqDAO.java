@@ -1,9 +1,6 @@
 package com.dhn.client.dao;
 
-import com.dhn.client.bean.ButtonBean;
-import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.bean.TmplData;
-import com.dhn.client.bean.TmplRequestBean;
+import com.dhn.client.bean.*;
 
 import java.util.List;
 
@@ -35,4 +32,8 @@ public interface TemplateReqDAO {
     void updateTmplrefreshfail(SQLParameter param) throws Exception;
 
     void selectInsertComments(SQLParameter param) throws Exception;
+
+    List<TmplCommentBean> tmplCommentSelect(SQLParameter param) throws Exception;
+
+    void selectUpdateComments(SQLParameter param) throws Exception;
 }

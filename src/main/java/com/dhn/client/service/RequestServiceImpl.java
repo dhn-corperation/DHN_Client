@@ -140,6 +140,4 @@ public class RequestServiceImpl implements RequestService {
 	public List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception {
 		return requestDAO.moveRtimeDataSelect(param);
 	}
-
-
 }

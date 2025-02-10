@@ -7,4 +7,5 @@ public class TmplinspectionBean {
 
     private String senderKey;
     private String templateCode;
+    private String comment;
 }

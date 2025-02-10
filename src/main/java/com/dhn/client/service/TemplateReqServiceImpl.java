@@ -1,9 +1,6 @@
 package com.dhn.client.service;
 
-import com.dhn.client.bean.ButtonBean;
-import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.bean.TmplData;
-import com.dhn.client.bean.TmplRequestBean;
+import com.dhn.client.bean.*;
 import com.dhn.client.dao.TemplateReqDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,5 +82,15 @@ public class TemplateReqServiceImpl implements TemplateReqSevice{
     @Override
     public void selectInsertComments(SQLParameter param) throws Exception {
         templateReqDAO.selectInsertComments(param);
+    }
+
+    @Override
+    public List<TmplCommentBean> tmplCommentSelect(SQLParameter param) throws Exception {
+        return templateReqDAO.tmplCommentSelect(param);
+    }
+
+    @Override
+    public void selectUpdateComments(SQLParameter param) throws Exception {
+        templateReqDAO.selectUpdateComments(param);
     }
 }

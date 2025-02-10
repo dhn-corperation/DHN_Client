@@ -186,8 +186,39 @@
                '${comment_status}',
                '${comment_userName}',
                '',
-               TO_TIMESTAMP('${comment_createdAt}')
+               SYSDATE
            )
     </insert>
+
+    <resultMap id="CommentData" type="com.dhn.client.bean.TmplCommentBean">
+        <result column="tmplno" property="tmplno"/>
+        <result column="commentid" property="commentid"/>
+        <result column="content" property="content"/>
+        <result column="status" property="status"/>
+        <result column="username" property="username"/>
+        <result column="regid" property="regid"/>
+    </resultMap>
+
+    <select id="tmpl_comment_list" parameterType="com.dhn.client.bean.SQLParameter" resultMap = "CommentData">
+        SELECT
+            MSG_TEMPLATE_NO AS tmplno,
+            COMMENT_ID AS commentid,
+            CONTENT AS content,
+            STATUS AS status,
+            USER_NAME AS username,
+            REG_ID AS regid
+        FROM ${comment_table}
+        WHERE MSG_TEMPLATE_NO = '${tmplid}'
+        AND STATUS = 'INQ'
+        AND (LENGTH(trim(COMMENT_ID)) = 0 OR TRIM(COMMENT_ID) IS NULL)
+    </select>
+
+    <update id="update_comments" parameterType="com.dhn.client.bean.SQLParameter">
+        UPDATE ${comment_table}
+        SET COMMENT_ID = '${comment_id}'
+        WHERE MSG_TEMPLATE_NO = '${tmplid}'
+          AND STATUS = 'INQ'
+          AND (LENGTH(trim(COMMENT_ID)) = 0 OR TRIM(COMMENT_ID) IS NULL)
+    </update>
 
 </mapper>

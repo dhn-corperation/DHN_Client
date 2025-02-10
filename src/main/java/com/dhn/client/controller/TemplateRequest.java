@@ -1,6 +1,7 @@
 package com.dhn.client.controller;
 
 import com.dhn.client.bean.*;
+import com.dhn.client.service.RequestService;
 import com.dhn.client.service.TemplateReqSevice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,8 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 
     @Autowired
     ScheduledAnnotationBeanPostProcessor posts;
+    @Autowired
+    private RequestService requestService;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -144,12 +147,29 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                 if (response.getStatusCode() == HttpStatus.OK) {
                                     if(res.get("code").equals("200")){
                                         templateReqSevice.updateTmplSuccess(param);
-                                        log.info("템플릿 수정요청 완료(" + response.getStatusCode() + ") 템플릿 Code : "+ tmplUpdateBean.getTemplateCode());
                                         log.info("템플릿 수정요청 완료 후 검수요청 시작(" + response.getStatusCode() + ")  템플릿 Code : " + tmplUpdateBean.getTemplateCode());
+
+                                        List<TmplCommentBean> commentList = templateReqSevice.tmplCommentSelect(param);
 
                                         TmplinspectionBean tmplinspectionBean = new TmplinspectionBean();
                                         tmplinspectionBean.setSenderKey(tmplUpdateBean.getSenderKey());
                                         tmplinspectionBean.setTemplateCode(tmplUpdateBean.getTemplateCode());
+
+                                        if(commentList != null && !commentList.isEmpty()){
+                                            StringBuilder sb = new StringBuilder();
+
+                                            for (TmplCommentBean comment : commentList) {
+                                                if (comment.getContent() != null && !comment.getContent().isEmpty()) {
+                                                    if (sb.length() > 0) {
+                                                        sb.append("\n");
+                                                    }
+                                                    sb.append(comment.getContent());
+                                                }
+                                            }
+
+                                            // 생성된 줄바꿈이 포함된 내용 설정
+                                            tmplinspectionBean.setComment(sb.toString());
+                                        }
 
                                         sw = new StringWriter();
                                         om = new ObjectMapper();
@@ -166,6 +186,53 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                                 if(res.get("code").equals("200")){
                                                     templateReqSevice.updateTmplSuccess(param);
                                                     log.info("템플릿 검수요청 완료(" + response.getStatusCode() + ") 템플릿 Code : "+ tmplinspectionBean.getTemplateCode());
+
+                                                    rt = new RestTemplate();
+                                                    om = new ObjectMapper();
+
+                                                    URI uri = UriComponentsBuilder
+                                                            .fromUriString(dhnServer)
+                                                            .path("template/")
+                                                            .queryParam("senderKey",tmplData.getSenderKey())
+                                                            .queryParam("templateCode",tmplData.getTemplateCode())
+                                                            .queryParam("senderKeyType","S")
+                                                            .encode()
+                                                            .build()
+                                                            .toUri();
+
+                                                    try {
+                                                        ResponseEntity<String> response2 = rt.getForEntity(uri, String.class);
+                                                        Map<String, Object> res2 = om.readValue(response.getBody(), Map.class);
+
+                                                        //log.info(res.toString());
+                                                        if (response.getStatusCode() == HttpStatus.OK) {
+                                                            if(res.get("code").equals("200")) {
+                                                                Map<String, Object> data = (Map<String, Object>) res2.get("data");
+                                                                String inspectionStatus = data.get("inspectionStatus").toString();
+
+                                                                if (inspectionStatus.equalsIgnoreCase("REQ")) {
+                                                                    List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
+                                                                    if (comments != null && !comments.isEmpty()) {
+                                                                        for (Map<String, Object> comment : comments) {
+                                                                            param.setComment_id(comment.get("id").toString());
+                                                                            templateReqSevice.selectUpdateComments(param);
+                                                                        }
+                                                                    }
+                                                                    log.info("템플릿 검수 승인 템플릿 Code : " + tmplData.getTemplateCode());
+                                                                }
+                                                                log.info("템플릿 검수요청 확인 완료 템플릿코드 : " + tmplData.getTemplateCode());
+                                                            }else{
+                                                                param.setRej_memo(res.get("message").toString());
+                                                                templateReqSevice.updateTmplrefreshfail(param);
+                                                                log.info("템플릿 검수요청 확인 조회 오류(KAKAO) : " + tmplData.getTemplateCode() + " / "  + res2.toString());
+                                                            }
+                                                        }else{
+                                                            log.error("템플릿 검수요청 확인 조회 오류(Http ERR) : " + tmplData.getTemplateCode() + " / " + res2.toString());
+                                                        }
+                                                    } catch (Exception e) {
+                                                        log.error("템플릿 검수요청 확인 조회 오류(Response) : " + tmplData.getTemplateCode() + " / " + e.toString());
+                                                    }
+
                                                 }else{
                                                     param.setRej_memo(res.get("message"));
                                                     templateReqSevice.updateTmplfail(param);
@@ -235,9 +302,26 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                 if(res.get("code").equals("200")){
                                     log.info("템플릿 등록 완료 후 검수요청 시작(" + response.getStatusCode() + ")  템플릿 Code : " + tmplRequestBean.getTemplateCode());
 
+                                    List<TmplCommentBean> commentList = templateReqSevice.tmplCommentSelect(param);
+
                                     TmplinspectionBean tmplinspectionBean = new TmplinspectionBean();
                                     tmplinspectionBean.setSenderKey(tmplRequestBean.getSenderKey());
                                     tmplinspectionBean.setTemplateCode(tmplRequestBean.getTemplateCode());
+                                    if(commentList != null && !commentList.isEmpty()){
+                                        StringBuilder sb = new StringBuilder();
+
+                                        for (TmplCommentBean comment : commentList) {
+                                            if (comment.getContent() != null && !comment.getContent().isEmpty()) {
+                                                if (sb.length() > 0) {
+                                                    sb.append("\n");
+                                                }
+                                                sb.append(comment.getContent());
+                                            }
+                                        }
+
+                                        // 생성된 줄바꿈이 포함된 내용 설정
+                                        tmplinspectionBean.setComment(sb.toString());
+                                    }
 
                                     sw = new StringWriter();
                                     om = new ObjectMapper();
@@ -254,6 +338,52 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                             if(res.get("code").equals("200")){
                                                 templateReqSevice.updateTmplSuccess(param);
                                                 log.info("템플릿 검수요청 완료(" + response.getStatusCode() + ") 템플릿 Code : "+ tmplinspectionBean.getTemplateCode());
+
+                                                rt = new RestTemplate();
+                                                om = new ObjectMapper();
+
+                                                URI uri = UriComponentsBuilder
+                                                        .fromUriString(dhnServer)
+                                                        .path("template/")
+                                                        .queryParam("senderKey",tmplData.getSenderKey())
+                                                        .queryParam("templateCode",tmplData.getTemplateCode())
+                                                        .queryParam("senderKeyType","S")
+                                                        .encode()
+                                                        .build()
+                                                        .toUri();
+
+                                                try {
+                                                    ResponseEntity<String> response2 = rt.getForEntity(uri, String.class);
+                                                    Map<String, Object> res2 = om.readValue(response.getBody(), Map.class);
+
+                                                    //log.info(res.toString());
+                                                    if (response.getStatusCode() == HttpStatus.OK) {
+                                                        if(res.get("code").equals("200")) {
+                                                            Map<String, Object> data = (Map<String, Object>) res2.get("data");
+                                                            String inspectionStatus = data.get("inspectionStatus").toString();
+
+                                                            if (inspectionStatus.equalsIgnoreCase("REQ")) {
+                                                                List<Map<String, Object>> comments = (List<Map<String, Object>>) data.get("comments");
+                                                                if (comments != null && !comments.isEmpty()) {
+                                                                    for (Map<String, Object> comment : comments) {
+                                                                        param.setComment_id(comment.get("id").toString());
+                                                                        templateReqSevice.selectUpdateComments(param);
+                                                                    }
+                                                                }
+                                                                log.info("템플릿 검수 승인 템플릿 Code : " + tmplData.getTemplateCode());
+                                                            }
+                                                            log.info("템플릿 검수요청 확인 완료 템플릿코드 : " + tmplData.getTemplateCode());
+                                                        }else{
+                                                            param.setRej_memo(res.get("message").toString());
+                                                            templateReqSevice.updateTmplrefreshfail(param);
+                                                            log.info("템플릿 검수요청 확인 조회 오류(KAKAO) : " + tmplData.getTemplateCode() + " / "  + res2.toString());
+                                                        }
+                                                    }else{
+                                                        log.error("템플릿 검수요청 확인 조회 오류(Http ERR) : " + tmplData.getTemplateCode() + " / " + res2.toString());
+                                                    }
+                                                } catch (Exception e) {
+                                                    log.error("템플릿 검수요청 확인 조회 오류(Response) : " + tmplData.getTemplateCode() + " / " + e.toString());
+                                                }
                                             }else{
                                                 param.setRej_memo(res.get("message"));
                                                 templateReqSevice.updateTmplfail(param);

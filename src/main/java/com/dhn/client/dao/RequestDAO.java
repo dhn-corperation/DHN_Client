@@ -51,4 +51,5 @@ public interface RequestDAO {
     int moveRtimeDataCount(SQLParameter param) throws Exception;
 
 	List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception;
+;
 }
