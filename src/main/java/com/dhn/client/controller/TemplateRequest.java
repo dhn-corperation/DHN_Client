@@ -146,7 +146,6 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
 //                                        log.info(res.toString());
                                 if (response.getStatusCode() == HttpStatus.OK) {
                                     if(res.get("code").equals("200")){
-                                        templateReqSevice.updateTmplSuccess(param);
                                         log.info("템플릿 수정요청 완료 후 검수요청 시작(" + response.getStatusCode() + ")  템플릿 Code : " + tmplUpdateBean.getTemplateCode());
 
                                         List<TmplCommentBean> commentList = templateReqSevice.tmplCommentSelect(param);
@@ -249,7 +248,7 @@ public class TemplateRequest implements ApplicationListener<ContextRefreshedEven
                                             log.error("템플릿 검수요청 오류(Response) : " + tmplinspectionBean.getTemplateCode() + " / "  + e.toString());
                                         }
 
-                                    }else if(!res.get("code").equals("508")){
+                                    }else {
                                         param.setRej_memo(res.get("message"));
                                         templateReqSevice.updateTmplfail(param);
                                         log.error("템플릿 수정요청 오류(KAKAO ERR) : " + tmplUpdateBean.getTemplateCode() + " / " + res.toString());
