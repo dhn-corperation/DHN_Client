@@ -26,7 +26,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
     private String sms_use;
     private String lms_use;
     private String slms_use;
-    private String tmp_use;
     private String alive_table;
 
     @Autowired
@@ -47,7 +46,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
         sms_use = appContext.getEnvironment().getProperty("dhnclient.sms_use");
         lms_use = appContext.getEnvironment().getProperty("dhnclient.lms_use");
         slms_use = appContext.getEnvironment().getProperty("dhnclient.smslms_use");
-        tmp_use = appContext.getEnvironment().getProperty("dhnclient.tmp_use");
         role_type = appContext.getEnvironment().getProperty("dhnclient.role_type");
         alive_table = appContext.getEnvironment().getProperty("dhnclient.alive_table");
 
@@ -96,10 +94,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                         SLMSSendRequest.setIsStart(true);
                     }
 
-                    if (tmp_use != null && tmp_use.equalsIgnoreCase("Y") && !TemplateRequest.isStart) {
-                        TemplateRequest.setIsStart(true);
-                    }
-
                     if(!ResultReq.isStart){
                         ResultReq.setIsStart(true);
                     }
@@ -146,10 +140,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                             SLMSSendRequest.setIsStart(true);
                         }
 
-                        if (tmp_use != null && tmp_use.equalsIgnoreCase("Y") && !TemplateRequest.isStart) {
-                            TemplateRequest.setIsStart(true);
-                        }
-
                         if(!ResultReq.isStart){
                             ResultReq.setIsStart(true);
                         }
@@ -192,10 +182,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
 
                         if (SLMSSendRequest.isStart) {
                             SLMSSendRequest.setIsStart(false);
-                        }
-
-                        if (TemplateRequest.isStart) {
-                            TemplateRequest.setIsStart(false);
                         }
 
                         if(LogTableCheck.isStart) {
