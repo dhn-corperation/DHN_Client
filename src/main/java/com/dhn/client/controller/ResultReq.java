@@ -203,6 +203,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	}
 
 	private void ResultProc(JSONArray json, int _pc) {
+
+		try {
+			requestService.logTableCheck(msgTable, logTable);
+		} catch (Exception e) {
+			log.error("테이블 확인 및 생성 실패: " + e.getMessage());
+		}
 		
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);

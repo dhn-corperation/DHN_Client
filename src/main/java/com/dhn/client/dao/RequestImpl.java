@@ -40,7 +40,6 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateKAOSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param);
-//		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2", param);
 		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2_new", param);
 	}
 
@@ -69,7 +68,6 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateMSGSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete",param);
-//		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2",param);
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2_new",param);
 	}
 
@@ -85,15 +83,10 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void update_msg_log(Msg_Log ml) throws Exception {
-		sqlSession.update("com.dhn.client.result.mapper.SendRequest.log_update",ml); // send 테이블 update MST는 update 제외 02로 유지하면서 code값 update
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.log_update",ml);
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_update",ml);
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_insert",ml);
 		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.dhn_log_delete",ml);
-		/*
-		if(ml.getFlag_2nd().equalsIgnoreCase("Y") && !ml.getResult_code().equalsIgnoreCase("0000")){
-			sqlSession.update("com.dhn.client.result.mapper.SendRequest.send_2nd_update",ml);
-		}
-		 */
 	}
 
 	@Override
@@ -143,7 +136,6 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void tableCreate(SQLParameter param) throws Exception {
-//		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable", param);
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable_new", param);
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createPrimaryKey", param);
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex1", param);
@@ -163,13 +155,11 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void moveDataInsert(SQLParameter param) throws Exception {
-//		sqlSession.insert("com.dhn.client.move.mapper.SendRequest.move_data_insert", param);
 		sqlSession.insert("com.dhn.client.move.mapper.SendRequest.move_data_insert_new", param);
 	}
 
 	@Override
 	public void updateMoveStatus(SQLParameter param) throws Exception {
-//		sqlSession.update("com.dhn.client.move.mapper.SendRequest.update_move_status", param);
 		sqlSession.update("com.dhn.client.move.mapper.SendRequest.update_move_status_new", param);
 	}
 
@@ -179,7 +169,6 @@ public class RequestImpl implements RequestDAO{
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_update",ml);
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_insert",ml);
 		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_delete",ml);
-//		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.phn_err_log_delete",ml);
 	}
 
 	@Override

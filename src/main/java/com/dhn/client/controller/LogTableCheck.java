@@ -45,7 +45,7 @@ public class LogTableCheck implements ApplicationListener<ContextRefreshedEvent>
 
     }
 
-    @Scheduled(cron = "0 0 1 L * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     public void createTable() {
         if (kakao_use.equalsIgnoreCase("Y")) {
             log.info("Log Table Create kakao_use 활성화 → 30초 대기 시작");
