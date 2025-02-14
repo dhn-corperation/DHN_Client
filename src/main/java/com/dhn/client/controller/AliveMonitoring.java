@@ -94,10 +94,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                         SLMSSendRequest.setIsStart(true);
                     }
 
-                    if(!ResultReq.isStart){
-                        ResultReq.setIsStart(true);
-                    }
-
                     if(!LogTableCheck.isStart){
                         LogTableCheck.setIsStart(true);
                     }
@@ -138,10 +134,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
 
                         if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !SLMSSendRequest.isStart) {
                             SLMSSendRequest.setIsStart(true);
-                        }
-
-                        if(!ResultReq.isStart){
-                            ResultReq.setIsStart(true);
                         }
 
                         if(!LogTableCheck.isStart){

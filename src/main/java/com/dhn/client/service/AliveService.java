@@ -25,6 +25,4 @@ public interface AliveService {
     void aliveUpdateDate(SQLParameter param) throws Exception;
 
     void aliveUpdateAgent(SQLParameter param) throws Exception;
-
-    ;
 }
