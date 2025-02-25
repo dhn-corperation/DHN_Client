@@ -51,6 +51,7 @@
     <update id="log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${main_table}
             set SEND_RESULT_DT = SYSTIMESTAMP,
+                MESSAGE_STATUS_CD = '02',
                 SEND_RESULT_CD = '${result_code}',
                 SEND_RESULT_MESSAGE = #{result_msg},
                 MOD_DT = SYSTIMESTAMP,
