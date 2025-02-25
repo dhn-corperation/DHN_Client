@@ -10,7 +10,8 @@
         WHERE SEND_TYPE_CD IN (${flag_msg_type})
           AND MESSAGE_STATUS_CD = '00'
           AND ETRS_MTCD = '02'
-        AND SEND_EXPECTED_DT || SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISS')
+        AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+            OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
     </select>
 
     <select id = "move_rtime_data_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
