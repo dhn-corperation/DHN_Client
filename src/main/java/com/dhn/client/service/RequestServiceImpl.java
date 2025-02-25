@@ -98,7 +98,6 @@ public class RequestServiceImpl implements RequestService {
 			log.error("{} 테이블 생성 중 오류 발생: {}", param.getMsg_table(), e.getMessage());
 			throw e;
 		}
-		requestDAO.tableCheck(param);
 	}
 
 	@Override
