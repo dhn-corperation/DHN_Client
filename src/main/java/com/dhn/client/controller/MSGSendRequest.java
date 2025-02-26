@@ -85,7 +85,7 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
                         }
                         param.setMsgid(messageRequestBean.getMsgid());
                         messageidList.add(messageRequestBean.getMsgid());
-                        requestService.updateMessageStatus(param);
+//                        requestService.updateMessageStatus(param);
 
                     }
 
