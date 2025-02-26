@@ -85,7 +85,7 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
                         }
                         param.setMsgid(messageRequestBean.getMsgid());
                         messageidList.add(messageRequestBean.getMsgid());
-//                        requestService.updateMessageStatus(param);
+                        requestService.updateMessageStatus(param);
 
                     }
 
@@ -124,15 +124,15 @@ public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent
                         log.info(res.toString());
                         if (response.getStatusCode() == HttpStatus.OK) {
                             //log.info("메세지 상태 102 Update 시작");
-                            requestService.updateMessageComplete(param);
+//                            requestService.updateMessageComplete(param);
                             log.info("메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
                         } else {
                             log.error("메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
-//                            requestService.updateMessageInit(param);
+                            requestService.updateMessageInit(param);
                         }
                     } catch (Exception e) {
                         log.error("메세지 전송 오류(Response) : " + e.toString());
-//                        requestService.updateMessageInit(param);
+                        requestService.updateMessageInit(param);
                     }
 
 
