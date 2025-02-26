@@ -4,9 +4,10 @@
 <mapper namespace="com.dhn.client.message.mapper.SendRequest">
 
     <select id = "req_message_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-        select count(1) as cnt
+        select /* O.dhncorp.countAllBySearchParam */
+            count(1) as cnt
         from ${msg_table}
-        where REQDTTM &gt;= '2024-12-01 00:00:00'
+        where REQDTTM &gt;= sysdate - 14
           AND NVL(REQDTTM, sysdate) &lt;= sysdate
           and STATUS = '100'
     </select>
@@ -34,7 +35,7 @@
     </resultMap>
 
     <select id="req_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        SELECT
+        SELECT /* O.dhncorp.findAllBySearchParam */
             SEQNO,
             TYPE,
             MSG,
@@ -65,16 +66,17 @@
             ATCH_FILE_SN,
             APP_LAUNCH
         FROM ${msg_table}
-        WHERE REQDTTM &gt;= '2024-12-01 00:00:00'
+        WHERE REQDTTM &gt;= sysdate - 14
           and NVL(REQDTTM, sysdate) &lt;= sysdate
           and STATUS = '100'
           and ROWNUM &lt;= 500
     </select>
 
     <update id="req_message_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
-        update ${msg_table}
+        update /* O.dhncorp.updateDateMakeBySeqNO */
+            ${msg_table}
         set STATUS = '102'
-        where REQDTTM &gt;= '2024-12-01 00:00:00'
+        where REQDTTM &gt;= sysdate - 14
           and NVL(REQDTTM, sysdate) &lt;= sysdate
           and SEQNO in
         <foreach collection="messageid" item="msgid" open="(" separator="," close=")">
@@ -83,9 +85,10 @@
     </update>
 
     <update id="req_message_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
-        update ${msg_table}
+        update /* O.dhncorp.updateSendFailBySearchParam */
+            ${msg_table}
         set STATUS = '100'
-        where REQDTTM &gt;= '2024-12-01 00:00:00'
+        where REQDTTM &gt;= sysdate - 14
           and NVL(REQDTTM, sysdate) &lt;= sysdate
           and SEQNO in
         <foreach collection="messageid" item="msgid" open="(" separator="," close=")">
@@ -94,7 +97,8 @@
     </update>
 
     <update id="req_message_status" parameterType="com.dhn.client.bean.SQLParameter">
-        update ${msg_table}
+        update /* O.dhncorp.updateDateMakeBySeqNO */
+            ${msg_table}
         set STATUS = '102'
         where SEQNO = '${msgid}'
     </update>
