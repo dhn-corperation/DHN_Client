@@ -71,6 +71,7 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
 
         if(smslms_use != null && smslms_use.equals("Y")){
             msg_type.add("99");
+            msg_type.add("MM");
         }
 
         param.setFlag_msg_type("'"+String.join("','", msg_type)+"'");

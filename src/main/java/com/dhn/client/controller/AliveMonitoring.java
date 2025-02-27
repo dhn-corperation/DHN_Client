@@ -94,6 +94,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                         SLMSSendRequest.setIsStart(true);
                     }
 
+                    if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !MMSendRequest.isStart) {
+                        MMSendRequest.setIsStart(true);
+                    }
+
                     if(!LogTableCheck.isStart){
                         LogTableCheck.setIsStart(true);
                     }
@@ -136,6 +140,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                             SLMSSendRequest.setIsStart(true);
                         }
 
+                        if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !MMSendRequest.isStart) {
+                            MMSendRequest.setIsStart(true);
+                        }
+
                         if(!LogTableCheck.isStart){
                             LogTableCheck.setIsStart(true);
                         }
@@ -174,6 +182,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
 
                         if (SLMSSendRequest.isStart) {
                             SLMSSendRequest.setIsStart(false);
+                        }
+
+                        if (MMSendRequest.isStart){
+                            MMSendRequest.setIsStart(false);
                         }
 
                         if(LogTableCheck.isStart) {
