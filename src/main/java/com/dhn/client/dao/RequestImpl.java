@@ -166,6 +166,7 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void phnErrUpdateDelete(Msg_Log ml) throws Exception {
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_log_update",ml);
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_mst_update",ml);
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_update",ml);
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_insert",ml);
 		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.phn_err_dhn_log_delete",ml);

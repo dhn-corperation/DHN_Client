@@ -76,6 +76,18 @@
         where MESSAGE_MST_NO in (${msgid})
     </update>
 
+    <update id="phn_err_mst_update" parameterType="com.dhn.client.bean.Msg_Log">
+        update ${main_log_table}
+        set SEND_RESULT_DT = SYSTIMESTAMP,
+            SEND_DT = SYSTIMESTAMP,
+            MESSAGE_STATUS_CD = '91',
+            SEND_RESULT_CD = '${result_code}',
+            SEND_RESULT_MESSAGE = #{result_msg},
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = #{mod_id}
+        where MESSAGE_MST_NO in (${msgid})
+    </update>
+
     <update id="phn_err_dhn_log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${msg_table}
         set SEND_RESULT_DT = SYSTIMESTAMP,
