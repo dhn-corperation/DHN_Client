@@ -155,6 +155,10 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 								continue;
 							}
 
+							if(kaoRequestBean.getPhn().startsWith("0")){
+								kaoRequestBean.setPhn("82"+kaoRequestBean.getPhn().substring(1));
+							}
+
 
 
 							if(kaoRequestBean.getBtnname() != null){
