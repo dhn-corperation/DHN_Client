@@ -1,116 +1,131 @@
 package com.dhn.client.service;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.MMSImageBean;
+import com.dhn.client.bean.KAOtoMMSBean;
+import com.dhn.client.bean.LMSTableBean;
 import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.dao.RequestDAO;
+import com.dhn.client.dao.RequestDAO; 
 
 @Service
-public class RequestServiceImpl implements RequestService {
+public class RequestServiceImpl implements RequestService{
 
 	@Autowired
-	private RequestDAO req;
-
-	@Override
-	public int selectKAORequestCount(SQLParameter param) throws Exception {
-		return req.selectKAORequestCount(param);
-	}
-
-	@Override
-	public void updateKAOGroupNo(SQLParameter param) throws Exception {
-		req.updateKAOGroupNo(param);
-	}
-
-	@Override
-	public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
-		return req.selectKAORequests(param);
-	}
-
-	@Override
-	public void updateKAOSendComplete(SQLParameter param) throws Exception {
-		req.updateKAOSendComplete(param);
-	}
-
-	@Override
-	public void updateKAOSendInit(SQLParameter param) throws Exception {
-		req.updateKAOSendInit(param);
-	}
-
+	private RequestDAO requestDAO;
+	
 	@Override
 	public int selectSMSReqeustCount(SQLParameter param) throws Exception {
-		return req.selectSMSReqeustCount(param);
+		return requestDAO.selectSMSReqeustCount(param);
 	}
 
 	@Override
 	public void updateSMSGroupNo(SQLParameter param) throws Exception {
-		req.updateSMSGroupNo(param);
+		requestDAO.updateSMSGroupNo(param);
 	}
-
+		
 	@Override
 	public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception {
-		return req.selectSMSRequests(param);
+		return requestDAO.selectSMSRequests(param);
 	}
 
 	@Override
 	public void updateSMSSendComplete(SQLParameter param) throws Exception {
-		req.updateSMSSendComplete(param);
+		requestDAO.updateSMSSendComplete(param);
 	}
 
 	@Override
 	public void updateSMSSendInit(SQLParameter param) throws Exception {
-		req.updateSMSSendInit(param);
+		requestDAO.updateSMSSendInit(param);
 	}
 
 	@Override
-	public int selectLMSReqeustCount(SQLParameter param) throws Exception {
-		return req.selectLMSReqeustCount(param);
-	}
-
-	@Override
-	public void updateLMSGroupNo(SQLParameter param) throws Exception {
-		req.updateLMSGroupNo(param);
-	}
-
-	@Override
-	public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception {
-		return req.selectLMSRequests(param);
+	public void Insert_msg_log(Msg_Log ml) throws Exception {
+		requestDAO.Insert_msg_log(ml);
 	}
 
 	@Override
 	public int selectMMSReqeustCount(SQLParameter param) throws Exception {
-		return req.selectMMSReqeustCount(param);
+		return requestDAO.selectMMSReqeustCount(param);
 	}
 
 	@Override
 	public void updateMMSGroupNo(SQLParameter param) throws Exception {
-		req.updateMMSGroupNo(param);
+		requestDAO.updateMMSGroupNo(param);
 	}
 
 	@Override
 	public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception {
-		return req.selectMMSRequests(param);
+		return requestDAO.selectMMSRequests(param);
+	}
+
+
+	@Override
+	public int selectOTPReqeustCount(SQLParameter param) throws Exception {
+		return requestDAO.selectOTPReqeustCount(param);
 	}
 
 	@Override
-	public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception {
-		return req.selectMMSImage(param);
+	public void updateOTPGroupNo(SQLParameter param) throws Exception {
+		requestDAO.updateOTPGroupNo(param);
+	}
+		
+	@Override
+	public List<RequestBean> selectOTPRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectOTPRequests(param);
 	}
 
 	@Override
-	public void updateMMSImageGroup(SQLParameter param) throws Exception {
-		req.updateMMSImageGroup(param);
+	public void updateOTPSendComplete(SQLParameter param) throws Exception {
+		requestDAO.updateOTPSendComplete(param);
 	}
 
 	@Override
-	public void Insert_msg_log(Msg_Log _ml) throws Exception {
-		req.Insert_msg_log(_ml);
+	public void updateOTPSendInit(SQLParameter param) throws Exception {
+		requestDAO.updateOTPSendInit(param);
 	}
+
+
+	@Override
+	public int selectKAOReqeustCount(SQLParameter param) throws Exception {
+		return requestDAO.selectKAOReqeustCount(param);
+	}
+
+	@Override
+	public void updateKAOGroupNo(SQLParameter param) throws Exception {
+		requestDAO.updateKAOGroupNo(param);
+	}
+		
+	@Override
+	public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
+		return requestDAO.selectKAORequests(param);
+	}
+
+	@Override
+	public void updateKAOSendComplete(SQLParameter param) throws Exception {
+		requestDAO.updateKAOSendComplete(param);
+	}
+
+	@Override
+	public void updateKAOSendInit(SQLParameter param) throws Exception {
+		requestDAO.updateKAOSendInit(param);
+	}
+
+	@Override
+	public List<LMSTableBean> kakao_to_sms_select(Msg_Log param) throws Exception {
+		return requestDAO.kakao_to_sms_select(param);
+	}
+
+	@Override
+	public void insert_sms(LMSTableBean param) throws Exception {
+		requestDAO.insert_sms(param);
+	}
+ 
 
 }

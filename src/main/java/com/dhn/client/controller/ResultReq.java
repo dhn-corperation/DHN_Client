@@ -1,5 +1,16 @@
 package com.dhn.client.controller;
 
+
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,46 +26,56 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.bean.LMSTableBean;
 import com.dhn.client.bean.Msg_Log;
+import com.dhn.client.bean.RequestBean;
 import com.dhn.client.service.RequestService;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
 public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
-	
+
 	public static boolean isStart = false;
 	private boolean isProc = false;
-	//private SQLParameter param = new SQLParameter();
+	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
-	//private Map<String, String> _rsltCode = new HashMap<String, String>();
+	private Map<String, String> _rsltCode = new HashMap<String, String>();
 	private static int procCnt = 0;
-	private String msgTable = "";
-	private String logTable = "";
-	private String dbtype = "";
+	private String kakaot = "";
+	private String kakaotl = "";
+	private String tableseq = "";
+	private String smst = "";
+	private String smstl = "";
+	private String lmst = "";
+	private String lmstl = "";
+	
+	
+	private static final Logger log = LogManager.getRootLogger();
 	
 	@Autowired
-	private RequestService reqService;
+	private RequestService requestService;
 	
 	@Autowired
 	private ApplicationContext appContext;
-
+	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		
-		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
-		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
-		dbtype = appContext.getEnvironment().getProperty("dhnclient.database");
-		
+		// TODO Auto-generated method stub
+		kakaot = appContext.getEnvironment().getProperty("dhnclient.req_table");
+		kakaotl = appContext.getEnvironment().getProperty("dhnclient.log_table");
+		tableseq = appContext.getEnvironment().getProperty("dhnclient.table_seq");
+		 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		
 		isStart = true;
 	}
-
+	
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc && procCnt < 10) {
@@ -62,6 +83,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			procCnt++;
 			try {
 				ObjectMapper om = new ObjectMapper();
+				
 				HttpHeaders header = new HttpHeaders();
 				
 				header.setContentType(MediaType.APPLICATION_JSON);
@@ -75,39 +97,13 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 											
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
-						String responseBody = response.getBody();
-						JSONObject jsonObject = new JSONObject(responseBody);
-
-						if (jsonObject.has("data")) {
-							JSONObject dataObject = jsonObject.getJSONObject("data");
-
-							if (dataObject.has("detail")) {
-								JSONArray jsonArray = dataObject.getJSONArray("detail");
-
-								if (jsonArray.length() > 0) {
-									Thread res = new Thread(() -> ResultProc(jsonArray, procCnt));
-									res.start();
-								} else {
-									Thread.sleep(5000);
-									procCnt--;
-								}
-							} else {
-								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
-								procCnt--;
-							}
+						JSONArray json = new JSONArray(response.getBody().toString());
+						if(json.length()>0) {
+							Thread res = new Thread(() ->ResultProc(json, procCnt) );
+							res.start();
 						} else {
-							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
 							procCnt--;
 						}
-
-//						JSONArray json = new JSONArray(response.getBody().toString());
-//						if(json.length()>0) {
-//							Thread res = new Thread(() ->ResultProc(json, procCnt) );
-//							res.start();
-//						} else {
-//							procCnt--;
-//						}
-
 					} else {
 						procCnt--;
 					}
@@ -116,84 +112,189 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					procCnt--;
 				}
 				
-			}catch (Exception e) {
+			} catch (Exception e) {
 				log.info("결과 수신 오류 : " + e.toString());
 				procCnt--;
 			}
+			
 			isProc = false;
 		}
 	}
 	
 	private void ResultProc(JSONArray json, int _pc) {
 		
-		for(int i=0; i<json.length(); i++) {
+		//log.info(response.getBody().toString());
+		
+		for(int i=0; i<json.length();i++) {
 			JSONObject ent = json.getJSONObject(i);
-			
-			Msg_Log _ml = new Msg_Log(msgTable, logTable, dbtype);
-			_ml.setMsgid(ent.getString("msgid"));
-			
-			String rscode = "";
-			
-			_ml.setMsg_type(ent.getString("message_type").toUpperCase());
-			
-			if(ent.getString("message_type").equalsIgnoreCase("AT")) { // message_type = AT 즉, 1차 알림톡 성공
-				_ml.setMsg_err_code(ent.getString("code")); // 알림톡 코드
-				rscode = "K"; // 재발송된 문자 결과값 (K : 알림톡 성공)
-				_ml.setSndg_cpee_dt(ent.getString("res_dt")); // 단말기 수신 시각 (알림톡이 성공하면 remark2가 없어 Center에서 AT테이블에 넣는 시각)
-				
-				if(ent.getString("code").equals("0000")) { // 알림톡 성공 여부
-					_ml.setStatus("2");		
-				}else {
-					_ml.setStatus("4");							
-				}
-			}else { // message_type = PH
-				if (ent.has("s_code") && !ent.isNull("s_code") && ent.getString("s_code").length() > 1){// 알림톡 실패 -> 문자처리
-					_ml.setMsg_err_code(ent.getString("s_code")); // 알림톡 실패 코드
-					rscode = ent.getString("code").substring(2); // 문자 코드
-					_ml.setAgan_sms_type(ent.getString("sms_kind")); // 재발송된 문자 타입
-					
-					if(ent.getString("remark1").equalsIgnoreCase("SKT")) {// 재발송된 문자 통신사값
-						_ml.setAgan_tel_info("1");
-					}else if(ent.getString("remark1").equalsIgnoreCase("KTF")) {
-						_ml.setAgan_tel_info("2");
-					}else if(ent.getString("remark1").equalsIgnoreCase("LGT")) {
-						_ml.setAgan_tel_info("3");
-					}else if(ent.getString("remark1").equalsIgnoreCase("ETC")) {
-						_ml.setAgan_tel_info("4");
-					}
-					
-					if(ent.getString("code").equals("0000")) { // 문자 성공 여부
-						_ml.setStatus("2");		
-					}else {
-						_ml.setStatus("4");							
-					}
-					_ml.setSndg_cpee_dt(ent.getString("remark2")); // 단말기 수신 시각
-					
-				}else { // 일반 문자
-					_ml.setMsg_err_code(ent.getString("code").substring(2)); // 문자 코드
-					_ml.setAgan_sms_type(ent.getString("sms_kind")); // 문자 타입
-					if(ent.getString("code").equals("0000")) {
-						_ml.setStatus("2");		
-					}else {
-						_ml.setStatus("4");							
-					}
-					_ml.setSndg_cpee_dt(ent.getString("remark2")); // 단말기 수신 시각
-				}
+			Msg_Log _ml = new Msg_Log(kakaot, kakaotl);
+			String[] mseq = ent.getString("msgid").split("_");
+			_ml.setMseq (mseq[0].substring(1));
+			_ml.setMsg_type( mseq[0].substring(0,1) );
+			_ml.setTable(kakaot);
+			_ml.setLog_table(kakaotl);
+			//log.info(ent.getString("msgid") + "/ ", mseq );
+			if( mseq != null &&  mseq.length >=2 ) {
+				_ml.setExt_col1(mseq[1]);
+			} else {
+				_ml.setExt_col1("N");
+
 			}
 			
-			_ml.setAgan_code(rscode);
+			_ml.setPseq(_ml.getMseq());
+			String rscode = "0000";
+			_ml.setStat("3");
 			
-			
+			if(ent.getString("message_type").toUpperCase().equals("PH")) 
+			{
+				//if(!ent.getString("code").equals("0000")) {
+				rscode = ent.getString("code");
+				//} 
+				
+				_ml.setReport_time(ent.getString("remark2"));
+				_ml.setTelecom(ent.getString("remark1"));
+				_ml.setResult(rscode);
+			} else {
+				
+				_ml.setResult(ent.getString("code"));
+				
+				_ml.setReport_time(ent.getString("res_dt"));
+				_ml.setTelecom("KAK");
+				
+				rscode = ent.getString("code");
+				
+				if(!_ml.getResult().equals("0000")) {
+					try {
+						List<LMSTableBean> _list = requestService.kakao_to_sms_select(_ml);
+						for(int ii=0; ii<_list.size();ii++ ) {
+							LMSTableBean r = _list.get(ii);
+							r.setTable(kakaot);
+							//log.info("Mseq > " + r.getMseq() + ", " + _ml.getMseq() );
+							if(r.getK_next_type().equals("5")) {
+								r.setPseq(r.getMseq());
+								r.setMsg_type("3");
+								r.setK_next_type("0");
+								r.setTable_seq(tableseq);
+
+								byte[] bytes = 	r.getText().getBytes("EUC-KR");
+								
+								int limit = 1000;
+								int length = bytes.length;
+								int offset = 0;
+								int extIdx = 1;
+								while (offset < length) {
+									String temp1 = new String(bytes, offset, length-offset, "EUC-KR");
+									String temp2 = cutKoreanString(temp1, limit);
+									
+									int endIdx =offset + temp2.getBytes("EUC-KR").length;
+									if(endIdx > length) {
+										endIdx = length;
+									}
+									
+									r.setText(temp2.replace("'", "''"));
+									r.setExt_col1("" + extIdx);
+									requestService.insert_sms(r);
+									extIdx++;
+									offset = endIdx;
+								}
+							} else if(r.getK_next_type().equals("8")) {
+								r.setPseq(r.getMseq());
+								r.setExt_col1("1");
+								r.setText(r.getText2().replace("'", "''"));
+								r.setMsg_type("3");
+								r.setK_next_type("0");
+								r.setTable_seq(tableseq);
+
+								requestService.insert_sms(r);
+							} else if(r.getK_next_type().equals("4")) {
+								r.setPseq(r.getMseq());
+								r.setMsg_type("1");
+								r.setK_next_type("0");
+								r.setTable_seq(tableseq);
+								
+								byte[] bytes = 	r.getText().getBytes("EUC-KR");
+								
+								int limit = 90;
+								int length = bytes.length;
+								int offset = 0;
+								int extIdx = 1;
+								while (offset < length) {
+									
+									String temp1 = new String(bytes, offset, length-offset, "EUC-KR");
+									String temp2 = cutKoreanString(temp1, limit);
+									
+									int endIdx =offset + temp2.getBytes("EUC-KR").length;
+									if(endIdx > length) {
+										endIdx = length;
+									}
+									
+									r.setText(temp2.replace("'", "''"));
+									r.setExt_col1("" + extIdx);
+									requestService.insert_sms(r);
+									extIdx++;
+									offset = endIdx;
+								}								
+							} else if(r.getK_next_type().equals("7")) {
+								r.setPseq(r.getMseq());
+								r.setExt_col1("1");
+								r.setText(r.getText2().replace("'", "''"));
+								r.setMsg_type("1");
+								r.setK_next_type("0");
+								r.setTable_seq(tableseq);
+
+								requestService.insert_sms(r);
+							}
+							
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						// e.printStackTrace();
+						log.error("{}",e.getMessage());
+						//log.error(e);
+					}
+
+				}
+			}
+			 
+			//if(_ml.getRcv_mno_cd().length()>=2) {
+			//	_ml.setRcv_mno_cd(_ml.getRcv_mno_cd().substring(0,1));
+			//}
+			log.info("Mseq : " + _ml.getMseq() + ", Message Type : " + _ml.getMsg_type() + ", Result : " + _ml.getResult() );
 			try {
-				reqService.Insert_msg_log(_ml);
-			}catch (Exception e) {
-				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
+				requestService.Insert_msg_log(_ml);
+			} catch (Exception e) {
+				log.info("결과 처리 오류 [ " + _ml.getMseq() + " ] - " + e.toString());
 			}
 		}
+		
 		log.info("결과 수신 완료 : " + json.length() + " 건");		
 		procCnt--;
-		
 	}
 	
+    public static String cutKoreanString(String input, int maxBytes) {
+        if (input == null || input.getBytes().length <= maxBytes) {
+            return input;
+        }
 
+        StringBuilder result = new StringBuilder();
+        int bytes = 0;
+
+        for (char c : input.toCharArray()) {
+            try {
+				bytes += String.valueOf(c).getBytes("EUC-KR").length;
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+            if (bytes > maxBytes) {
+                break;
+            }
+
+            result.append(c);
+        }
+
+        return result.toString();
+    }
 }
+

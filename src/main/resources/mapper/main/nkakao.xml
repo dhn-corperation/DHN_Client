@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.nkakao.mapper.SendRequest">
+	
+	<select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select count(1) as cnt
+		  from ${msg_table}
+		 where msg_type = '1'
+		   and nvl(REQUEST_TIME, sysdate) &lt;= sysdate
+		   and SEND_TIME is null
+		   and STAT = '0'
+		   and rownum = 1		 
+	</select>
+	
+	<update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table}
+		   set STAT = '1'
+		      ,SEND_TIME = to_date('${group_no}', 'yyyymmddhh24miss')
+		 where MSEQ in (select r.MSEQ
+		                    from ${msg_table} r
+		                   where msg_type = '1'
+		                     and nvl(REQUEST_TIME, sysdate) &lt;= sysdate
+		                     and SEND_TIME is null
+		                     and STAT = '0'
+		                     and rownum &lt;= 1000)
+	</update>
+
+	<select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select count(1) as cnt
+		  from ${msg_table}
+		 where STAT = '0'
+		   and nvl(REQUEST_TIME, sysdate) &lt;= sysdate
+		   and SEND_TIME is null
+           and msg_type = '3'
+		   and rownum = 1		 
+	</select>
+	<update id="req_mms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table}
+		   set STAT = '1'
+		      ,SEND_TIME = to_date('${group_no}', 'yyyymmddhh24miss')
+		 where MSEQ in (select r.MSEQ
+		                    from ${msg_table} r
+		                   where msg_type = '3'
+		                     and nvl(REQUEST_TIME, sysdate) &lt;= sysdate
+		                     and SEND_TIME is null
+		                     and STAT = '0'
+		                     and rownum &lt;= 1000)
+	</update>
+
+	
+	<select id="req_sms_count_z" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select count(1) as cnt
+		  from ${msg_table}
+		 where msg_type = '1'
+		   and nvl(REQUEST_TIME, sysdate) &lt;= sysdate
+		   and SEND_TIME is null
+		   and STAT = '0'
+ 		   and exists (SELECT 1 
+ 		          FROM ${zbsysmcd_table}
+                  WHERE cdid='kkoagent' 
+                    AND TO_CHAR(SYSDATE, 'YYYYMMDD') BETWEEN valifromdd AND valitodd
+                    and cdval = 'DH')	
+		   and rownum = 1		 
+	</select>
+	
+	<update id="req_sms_group_update_z" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table}
+		   set STAT = '1'
+		      ,SEND_TIME = to_date('${group_no}', 'yyyymmddhh24miss')
+		 where MSEQ in (select r.MSEQ
+		                    from ${msg_table} r
+		                   where msg_type = '1'
+		                     and nvl(REQUEST_TIME, sysdate) &lt;= sysdate
+		                     and SEND_TIME is null
+		                     and STAT = '0'
+					 	     and exists (SELECT 1 
+						 		           FROM ${zbsysmcd_table}
+						                  WHERE cdid='kkoagent' 
+						                    AND TO_CHAR(SYSDATE, 'YYYYMMDD') BETWEEN valifromdd AND valitodd
+						                    and cdval = 'DH')		   
+		                     and rownum &lt;= 1000)
+	</update>
+
+	<select id="req_mms_count_z" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select count(1) as cnt
+		  from ${msg_table}
+		 where STAT = '0'
+		   and nvl(REQUEST_TIME, sysdate) &lt;= sysdate
+		   and SEND_TIME is null
+           and msg_type = '3'
+ 		   and exists (SELECT 1 
+ 		          FROM ${zbsysmcd_table}
+                  WHERE cdid='kkoagent' 
+                    AND TO_CHAR(SYSDATE, 'YYYYMMDD') BETWEEN valifromdd AND valitodd
+                    and cdval = 'DH')	
+		   and rownum = 1		 
+	</select>
+	<update id="req_mms_group_update_z" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table}
+		   set STAT = '1'
+		      ,SEND_TIME = to_date('${group_no}', 'yyyymmddhh24miss')
+		 where MSEQ in (select r.MSEQ
+		                    from ${msg_table} r
+		                   where msg_type = '3'
+		                     and nvl(REQUEST_TIME, sysdate) &lt;= sysdate
+		                     and SEND_TIME is null
+		                     and STAT = '0'
+					 	     and exists (SELECT 1 
+						 		           FROM ${zbsysmcd_table}
+						                  WHERE cdid='kkoagent' 
+						                    AND TO_CHAR(SYSDATE, 'YYYYMMDD') BETWEEN valifromdd AND valitodd
+						                    and cdval = 'DH')		   
+		                     and rownum &lt;= 1000)
+	</update>
+  
+	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table} set STAT = '2' where STAT = '1' and SEND_TIME = to_date('${group_no}', 'yyyymmddhh24miss') and msg_type = '${msg_type}'
+	</update>
+
+	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table} set STAT = '0', SEND_TIME = null  where STAT = '1' and SEND_TIME = to_date('${group_no}', 'yyyymmddhh24miss') and msg_type = '${msg_type}'	
+	</update>
+	
+	<resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
+		<result column="msg_seq" property="msgid"/>
+		<result column="messagetype" property="messagetype"/>
+		<result column="msg_txt" property="msg"/>
+		<result column="sms_txt" property="msgsms"/>
+		<result column="call_to" property="phn"/>
+		<result column="call_from" property="smssender"/>
+		<result column="pcom" property="pcom"/>
+		<result column="userdata" property="pinvoice"/>
+		<result column="msgtype" property="smskind"/>
+		<result column="msg_txt_title" property="smslmstit"/>
+		<result column="crypto" property="crypto"/>
+		<result column="curr_date" property="regdt"/>
+		<result column="snd_dttm" property="reservedt"/>
+	</resultMap>
+			
+	<select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+		select 'S' || MSEQ || '_' ||  nvl(EXT_COL1,'N')  as msg_seq
+		      ,'ph' as messagetype
+		      ,text as msg_txt
+		      ,text as sms_txt
+		      ,DSTADDR as call_to
+		      ,CALLBACK as call_from
+		      ,'S' as msgtype
+		      ,null as msg_txt_title
+		      ,'D' as pcom
+		      ,'N' as crypto
+		      ,to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') as curr_date
+		      ,nvl(to_char(REQUEST_TIME,'yyyymmddhh24miss'), '00000000000000') as snd_dttm
+		  from ${msg_table} 
+		 where STAT = '1'
+		   and msg_type = '${msg_type}'
+		   and SEND_TIME = to_date('${group_no}', 'yyyymmddhh24miss')
+	</select>
+			
+	<select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+		select 'L' || MSEQ || '_' || nvl(EXT_COL1,'N') as msg_seq
+		      ,'ph' as messagetype
+		      ,text as msg_txt
+		      ,text as sms_txt
+		      ,DSTADDR as call_to
+		      ,CALLBACK as call_from
+		      ,'L' as msgtype
+		      ,SUBJECT as msg_txt_title
+		      ,'D' as pcom
+		      ,'N' as crypto
+		      ,to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') as curr_date
+		      ,nvl(to_char(REQUEST_TIME,'yyyymmddhh24miss'), '00000000000000') as snd_dttm
+		  from ${msg_table} 
+		 where STAT = '1'
+		   and msg_type = '${msg_type}'
+		   and SEND_TIME = to_date('${group_no}', 'yyyymmddhh24miss')
+	</select>
+
+	<insert id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+		update ${table} 
+		   set STAT = '${stat}'
+		      ,RESULT = '${result}' 
+		      ,report_time = to_date('${report_time}', 'yyyy-mm-dd hh24:mi:ss')
+		      ,telecom = '${telecom}' 
+		      ,TCPRECV_TIME =  sysdate  
+		      ,save_time = sysdate
+		 where mseq = '${mseq}'
+		   and nvl(ext_col1,'N') = '${ext_col1}'
+	</insert>
+
+	<insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
+		insert into ${log_table} select * from ${table} where mseq = '${mseq}' and nvl(ext_col1,'N') = '${ext_col1}'
+	</insert>	
+
+	<insert id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
+		insert into ${log_table}
+		  (mseq
+		  ,msg_type
+		  ,send_type
+		  ,dkey
+		  ,dcnt
+		  ,dstaddr
+		  ,callback
+		  ,stat
+		  ,subject
+		  ,text_type
+		  ,text
+		  ,text2
+		  ,expiretime
+		  ,filecnt
+		  ,fileloc1
+		  ,filesize1
+		  ,fileloc2
+		  ,filesize2
+		  ,fileloc3
+		  ,filesize3
+		  ,fileloc4
+		  ,filesize4
+		  ,fileloc5
+		  ,filesize5
+		  ,filecnt_checkup
+		  ,insert_time
+		  ,request_time
+		  ,send_time
+		  ,report_time
+		  ,tcprecv_time
+		  ,save_time
+		  ,telecom
+		  ,result
+		  ,repcnt
+		  ,server_id
+		  ,opt_id
+		  ,opt_cmp
+		  ,opt_post
+		  ,opt_name
+		  ,ext_col0
+		  ,ext_col1
+		  ,ext_col2
+		  ,ext_col3
+		  ,pseq
+		  ,sender_key
+		  ,k_template_code
+		  ,k_expiretime
+		  ,k_img_link_url
+		  ,k_next_type
+		  ,k_button_type
+		  ,k_button_name
+		  ,k_button_url
+		  ,k_button_url2
+		  ,k_button2_type
+		  ,k_button2_name
+		  ,k_button2_url
+		  ,k_button2_url2
+		  ,k_button3_type
+		  ,k_button3_name
+		  ,k_button3_url
+		  ,k_button3_url2
+		  ,k_button4_type
+		  ,k_button4_name
+		  ,k_button4_url
+		  ,k_button4_url2
+		  ,k_button5_type
+		  ,k_button5_name
+		  ,k_button5_url
+		  ,k_button5_url2
+		  ,k_at_send_type
+		  ,k_ad_flag
+		  ,systemcd
+		  ,tran_id)
+		  select pseq
+		        ,msg_type
+		        ,send_type
+		        ,dkey
+		        ,dcnt
+		        ,dstaddr
+		        ,callback
+		        ,stat
+		        ,subject
+		        ,text_type
+		        ,text
+		        ,text2
+		        ,expiretime
+		        ,filecnt
+		        ,fileloc1
+		        ,filesize1
+		        ,fileloc2
+		        ,filesize2
+		        ,fileloc3
+		        ,filesize3
+		        ,fileloc4
+		        ,filesize4
+		        ,fileloc5
+		        ,filesize5
+		        ,filecnt_checkup
+		        ,insert_time
+		        ,request_time
+		        ,send_time
+		        ,report_time
+		        ,tcprecv_time
+		        ,save_time
+		        ,telecom
+		        ,result
+		        ,repcnt
+		        ,server_id
+		        ,opt_id
+		        ,opt_cmp
+		        ,opt_post
+		        ,opt_name
+		        ,ext_col0
+		        ,ext_col1
+		        ,ext_col2
+		        ,ext_col3
+		        ,pseq
+		        ,sender_key
+		        ,k_template_code
+		        ,k_expiretime
+		        ,k_img_link_url
+		        ,k_next_type
+		        ,k_button_type
+		        ,k_button_name
+		        ,k_button_url
+		        ,k_button_url2
+		        ,k_button2_type
+		        ,k_button2_name
+		        ,k_button2_url
+		        ,k_button2_url2
+		        ,k_button3_type
+		        ,k_button3_name
+		        ,k_button3_url
+		        ,k_button3_url2
+		        ,k_button4_type
+		        ,k_button4_name
+		        ,k_button4_url
+		        ,k_button4_url2
+		        ,k_button5_type
+		        ,k_button5_name
+		        ,k_button5_url
+		        ,k_button5_url2
+		        ,k_at_send_type
+		        ,k_ad_flag
+		        ,systemcd
+		        ,tran_id
+		    from ${table} 
+		    where mseq = '${mseq}' and nvl(ext_col1,'N') = '${ext_col1}'
+	</insert>	
+	
+	<insert id="result_log_insert4" parameterType="com.dhn.client.bean.Msg_Log">
+		delete from ${table} a where mseq = '${mseq}' and nvl(ext_col1,'N') = '${ext_col1}'
+	</insert>
+	
+	<resultMap id="LMSTable" type="com.dhn.client.bean.LMSTableBean">
+		<result column="mseq" property="mseq"/>
+		<result column="msg_type" property="msg_type"/>
+		<result column="send_type" property="send_type"/>
+		<result column="dstaddr" property="dstaddr"/>
+		<result column="callback" property="callback"/>
+		<result column="stat" property="stat"/>
+		<result column="subject" property="subject"/>
+		<result column="text" property="text"/>
+		<result column="text2" property="text2"/>
+		<result column="expiretime" property="expiretime"/>
+		<result column="insert_time" property="insert_time"/>
+		<result column="request_time" property="request_time"/>
+		<result column="systemcd" property="systemcd"/>
+		<result column="tran_id" property="tran_id"/>
+		<result column="k_next_type" property="k_next_type"/>
+	</resultMap>
+			
+	<select id="kakao_to_sms_select" parameterType = "com.dhn.client.bean.Msg_Log" resultMap = "LMSTable">
+		select mseq
+		      ,'3' as msg_type
+		      ,'1' as send_type
+		      ,dstaddr
+		      ,callback
+		      ,'0' as stat
+		      ,subject as subject
+		      ,text as text
+		      ,text2 as text2
+		      ,expiretime
+		      ,sysdate as insert_time
+		      ,request_time
+		      ,systemcd
+		      ,tran_id
+		      ,k_next_type
+		  from ${table} t
+		 where t.mseq = ${mseq}
+		   and ext_col1 is null
+	</select>	
+				 
+	<insert id="kakao_to_sms_insert" parameterType="com.dhn.client.bean.LMSTableBean">
+		insert into ${table}
+		  (mseq
+		  ,msg_type
+		  ,send_type
+		  ,dstaddr
+		  ,callback
+		  ,stat
+		  ,subject
+		  ,text
+		  ,expiretime
+		  ,insert_time
+		  ,request_time
+		  ,ext_col1
+		  ,pseq
+		  ,systemcd
+		  ,tran_id
+		  ,k_next_type
+		  )
+		  values(
+		   ${table_seq}.nextval
+		  ,'${msg_type}'
+		  ,'${send_type}'
+		  ,'${dstaddr}'
+		  ,'${callback}'
+		  ,'${stat}'
+		  ,'${subject}'
+		  ,'${text}'
+		  ,'${expiretime}'
+		  ,to_date('${insert_time}', 'yyyy-mm-dd hh24:mi:ss')
+		  ,to_date('${request_time}', 'yyyy-mm-dd hh24:mi:ss')
+		  ,'${ext_col1}'
+		  ,'${pseq}'
+		  ,'${systemcd}'
+		  ,'${tran_id}'
+		  ,'${k_next_type}'
+		  )   		
+	</insert>	
+				
+</mapper>  
