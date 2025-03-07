@@ -58,8 +58,11 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_type("3");
 		
 
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+//		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
+
+		log.info("MMS 초기화 완료");
 		
 		isStart = true;
 	}

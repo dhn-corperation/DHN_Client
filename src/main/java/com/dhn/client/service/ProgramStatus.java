@@ -33,7 +33,7 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
     	KAOSendRequest.isStart = false;
     	log.info("프로그램이 종료 처리 중.....");
     	try {
-			Thread.sleep(10000);
+			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
