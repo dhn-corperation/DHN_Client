@@ -114,14 +114,14 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 							if(response.getStatusCode() ==  HttpStatus.OK)
 							{
 								requestService.updateKAOSendComplete(param);
-								log.info("메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+								log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("메세지 전송오류 : " + res.get("message"));
+								log.info("KAO 메세지 전송오류 : " + res.get("message"));
 								requestService.updateKAOSendInit(param);
 							}
 						} catch(Exception ex) {
-							log.info("메세지 전송 오류 : " + ex.toString());
+							log.info("KAO 메세지 전송 오류 : " + ex.toString());
 
 							requestService.updateKAOSendInit(param);
 						}
@@ -132,7 +132,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
-					log.error("SMS Send Error : " + e.toString());
+					log.error("KAO Send Error : " + e.toString());
 				}
 				preGroupNo = group_no;
 			}
