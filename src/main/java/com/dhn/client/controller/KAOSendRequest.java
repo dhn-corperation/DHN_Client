@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import com.dhn.client.service.RequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
+@Slf4j
 public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
@@ -37,8 +39,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
-
-	private static final Logger log = LogManager.getRootLogger();
 
 	@Autowired
 	private RequestService requestService;

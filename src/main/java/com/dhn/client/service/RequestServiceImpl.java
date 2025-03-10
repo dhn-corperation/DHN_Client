@@ -1,5 +1,6 @@
 package com.dhn.client.service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -126,6 +127,21 @@ public class RequestServiceImpl implements RequestService{
 	public void insert_sms(LMSTableBean param) throws Exception {
 		requestDAO.insert_sms(param);
 	}
- 
+
+	@Override
+	public int selectOldDataCount(SQLParameter param) throws Exception {
+		return requestDAO.selectOldDataCount(param);
+	}
+
+	@Override
+	public List<RequestBean> selectOldDataId(SQLParameter param) throws Exception {
+		return requestDAO.selectOldDataId(param);
+	}
+
+	@Override
+	public void oldDataResult(Msg_Log ml) throws Exception {
+		requestDAO.oldDataResult(ml);
+	}
+
 
 }

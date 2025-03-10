@@ -37,25 +37,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
 	private boolean isProc = false;
-	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
-	private Map<String, String> _rsltCode = new HashMap<String, String>();
 	private static int procCnt = 0;
 	private String kakaot = "";
 	private String kakaotl = "";
 	private String tableseq = "";
-	private String smst = "";
-	private String smstl = "";
-	private String lmst = "";
-	private String lmstl = "";
-	
-	
-	private static final Logger log = LogManager.getRootLogger();
 	
 	@Autowired
 	private RequestService requestService;
@@ -149,8 +141,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	
 	private void ResultProc(JSONArray json, int _pc) {
 		
-		//log.info(response.getBody().toString());
-		
+
 		for(int i=0; i<json.length();i++) {
 			JSONObject ent = json.getJSONObject(i);
 			Msg_Log _ml = new Msg_Log(kakaot, kakaotl);
@@ -159,7 +150,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			_ml.setMsg_type( mseq[0].substring(0,1) );
 			_ml.setTable(kakaot);
 			_ml.setLog_table(kakaotl);
-			//log.info(ent.getString("msgid") + "/ ", mseq );
 			if( mseq != null &&  mseq.length >=2 ) {
 				_ml.setExt_col1(mseq[1]);
 			} else {
@@ -173,12 +163,23 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			
 			if(ent.getString("message_type").toUpperCase().equals("PH")) 
 			{
-				//if(!ent.getString("code").equals("0000")) {
 				rscode = ent.getString("code");
-				//} 
-				
+
 				_ml.setReport_time(ent.getString("remark2"));
-				_ml.setTelecom(ent.getString("remark1"));
+
+				String telcom = "ETC";
+
+				if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")){
+					telcom = "LGT";
+				}else if(ent.getString("remark1").equalsIgnoreCase("SKT") || ent.getString("remark1").equals("011")){
+					telcom = "SKT";
+				}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")){
+					telcom = "KTF";
+				}else{
+					telcom = "ETC";
+				}
+
+				_ml.setTelecom(telcom);
 				_ml.setResult(rscode);
 			} else {
 				
@@ -281,10 +282,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 				}
 			}
-			 
-			//if(_ml.getRcv_mno_cd().length()>=2) {
-			//	_ml.setRcv_mno_cd(_ml.getRcv_mno_cd().substring(0,1));
-			//}
+
 			log.info("Mseq : " + _ml.getMseq() + ", Message Type : " + _ml.getMsg_type() + ", Result : " + _ml.getResult() );
 			try {
 				requestService.Insert_msg_log(_ml);

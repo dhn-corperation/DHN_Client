@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
@@ -40,8 +41,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
-	
-	private static final Logger log = LogManager.getRootLogger();
 	
 	@Autowired
 	private RequestService requestService;

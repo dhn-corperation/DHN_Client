@@ -1,5 +1,6 @@
 package com.dhn.client.dao;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,6 +195,35 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void insert_sms(LMSTableBean param) throws Exception {
 		sqlSession.insert("com.dhn.client.nkakao.mapper.SendRequest.kakao_to_sms_insert", param); 
+	}
+
+	@Override
+	public int selectOldDataCount(SQLParameter param) throws Exception {
+		int cnt =0;
+
+		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
+			cnt = sqlSession.selectOne("com.dhn.client.result.mapper.SendRequest.old_data_count_z", param);
+		} else {
+			cnt = sqlSession.selectOne("com.dhn.client.result.mapper.SendRequest.old_data_count", param);
+		}
+
+		return cnt;
+	}
+
+	@Override
+	public List<RequestBean> selectOldDataId(SQLParameter param) throws Exception {
+		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
+			return sqlSession.selectList("com.dhn.client.result.mapper.SendRequest.old_data_list_z", param);
+		} else {
+			return sqlSession.selectList("com.dhn.client.result.mapper.SendRequest.old_data_list", param);
+		}
+	}
+
+	@Override
+	public void oldDataResult(Msg_Log ml) throws Exception {
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.old_data_update", ml);
+		sqlSession.insert("com.dhn.client.result.mapper.SendRequest.old_data_insert", ml);
+		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.old_data_delete", ml);
 	}
 
 }

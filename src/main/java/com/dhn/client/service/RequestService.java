@@ -53,5 +53,9 @@ public interface RequestService {
 	
 	public void insert_sms(LMSTableBean param) throws Exception;
 
+    public int selectOldDataCount(SQLParameter param) throws Exception;
 
+	public List<RequestBean> selectOldDataId(SQLParameter param) throws Exception;
+
+	public void oldDataResult(Msg_Log ml) throws Exception;
 }
