@@ -139,7 +139,11 @@
 	</resultMap>
 			
 	<select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-		select 'S' || MSEQ || '_' ||  nvl(EXT_COL1,'N')  as msg_seq
+		select 'S' || MSEQ || '_' ||
+			   CASE
+				   WHEN PSEQ IS NOT NULL THEN '1'
+				   ELSE 'N'
+			   END as msg_seq
 		      ,'ph' as messagetype
 		      ,text as msg_txt
 		      ,text as sms_txt
@@ -158,7 +162,11 @@
 	</select>
 			
 	<select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-		select 'L' || MSEQ || '_' || nvl(EXT_COL1,'N') as msg_seq
+		select 'L' || MSEQ || '_' ||
+			   CASE
+				   WHEN PSEQ IS NOT NULL THEN '1'
+				   ELSE 'N'
+			   END as msg_seq
 		      ,'ph' as messagetype
 		      ,text as msg_txt
 		      ,text as sms_txt
@@ -185,11 +193,10 @@
 		      ,TCPRECV_TIME =  sysdate  
 		      ,save_time = sysdate
 		 where mseq = '${mseq}'
-		   and nvl(ext_col1,'N') = '${ext_col1}'
 	</insert>
 
 	<insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
-		insert into ${log_table} select * from ${table} where mseq = '${mseq}' and nvl(ext_col1,'N') = '${ext_col1}'
+		insert into ${log_table} select * from ${table} where mseq = '${mseq}'
 	</insert>	
 
 	<insert id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
@@ -341,11 +348,11 @@
 		        ,systemcd
 		        ,tran_id
 		    from ${table} 
-		    where mseq = '${mseq}' and nvl(ext_col1,'N') = '${ext_col1}'
+		    where mseq = '${mseq}'
 	</insert>	
 	
 	<insert id="result_log_insert4" parameterType="com.dhn.client.bean.Msg_Log">
-		delete from ${table} a where mseq = '${mseq}' and nvl(ext_col1,'N') = '${ext_col1}'
+		delete from ${table} a where mseq = '${mseq}'
 	</insert>
 	
 	<resultMap id="LMSTable" type="com.dhn.client.bean.LMSTableBean">
@@ -384,7 +391,6 @@
 		      ,k_next_type
 		  from ${table} t
 		 where t.mseq = ${mseq}
-		   and ext_col1 is null
 	</select>	
 				 
 	<insert id="kakao_to_sms_insert" parameterType="com.dhn.client.bean.LMSTableBean">
@@ -400,7 +406,6 @@
 		  ,expiretime
 		  ,insert_time
 		  ,request_time
-		  ,ext_col1
 		  ,pseq
 		  ,systemcd
 		  ,tran_id
@@ -418,7 +423,6 @@
 		  ,'${expiretime}'
 		  ,to_date('${insert_time}', 'yyyy-mm-dd hh24:mi:ss')
 		  ,to_date('${request_time}', 'yyyy-mm-dd hh24:mi:ss')
-		  ,'${ext_col1}'
 		  ,'${pseq}'
 		  ,'${systemcd}'
 		  ,'${tran_id}'

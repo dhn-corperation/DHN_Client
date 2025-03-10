@@ -14,7 +14,7 @@ public class Msg_Log {
 	private String report_time;
 	private String pseq;
 	private String k_next_type;
-	private String ext_col1;
+	private String second_flag;
 	private String msg_type;
 	private String telecom;
 	

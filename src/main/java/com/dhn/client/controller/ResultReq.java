@@ -151,17 +151,22 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			_ml.setTable(kakaot);
 			_ml.setLog_table(kakaotl);
 			if( mseq != null &&  mseq.length >=2 ) {
-				_ml.setExt_col1(mseq[1]);
+				if(mseq[1].equalsIgnoreCase("N")){
+					_ml.setSecond_flag("N");
+				}else{
+					_ml.setSecond_flag("Y");
+				}
 			} else {
-				_ml.setExt_col1("N");
+				_ml.setSecond_flag("N");
 
 			}
-			
+
 			_ml.setPseq(_ml.getMseq());
+
 			String rscode = "0000";
 			_ml.setStat("3");
 			
-			if(ent.getString("message_type").toUpperCase().equals("PH")) 
+			if(ent.getString("message_type").equalsIgnoreCase("PH"))
 			{
 				rscode = ent.getString("code");
 

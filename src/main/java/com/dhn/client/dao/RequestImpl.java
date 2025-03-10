@@ -73,10 +73,10 @@ public class RequestImpl implements RequestDAO{
 			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert3", ml);
 		} else {
 			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert1", ml);
-			if(!ml.getExt_col1().equals("N")) {
-				sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert3", ml);
-			} else {
+			if(ml.getSecond_flag().equalsIgnoreCase("N")) {
 				sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert2", ml);
+			} else {
+				sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert3", ml);
 			}
 			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert4", ml);
 		}

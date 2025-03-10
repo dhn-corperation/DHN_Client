@@ -144,15 +144,14 @@
 		      ,TCPRECV_TIME =  sysdate 
 		      ,save_time = sysdate
 		 where MSEQ = '${mseq}'
-		   and ext_col1 is null
 	</insert>
 
 	<insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
-		insert into ${log_table} select * from ${table} where MSEQ = '${mseq}' and ext_col1 is null
+		insert into ${log_table} select * from ${table} where MSEQ = '${mseq}'
 	</insert>	
 
 	<insert id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
-		delete from ${table} a where MSEQ = '${mseq}' and ext_col1 is null
+		delete from ${table} a where MSEQ = '${mseq}'
 	</insert>
 	
 </mapper>  
