@@ -2,7 +2,6 @@ package com.dhn.client.controller;
 
 import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.OldResultBean;
-import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +16,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class ResultOldData implements ApplicationListener<ContextRefreshedEvent> {
+public class ResultOldSMS implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -34,7 +33,6 @@ public class ResultOldData implements ApplicationListener<ContextRefreshedEvent>
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        // TODO Auto-generated method stub
         kakaot = appContext.getEnvironment().getProperty("dhnclient.req_table");
         kakaotl = appContext.getEnvironment().getProperty("dhnclient.log_table");
         tableseq = appContext.getEnvironment().getProperty("dhnclient.table_seq");
@@ -43,14 +41,12 @@ public class ResultOldData implements ApplicationListener<ContextRefreshedEvent>
         param.setZbsysmcd_table(appContext.getEnvironment().getProperty("dhnclient.zbsysmcd_table") );
         param.setKakao( appContext.getEnvironment().getProperty("dhnclient.kakao") );
 
-        param.setMsg_type("3");
+        param.setMsg_type("1");
         param.setTime("2");
 
         isStart = true;
     }
 
-
-//    @Scheduled(fixedDelay = 60000)
     @Scheduled(fixedDelay = 1000)
     private void SendProcess() {
         if(isStart && !isProc) {
@@ -74,18 +70,18 @@ public class ResultOldData implements ApplicationListener<ContextRefreshedEvent>
 
                         try{
                             requestService.oldDataResult(ml);
-                            log.info("LMS 과거 데이터 결과처리 Mseq : " + ml.getMseq());
+                            log.info("SMS 과거 데이터 결과처리 Mseq : " + ml.getMseq());
                             count++;
                         }catch (Exception e){
-                            log.error("LMS Old Data Result Error (Update - Insert - Delete) : " + e.toString());
+                            log.error("SMS Old Data Result Error (Update - Insert - Delete) : " + e.toString());
                         }
                     }
 
-                    log.info("LMS 과거데이터 결과처리 완료 {}건",count);
+                    log.info("SMS 과거데이터 결과처리 완료 {}건",count);
                 }
 
             } catch (Exception e){
-                log.error("LMS Old Data Result Error : " + e.toString());
+                log.error("SMS Old Data Result Error : " + e.toString());
             }
 
             isProc = false;

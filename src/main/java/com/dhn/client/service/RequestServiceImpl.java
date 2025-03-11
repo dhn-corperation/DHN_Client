@@ -4,16 +4,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import com.dhn.client.bean.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.KAOtoMMSBean;
-import com.dhn.client.bean.LMSTableBean;
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.RequestBean;
-import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.dao.RequestDAO; 
+import com.dhn.client.dao.RequestDAO;
 
 @Service
 public class RequestServiceImpl implements RequestService{
@@ -134,8 +129,8 @@ public class RequestServiceImpl implements RequestService{
 	}
 
 	@Override
-	public List<RequestBean> selectOldDataId(SQLParameter param) throws Exception {
-		return requestDAO.selectOldDataId(param);
+	public List<OldResultBean> selectOldData(SQLParameter param) throws Exception {
+		return requestDAO.selectOldData(param);
 	}
 
 	@Override

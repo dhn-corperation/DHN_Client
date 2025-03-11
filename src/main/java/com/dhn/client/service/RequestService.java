@@ -3,12 +3,7 @@ package com.dhn.client.service;
 import java.util.HashMap;
 import java.util.List;
 
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.KAOtoMMSBean;
-import com.dhn.client.bean.LMSTableBean;
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.RequestBean;
-import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.bean.*;
 
 public interface RequestService {
 	public int selectSMSReqeustCount(SQLParameter param) throws Exception;
@@ -55,7 +50,7 @@ public interface RequestService {
 
     public int selectOldDataCount(SQLParameter param) throws Exception;
 
-	public List<RequestBean> selectOldDataId(SQLParameter param) throws Exception;
+	public List<OldResultBean> selectOldData(SQLParameter param) throws Exception;
 
 	public void oldDataResult(Msg_Log ml) throws Exception;
 }

@@ -12,6 +12,6 @@ public class SQLParameter {
 	private String msg_type;
 	private String log_mv_flag;
 	private String bktable;
-
+	private String time;
 
 }

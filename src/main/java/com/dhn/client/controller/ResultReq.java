@@ -279,10 +279,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 							
 						}
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						// e.printStackTrace();
-						log.error("{}",e.getMessage());
-						//log.error(e);
+						log.error("재발송 데이터 Insert 오류 : {}",e.getMessage());
 					}
 
 				}
