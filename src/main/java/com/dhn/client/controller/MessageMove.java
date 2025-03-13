@@ -109,11 +109,11 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
                     log.info("Move Cnt : " + cnt);
                 }
 
-
                 if(cnt > 0){
                     List<MoveData> _list = requestService.moveDataSelect(param);
 
                     List<String> msgIdList = new ArrayList<>();
+
                     for(MoveData moveData : _list){
                         msgIdList.add(moveData.getMsgid());
                     }
@@ -122,7 +122,6 @@ public class MessageMove implements ApplicationListener<ContextRefreshedEvent> {
                     }
 
                     String strmsg = String.join(",", msgIdList);
-
                     if(dbug.equalsIgnoreCase("Y")){
                         log.info("Move msgid : " + strmsg);
                     }

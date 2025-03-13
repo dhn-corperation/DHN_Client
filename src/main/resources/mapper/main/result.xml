@@ -3,89 +3,62 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dhn.client.result.mapper.SendRequest">
 
-    <select id="select_2nd_flag" parameterType="com.dhn.client.bean.Msg_Log" resultType="String">
-        SELECT
-            CASE
-                WHEN LENGTH(trim(LINK_SEND_TYPE_CD)) > 0 AND TRIM(LINK_SEND_TYPE_CD) IS NOT NULL THEN 'Y'
-                ELSE 'N'
-                END AS flag
-        FROM ${msg_table}
-        WHERE MESSAGE_MST_NO = '${msgid}'
-    </select>
-
-    <update id="send_2nd_update" parameterType="com.dhn.client.bean.Msg_Log">
-        update ${main_table}
-            set SEND_RESULT_DT = SYSTIMESTAMP,
-                MESSAGE_STATUS_CD = '02',
-                SEND_RESULT_CD = '${result_code}',
-                SEND_RESULT_MESSAGE = #{result_msg},
-                MOD_DT = SYSTIMESTAMP,
-                MOD_ID = #{mod_id},
-                SEND_TYPE_CD = '${msg_type}'
-        where MESSAGE_MST_NO = '${msgid}'
-    </update>
-
     <update id="dhn_log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${msg_table}
-        set SEND_RESULT_DT = SYSTIMESTAMP,
-            MESSAGE_STATUS_CD = '03',
-            SEND_RESULT_CD = '${result_code}',
-            SEND_RESULT_MESSAGE = #{result_msg},
-            MOD_DT = SYSTIMESTAMP,
-            MOD_ID = #{mod_id},
-            SEND_TYPE_CD = '${msg_type}'
-        where MESSAGE_MST_NO = '${msgid}'
+        set GDBK_SNDNG_DMND_TMST = SYSTIMESTAMP,
+            MSG_STTS_CD = '03',
+            MSG_SNRS_CD = '${result_code}',
+            GDBK_SNRS_MSG_CN = #{result_msg},
+            MDFCN_DT = SYSTIMESTAMP,
+            MDFR_ID = #{mod_id},
+            SNDNG_TYPE_CD = '${msg_type}'
+        where MSG_MST_NO = '${msgid}'
     </update>
 
     <insert id="dhn_log_insert" parameterType="com.dhn.client.bean.Msg_Log">
         INSERT INTO ${log_date_table}
         SELECT * FROM ${msg_table}
-        WHERE MESSAGE_MST_NO = '${msgid}'
+        WHERE MSG_MST_NO = '${msgid}'
     </insert>
 
     <delete id="dhn_log_delete" parameterType="com.dhn.client.bean.Msg_Log">
         delete from ${msg_table}
-        where MESSAGE_MST_NO = '${msgid}'
+        where MSG_MST_NO = '${msgid}'
     </delete>
 
     <update id="log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${main_table}
-            set SEND_RESULT_DT = SYSTIMESTAMP,
-                MESSAGE_STATUS_CD = '02',
-                SEND_RESULT_CD = '${result_code}',
-                SEND_RESULT_MESSAGE = #{result_msg},
-                MOD_DT = SYSTIMESTAMP,
-                MOD_ID = #{mod_id},
-                SEND_TYPE_CD = '${msg_type}'
-        where MESSAGE_MST_NO = '${msgid}'
+            set GDBK_SNDNG_DMND_TMST = SYSTIMESTAMP,
+                MSG_STTS_CD = '02',
+                MSG_SNRS_CD = '${result_code}',
+                GDBK_SNRS_MSG_CN = #{result_msg},
+                MDFCN_DT = SYSTIMESTAMP,
+                MDFR_ID = #{mod_id},
+                SNDNG_TYPE_CD = '${msg_type}'
+        where MSG_MST_NO = '${msgid}'
     </update>
-
-    <delete id="log_delete" parameterType="com.dhn.client.bean.Msg_Log">
-        delete from ${main_table}
-        where MESSAGE_MST_NO = '${msgid}'
-    </delete>
 
     <update id="phn_err_log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${main_table}
-        set SEND_RESULT_DT = SYSTIMESTAMP,
-            MESSAGE_STATUS_CD = '91',
-            SEND_RESULT_CD = '${result_code}',
-            SEND_RESULT_MESSAGE = #{result_msg},
-            MOD_DT = SYSTIMESTAMP,
-            MOD_ID = #{mod_id}
-        where MESSAGE_MST_NO in (${msgid})
+        set GDBK_SNDNG_DMND_TMST = SYSTIMESTAMP,
+            MSG_STTS_CD = '91',
+            MSG_SNRS_CD = '${result_code}',
+            GDBK_SNRS_MSG_CN = #{result_msg},
+            MDFCN_DT = SYSTIMESTAMP,
+            MDFR_ID = #{mod_id}
+        where MSG_MST_NO in (${msgid})
     </update>
 
     <update id="phn_err_mst_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${main_log_table}
-        set SEND_RESULT_DT = SYSTIMESTAMP,
-            SEND_DT = SYSTIMESTAMP,
-            MESSAGE_STATUS_CD = '91',
-            SEND_RESULT_CD = '${result_code}',
-            SEND_RESULT_MESSAGE = #{result_msg},
-            MOD_DT = SYSTIMESTAMP,
-            MOD_ID = #{mod_id}
-        where MESSAGE_MST_NO in (${msgid})
+        set GDBK_SNDNG_DMND_TMST = SYSTIMESTAMP,
+            ISND_PRCS_DT = SYSTIMESTAMP,
+            MSG_STTS_CD = '91',
+            MSG_SNRS_CD = '${result_code}',
+            GDBK_SNRS_MSG_CN = #{result_msg},
+            MDFCN_DT = SYSTIMESTAMP,
+            MDFR_ID = #{mod_id}
+        where MSG_MST_NO in (${msgid})
     </update>
 
     <update id="phn_err_dhn_log_update" parameterType="com.dhn.client.bean.Msg_Log">
@@ -107,11 +80,6 @@
 
     <delete id="phn_err_dhn_log_delete" parameterType="com.dhn.client.bean.Msg_Log">
         delete from ${msg_table}
-        where MESSAGE_MST_NO in (${msgid})
-    </delete>
-
-    <delete id="phn_err_log_delete" parameterType="com.dhn.client.bean.Msg_Log">
-        delete from ${main_table}
         where MESSAGE_MST_NO in (${msgid})
     </delete>
 

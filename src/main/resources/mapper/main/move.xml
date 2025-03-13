@@ -4,135 +4,114 @@
 <mapper namespace="com.dhn.client.move.mapper.SendRequest">
 
     <select id = "move_data_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-        SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
-            count(MESSAGE_MST_NO) AS cnt
+        SELECT /*+ INDEX(MSA_MSG_SNDNG_B MSA_MSG_SNDNG_B_IDX3) */
+            count(MSG_MST_NO) AS cnt
         FROM ${main_table}
-        WHERE SEND_TYPE_CD IN (${flag_msg_type})
-          AND MESSAGE_STATUS_CD = '00'
-          AND ETRS_MTCD = '02'
-        AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
-            OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
+        WHERE SNDNG_TYPE_CD IN (${flag_msg_type})
+          AND MSG_STTS_CD = '00'
+          AND GDBK_TRSM_MTHD_CD = '02'
+        AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+            OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
     </select>
 
     <select id = "move_rtime_data_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-        SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */
-            count(MESSAGE_MST_NO) AS cnt
+        SELECT /*+ INDEX(MSA_MSG_SNDNG_B MSA_MSG_SNDNG_B_IDX3) */
+            count(MSG_MST_NO) AS cnt
         FROM ${main_table}
-        WHERE SEND_TYPE_CD IN (${flag_msg_type})
-          AND MESSAGE_STATUS_CD = '00'
-          AND ETRS_MTCD = '01'
-          AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
-            OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
+        WHERE SNDNG_TYPE_CD IN (${flag_msg_type})
+          AND MSG_STTS_CD = '00'
+          AND GDBK_TRSM_MTHD_CD = '01'
+          AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+            OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
     </select>
 
     <resultMap id="moveData" type="com.dhn.client.bean.MoveData">
-        <result column="MESSAGE_MST_NO" property="msgid"/>
+        <result column="MSGID" property="msgid"/>
     </resultMap>
 
     <select id="move_data_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="moveData">
-        SELECT MESSAGE_MST_NO
+        SELECT MSG_MST_NO AS MSGID
         FROM ${main_table}
         WHERE ROWID IN (
-            SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */ ROWID
+            SELECT /*+ INDEX(MSA_MSG_SNDNG_B MSA_MSG_SNDNG_B_IDX3) */ ROWID
             FROM ${main_table}
-            WHERE SEND_TYPE_CD IN (${flag_msg_type})
-            AND MESSAGE_STATUS_CD = '00'
-            AND ETRS_MTCD = '02'
-            AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
-                OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
-                ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
+            WHERE SNDNG_TYPE_CD IN (${flag_msg_type})
+            AND MSG_STTS_CD = '00'
+            AND GDBK_TRSM_MTHD_CD = '02'
+            AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+                OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
+                ) ORDER BY MOBL_REG_TYPE_CD , SNDNG_PRNMNT_YMD, GDBK_SNDNG_PRNMNT_TM
             FETCH FIRST 500 ROWS ONLY
-        ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME, REG_DT
+        ) ORDER BY MOBL_REG_TYPE_CD , SNDNG_PRNMNT_YMD, GDBK_SNDNG_PRNMNT_TM, REG_DT
     </select>
 
     <select id="move_rtime_data_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="moveData">
-        SELECT MESSAGE_MST_NO
+        SELECT MSG_MST_NO AS MSGID
         FROM ${main_table}
         WHERE ROWID IN (
-            SELECT /*+ INDEX(TB_MESSAGE_SEND IDX_MESSAGE_SEND_03) */ ROWID
+            SELECT /*+ INDEX(MSA_MSG_SNDNG_B MSA_MSG_SNDNG_B_IDX3) */ ROWID
             FROM ${main_table}
-            WHERE SEND_TYPE_CD IN (${flag_msg_type})
-              AND MESSAGE_STATUS_CD = '00'
-              AND ETRS_MTCD = '01'
-              AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
-                OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
-                ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
+            WHERE SNDNG_TYPE_CD IN (${flag_msg_type})
+              AND MSG_STTS_CD = '00'
+              AND GDBK_TRSM_MTHD_CD = '01'
+              AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+                OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
+                ) ORDER BY MOBL_REG_TYPE_CD , SNDNG_PRNMNT_YMD, GDBK_SNDNG_PRNMNT_TM
               FETCH FIRST 500 ROWS ONLY
-        ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME, REG_DT
+        ) ORDER BY MOBL_REG_TYPE_CD , SNDNG_PRNMNT_YMD, GDBK_SNDNG_PRNMNT_TM, REG_DT
     </select>
 
     <insert id="move_data_insert" parameterType="com.dhn.client.bean.SQLParameter">
         INSERT INTO ${msg_table}
-        SELECT * FROM ${main_table}
-        WHERE MESSAGE_MST_NO IN
-        <foreach collection="msgid_list" item="msgid" open="(" separator="," close=")">
-            #{msgid}
-        </foreach>
+        SELECT
+            SNDNG_PRNMNT_YMD,
+            MSG_MST_NO,
+            GDBK_SNDNG_PRNMNT_TM,
+            MSG_TMPLT_CD,
+            ISND_DMND_YMD,
+            SNDNG_TYPE_CD,
+            SNDPTY_ID,
+            SNDPTY_NM,
+            MOBL_BROF_CD,
+            CUST_NM,
+            SNDPTY_TELNO,
+            RCVR_TELNO,
+            MSG_TTL,
+            MSG_CN,
+            SNDNG_PFR_RNKG,
+            MOBL_REG_TYPE_CD,
+            GDBK_TRSM_MTHD_CD,
+            MSG_STTS_CD,
+            ISND_PRCS_DT,
+            GDBK_SNDNG_DMND_TMST,
+            MSG_SNRS_CD,
+            GDBK_SNRS_MSG_CN,
+            MOBL_SYS_CD,
+            SPAM_YN,
+            BTN_NM,
+            BTN_KIND_NM,
+            URL_MOBL_ANDR_CN,
+            URL_PC_IOS_CN,
+            CUST_INTG_CONT_NO,
+            LINK_SNDNG_TYPE_CD,
+            LINK_SNDNG_MST_NO,
+            LINK_FRST_SNDNG_TYPE_CD,
+            GDBK_LAST_SNDNG_TYPE_CD,
+            LINK_LAST_SNDNG_SCS_YN,
+            MDFCN_DT,
+            MDFR_ID,
+            NULL
+        FROM ${main_table}
+        WHERE MSG_MST_NO IN (${strmsgid})
     </insert>
 
     <update id="update_move_status" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${main_table}
-            SET MESSAGE_STATUS_CD = '01',
-            SEND_DT = SYSTIMESTAMP,
-            MOD_DT = SYSTIMESTAMP,
-            MOD_ID = #{mod_id}
-        WHERE MESSAGE_MST_NO IN
-        <foreach collection="msgid_list" item="msgid" open="(" separator="," close=")">
-            #{msgid}
-        </foreach>
-    </update>
-
-    <insert id="move_data_insert_new" parameterType="com.dhn.client.bean.SQLParameter">
-        INSERT INTO ${msg_table}
-        SELECT
-            SEND_EXPECTED_DT,
-            MESSAGE_MST_NO,
-            SEND_EXPECTED_TIME,
-            MSG_TEMPLATE_CD,
-            ISND_RQRM_DT,
-            SEND_TYPE_CD,
-            SENDER_ID,
-            SENDER_NAME,
-            BROF_CD,
-            CUST_NAME,
-            SENDER_PHONE_NO,
-            RECEIVER_PHONE_NO,
-            MESSAGE_TITLE,
-            MESSAGE_CONTENT,
-            SEND_PRIORITY,
-            REG_TYPE_CD,
-            ETRS_MTCD,
-            MESSAGE_STATUS_CD,
-            SEND_DT,
-            SEND_RESULT_DT,
-            SEND_RESULT_CD,
-            SEND_RESULT_MESSAGE,
-            SYSTEM_CD,
-            AD_FLAG,
-            BUTTON_NAME,
-            BUTTON_TYPE,
-            URL_MOBILE_ANDROID,
-            URL_PC_IOS,
-            CUST_INTG_CONT_NO,
-            LINK_SEND_TYPE_CD,
-            LINK_SEND_MST_NO,
-            LINK_FIRST_SEND_TYPE_CD,
-            LINK_LAST_SEND_TYPE_CD,
-            LINK_LAST_SEND_SUCCESS_YN,
-            MOD_DT,
-            MOD_ID,
-            NULL
-        FROM ${main_table}
-        WHERE MESSAGE_MST_NO IN (${strmsgid})
-    </insert>
-
-    <update id="update_move_status_new" parameterType="com.dhn.client.bean.SQLParameter">
-        UPDATE ${main_table}
-        SET MESSAGE_STATUS_CD = '01',
-        SEND_DT = SYSTIMESTAMP,
-        MOD_DT = SYSTIMESTAMP,
-        MOD_ID = #{mod_id}
-        WHERE MESSAGE_MST_NO IN (${strmsgid})
+        SET MSG_STTS_CD = '01',
+            ISND_PRCS_DT = SYSTIMESTAMP,
+            MDFCN_DT = SYSTIMESTAMP,
+            MDFR_ID = #{mod_id}
+        WHERE MSG_MST_NO IN (${strmsgid})
     </update>
 
 

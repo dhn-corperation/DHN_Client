@@ -69,11 +69,6 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public String select2ndFlag(Msg_Log ml) throws Exception {
-		return requestDAO.select2ndFlag(ml);
-	}
-
-	@Override
 	public void update_msg_log(Msg_Log ml) throws Exception {
 		requestDAO.update_msg_log(ml);
 	}
@@ -96,6 +91,23 @@ public class RequestServiceImpl implements RequestService {
 			}
 		}catch (Exception e){
 			log.error("{} 테이블 생성 중 오류 발생: {}", param.getMsg_table(), e.getMessage());
+			throw e;
+		}
+	}
+
+	@Override
+	public void aliveTableCheck(SQLParameter param) throws Exception {
+		int result = requestDAO.aliveTableCheck(param);
+
+		try{
+			if(result == 0){
+				requestDAO.aliveTableCreate(param);
+				log.info("{} 테이블 생성 완료",param.getAlive_table());
+			}else{
+				log.info("{} 테이블이 존재합니다.",param.getAlive_table());
+			}
+		}catch (Exception e){
+			log.error("{} 테이블 생성 중 오류 발생: {}", param.getAlive_table(), e.getMessage());
 			throw e;
 		}
 	}

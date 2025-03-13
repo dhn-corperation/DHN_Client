@@ -26,8 +26,6 @@ public interface RequestDAO {
 
 	void updateMSGSendInit(SQLParameter param) throws Exception;
 
-	String select2ndFlag(Msg_Log ml) throws Exception;
-
 	void update_msg_log(Msg_Log ml) throws Exception;
 
     void logTableCheck(String msgTable, String logTable) throws Exception;
@@ -35,6 +33,8 @@ public interface RequestDAO {
 	int tableCheck(SQLParameter param) throws Exception;
 
 	void tableCreate(SQLParameter param) throws Exception;
+
+	void aliveTableCreate(SQLParameter param) throws Exception;
 
 	int moveDataCount(SQLParameter param) throws Exception;
 
@@ -51,5 +51,6 @@ public interface RequestDAO {
     int moveRtimeDataCount(SQLParameter param) throws Exception;
 
 	List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception;
-;
+
+	int aliveTableCheck(SQLParameter param) throws Exception;
 }

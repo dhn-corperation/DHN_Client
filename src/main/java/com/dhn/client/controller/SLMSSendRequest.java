@@ -142,12 +142,8 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
                             continue;
                         }
 
-                        if(requestBean.getMsgsms().getBytes("EUC-KR").length > 90){
-                            requestBean.setSmskind("L");
-                        }
 
                         msg_list.add(requestBean.getMsgid());
-
                         sendList.add(requestBean);
                     }
 

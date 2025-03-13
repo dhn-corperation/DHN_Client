@@ -40,7 +40,7 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateKAOSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param);
-		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2_new", param);
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2", param);
 	}
 
 	@Override
@@ -68,17 +68,12 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateMSGSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete",param);
-		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2_new",param);
+		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2",param);
 	}
 
 	@Override
 	public void updateMSGSendInit(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_init",param);
-	}
-
-	@Override
-	public String select2ndFlag(Msg_Log ml) throws Exception {
-		return sqlSession.selectOne("com.dhn.client.result.mapper.SendRequest.select_2nd_flag",ml);
 	}
 
 	@Override
@@ -136,9 +131,19 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void tableCreate(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable_new", param);
+		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable", param);
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createPrimaryKey", param);
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex1", param);
+	}
+
+	@Override
+	public int aliveTableCheck(SQLParameter param) throws Exception {
+		return sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.aliveTableCheck", param);
+	}
+
+	@Override
+	public void aliveTableCreate(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createAliveTable", param);
 	}
 
 	@Override
@@ -155,12 +160,12 @@ public class RequestImpl implements RequestDAO{
 
 	@Override
 	public void moveDataInsert(SQLParameter param) throws Exception {
-		sqlSession.insert("com.dhn.client.move.mapper.SendRequest.move_data_insert_new", param);
+		sqlSession.insert("com.dhn.client.move.mapper.SendRequest.move_data_insert", param);
 	}
 
 	@Override
 	public void updateMoveStatus(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.move.mapper.SendRequest.update_move_status_new", param);
+		sqlSession.update("com.dhn.client.move.mapper.SendRequest.update_move_status", param);
 	}
 
 	@Override
@@ -188,4 +193,5 @@ public class RequestImpl implements RequestDAO{
 	public List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception {
 		return sqlSession.selectList("com.dhn.client.move.mapper.SendRequest.move_rtime_data_select", param);
 	}
+
 }

@@ -141,12 +141,7 @@ public class MMSendRequest implements ApplicationListener<ContextRefreshedEvent>
                             continue;
                         }
 
-                        if(requestBean.getMsgsms().getBytes("EUC-KR").length > 90){
-                            requestBean.setSmskind("L");
-                        }
-
                         msg_list.add(requestBean.getMsgid());
-
                         sendList.add(requestBean);
                     }
 

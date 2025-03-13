@@ -221,18 +221,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			String code = "0000";
 
-//			String flag = "N";
-
 			if(ent.getString("message_type").equalsIgnoreCase("AT")){
-
-				/*
-				try{
-					flag = requestService.select2ndFlag(_ml);
-				}catch (Exception e){
-					log.info("알림톡 결과처리 2차여부 조회 오류 : " + e.getMessage());
-				}
-
-				 */
 				code = _kaoCode.getOrDefault(ent.getString("code"),"E999");
 				_ml.setReal_send_date(ent.getString("res_dt"));
 				_ml.setResult_msg(ent.getString("message"));
@@ -247,8 +236,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					_ml.setMsg_type("M2");
 				}
 			}
-
-//			_ml.setFlag_2nd(flag);
 
 			_ml.setResult_code(code);
 

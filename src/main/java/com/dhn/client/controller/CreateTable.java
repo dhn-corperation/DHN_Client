@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class CreateTable implements ApplicationListener<ContextRefreshedEvent> {
 
     private SQLParameter param = new SQLParameter();
+    private String dual_flag = "N";
 
     @Autowired
     private RequestService requestService;
@@ -29,6 +30,7 @@ public class CreateTable implements ApplicationListener<ContextRefreshedEvent> {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setMain_table(appContext.getEnvironment().getProperty("dhnclient.main_table"));
         param.setLog_table(appContext.getEnvironment().getProperty("dhnclient.log_table"));
+        dual_flag = appContext.getEnvironment().getProperty("dhnclient.dual");
 
         try{
             requestService.tableCheck(param);
@@ -42,6 +44,16 @@ public class CreateTable implements ApplicationListener<ContextRefreshedEvent> {
             log.info("DHN 로그 테이블 체크 및 생성 완료");
         }catch (Exception e){
             log.error(param.getLog_table() + " 테이블 생성 오류 : " + e.getMessage());
+        }
+
+        if(dual_flag.equalsIgnoreCase("Y")){
+            param.setAlive_table(appContext.getEnvironment().getProperty("dhnclient.alive_table"));
+            try{
+                requestService.aliveTableCheck(param);
+                log.info("DHN Alive 테이블 체크 및 생성 완료");
+            }catch (Exception e){
+                log.error(param.getAlive_table() + " 테이블 생성 오류 : " + e.getMessage());
+            }
         }
     }
 }
