@@ -61,7 +61,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-		log.info("MMS 초기화 완료");
+		log.info("LMS 초기화 완료");
 		
 		isStart = true;
 	}
@@ -112,14 +112,14 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							if(response.getStatusCode() == HttpStatus.OK)
 							{
 								requestService.updateSMSSendComplete(param);
-								log.info("MMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+								log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("MMS 메세지 전송오류 : " + res.get("message"));
+								log.info("LMS 메세지 전송오류 : " + res.get("message"));
 								requestService.updateSMSSendInit(param);
 							}
 						} catch(Exception ex) {
-							log.info("MMS 메세지 전송 오류 : " + ex.toString());
+							log.info("LMS 메세지 전송 오류 : " + ex.toString());
 
 							requestService.updateSMSSendInit(param);
 						}
@@ -130,7 +130,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
-					log.error("MMS Send Error : " + e.toString());
+					log.error("LMS Send Error : " + e.toString());
 				}
 				preGroupNo = group_no;
 			}

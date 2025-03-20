@@ -2,7 +2,6 @@ package com.dhn.client.controller;
 
 import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.OldResultBean;
-import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +16,7 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class ResultOldData implements ApplicationListener<ContextRefreshedEvent> {
+public class ResultOldLMS implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -44,7 +43,7 @@ public class ResultOldData implements ApplicationListener<ContextRefreshedEvent>
         param.setKakao( appContext.getEnvironment().getProperty("dhnclient.kakao") );
 
         param.setMsg_type("3");
-        param.setTime("2");
+        param.setTime("4");
 
         isStart = true;
     }
