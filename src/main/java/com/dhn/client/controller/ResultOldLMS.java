@@ -49,8 +49,7 @@ public class ResultOldLMS implements ApplicationListener<ContextRefreshedEvent> 
     }
 
 
-//    @Scheduled(fixedDelay = 60000)
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 60000)
     private void SendProcess() {
         if(isStart && !isProc) {
             isProc = true;

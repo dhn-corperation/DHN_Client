@@ -47,7 +47,7 @@ public class ResultOldSMS implements ApplicationListener<ContextRefreshedEvent> 
         isStart = true;
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 60000)
     private void SendProcess() {
         if(isStart && !isProc) {
             isProc = true;
