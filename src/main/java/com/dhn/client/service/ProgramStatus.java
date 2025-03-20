@@ -1,6 +1,7 @@
 package com.dhn.client.service;
 
 import com.dhn.client.controller.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
@@ -10,9 +11,8 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class ProgramStatus implements CommandLineRunner, ApplicationListener<ContextClosedEvent> , DisposableBean {
-
-	private static final Logger log = LogManager.getRootLogger();
 	
     @Override
     public void run(String... args) throws Exception {
