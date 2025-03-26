@@ -1,4 +1,4 @@
-# 자바 DHN_CLIENT 국민연금공단 메인
+# 자바 DHN_CLIENT 국민연금공단 데이터 넣어주는 에이전트
 ## Service
 - Oracle DB
 
