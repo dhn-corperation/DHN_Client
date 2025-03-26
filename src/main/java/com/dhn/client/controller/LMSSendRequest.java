@@ -139,6 +139,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
             sendParam.setGroup_no(group_no);
             sendParam.setMsg_table(msgTable);
             sendParam.setLog_table(logTable);
+            sendParam.setMain_table(mainTable);
             sendParam.setMod_id(mod_id);
 
             List<RequestBean> _list = requestService.selectMSGRequests(sendParam);
