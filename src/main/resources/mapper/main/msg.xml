@@ -52,8 +52,8 @@
             CASE
                 WHEN SEND_TYPE_CD = 'M1' THEN 'S'
                 WHEN SEND_TYPE_CD = 'M2' THEN 'L'
-                WHEN SEND_TYPE_CD = '99' THEN 'S'
-                WHEN SEND_TYPE_CD = 'MM' THEN 'S'
+                WHEN (SEND_TYPE_CD = '99' OR SEND_TYPE_CD = 'MM') AND LENGTHB(MESSAGE_CONTENT) &lt;= 90 THEN 'S'
+                WHEN (SEND_TYPE_CD = '99' OR SEND_TYPE_CD = 'MM') AND LENGTHB(MESSAGE_CONTENT) &gt; 90 THEN 'L'
                 ELSE 'L'
             END AS MSGKIND,
             MESSAGE_CONTENT AS MSG,

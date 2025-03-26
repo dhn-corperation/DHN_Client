@@ -247,11 +247,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				code = _msgCode.getOrDefault(ent.getString("code"),"8011");
 				_ml.setReal_send_date(ent.getString("remark2"));
 				_ml.setResult_msg(ent.getString("message"));
-				if(ent.getString("sms_kind").equalsIgnoreCase("S")){
-					_ml.setMsg_type("M1");
-				}else if(ent.getString("sms_kind").equalsIgnoreCase("L")){
-					_ml.setMsg_type("M2");
-				}
 			}
 
 			_ml.setResult_code(code);
