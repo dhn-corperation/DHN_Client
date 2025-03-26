@@ -3,28 +3,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dhn.client.result.mapper.SendRequest">
 
-    <select id="select_2nd_flag" parameterType="com.dhn.client.bean.Msg_Log" resultType="String">
-        SELECT
-            CASE
-                WHEN LENGTH(trim(LINK_SEND_TYPE_CD)) > 0 AND TRIM(LINK_SEND_TYPE_CD) IS NOT NULL THEN 'Y'
-                ELSE 'N'
-                END AS flag
-        FROM ${msg_table}
-        WHERE MESSAGE_MST_NO = '${msgid}'
-    </select>
-
-    <update id="send_2nd_update" parameterType="com.dhn.client.bean.Msg_Log">
-        update ${main_table}
-            set SEND_RESULT_DT = SYSTIMESTAMP,
-                MESSAGE_STATUS_CD = '02',
-                SEND_RESULT_CD = '${result_code}',
-                SEND_RESULT_MESSAGE = #{result_msg},
-                MOD_DT = SYSTIMESTAMP,
-                MOD_ID = #{mod_id},
-                SEND_TYPE_CD = '${msg_type}'
-        where MESSAGE_MST_NO = '${msgid}'
-    </update>
-
     <update id="dhn_log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${msg_table}
         set SEND_RESULT_DT = SYSTIMESTAMP,
@@ -91,6 +69,7 @@
     <update id="phn_err_dhn_log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${msg_table}
         set SEND_RESULT_DT = SYSTIMESTAMP,
+            INTENAL_MESSAGE = '',
             MESSAGE_STATUS_CD = '91',
             SEND_RESULT_CD = '${result_code}',
             SEND_RESULT_MESSAGE = #{result_msg},
@@ -122,5 +101,38 @@
             MOD_DT = SYSTIMESTAMP,
             MOD_ID = #{mod_id}
         where MESSAGE_MST_NO = '${msgid}'
+    </update>
+
+
+    <update id="dhn_log_update_suc" parameterType="com.dhn.client.bean.Msg_Log">
+        update ${msg_table}
+        set SEND_RESULT_DT = SYSTIMESTAMP,
+            MESSAGE_STATUS_CD = '03',
+            SEND_RESULT_CD = '${result_code}',
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = #{mod_id}
+        where MESSAGE_MST_NO IN (${msgid})
+    </update>
+
+    <insert id="dhn_log_insert_suc" parameterType="com.dhn.client.bean.Msg_Log">
+        INSERT INTO ${log_date_table}
+        SELECT * FROM ${msg_table}
+        WHERE MESSAGE_MST_NO IN (${msgid})
+
+    </insert>
+
+    <delete id="dhn_log_delete_suc" parameterType="com.dhn.client.bean.Msg_Log">
+        delete from ${msg_table}
+        where MESSAGE_MST_NO IN (${msgid})
+    </delete>
+
+    <update id="log_update_suc" parameterType="com.dhn.client.bean.Msg_Log">
+        update ${main_table}
+        set SEND_RESULT_DT = SYSTIMESTAMP,
+            MESSAGE_STATUS_CD = '02',
+            SEND_RESULT_CD = '${result_code}',
+            MOD_DT = SYSTIMESTAMP,
+            MOD_ID = #{mod_id}
+        where MESSAGE_MST_NO IN (${msgid})
     </update>
 </mapper>

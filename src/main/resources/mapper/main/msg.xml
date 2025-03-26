@@ -6,18 +6,28 @@
     <select id = "req_msg_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
         SELECT count(MESSAGE_MST_NO) AS cnt
         FROM ${msg_table}
-        WHERE MESSAGE_STATUS_CD = '00'
-          AND SEND_TYPE_CD = '${msg_type}'
+        WHERE SEND_TYPE_CD = '${msg_type}'
+          AND MESSAGE_STATUS_CD = '00'
+          AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+            OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
     </select>
 
-    <update id = "req_msg_status_update" parameterType="com.dhn.client.bean.SQLParameter">
+    <update id="msg_group_update" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET MESSAGE_STATUS_CD = '01',
+            INTENAL_MESSAGE = '${group_no}',
             MOD_DT = SYSTIMESTAMP,
             MOD_ID = #{mod_id}
-        WHERE MESSAGE_STATUS_CD = '00'
-          AND SEND_TYPE_CD = '${msg_type}'
-        AND ROWNUM &lt;= 500
+        WHERE ROWID IN (
+            SELECT ROWID
+            FROM ${msg_table}
+            WHERE SEND_TYPE_CD = '${msg_type}'
+              AND MESSAGE_STATUS_CD = '00'
+              AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+                OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
+                ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
+                FETCH FIRST 500 ROWS ONLY
+        )
     </update>
 
     <resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
@@ -72,8 +82,7 @@
                 ELSE '1'
             END AS DATEFLAG
         FROM ${msg_table} a
-        WHERE SEND_TYPE_CD = '${msg_type}'
-          AND MESSAGE_STATUS_CD = '01'
+        WHERE INTENAL_MESSAGE = '${group_no}'
     </select>
 
     <update id="req_msg_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
@@ -82,8 +91,7 @@
             SEND_DT = SYSTIMESTAMP,
             MOD_DT = SYSTIMESTAMP,
             MOD_ID = #{mod_id}
-        where MESSAGE_STATUS_CD = '01'
-          and SEND_TYPE_CD = '${msg_type}'
+        where INTENAL_MESSAGE = '${group_no}'
     </update>
 
     <update id="req_msg_sent_complete2" parameterType="com.dhn.client.bean.SQLParameter">
@@ -92,28 +100,16 @@
             SEND_DT = SYSTIMESTAMP,
             MOD_DT = SYSTIMESTAMP,
             MOD_ID = #{mod_id}
-        where MESSAGE_MST_NO IN
-        <foreach collection="msgid_list" item="msgid" open="(" separator="," close=")">
-            #{msgid}
-        </foreach>
-    </update>
-
-    <update id="req_msg_sent_complete2_new" parameterType="com.dhn.client.bean.SQLParameter">
-        update ${main_table}
-        set MESSAGE_STATUS_CD = '02',
-        SEND_DT = SYSTIMESTAMP,
-        MOD_DT = SYSTIMESTAMP,
-        MOD_ID = #{mod_id}
         where MESSAGE_MST_NO IN (${strmsgid})
     </update>
 
     <update id="req_msg_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
         update ${msg_table}
         set MESSAGE_STATUS_CD = '00',
+            INTENAL_MESSAGE = NULL,
             MOD_DT = SYSTIMESTAMP,
             MOD_ID = #{mod_id}
-        where MESSAGE_STATUS_CD = '01'
-          and SEND_TYPE_CD = '${msg_type}'
+        where INTENAL_MESSAGE = '${group_no}'
     </update>
 
 

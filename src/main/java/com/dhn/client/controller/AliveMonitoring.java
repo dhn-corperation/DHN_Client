@@ -102,20 +102,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                         LogTableCheck.setIsStart(true);
                     }
 
-                    if(!MessageMove.isStart && ((kakao_use != null && kakao_use.equals("Y")) ||
-                            (sms_use != null && sms_use.equals("Y")) ||
-                            (lms_use != null && lms_use.equals("Y")) ||
-                            (slms_use != null && slms_use.equals("Y")))){
-                        MessageMove.setIsStart(true);
-                    }
-
-                    if(!MessageRtimeMove.isStart && ((kakao_use != null && kakao_use.equals("Y")) ||
-                            (sms_use != null && sms_use.equals("Y")) ||
-                            (lms_use != null && lms_use.equals("Y")) ||
-                            (slms_use != null && slms_use.equals("Y")))){
-                        MessageRtimeMove.setIsStart(true);
-                    }
-
                     if(!ResultReq.isStart){
                         ResultReq.setIsStart(true);
                     }
@@ -148,20 +134,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                             LogTableCheck.setIsStart(true);
                         }
 
-                        if(!MessageMove.isStart && ((kakao_use != null && kakao_use.equals("Y")) ||
-                                (sms_use != null && sms_use.equals("Y")) ||
-                                (lms_use != null && lms_use.equals("Y")) ||
-                                (slms_use != null && slms_use.equals("Y")))){
-                            MessageMove.setIsStart(true);
-                        }
-
-                        if(!MessageRtimeMove.isStart && ((kakao_use != null && kakao_use.equals("Y")) ||
-                                (sms_use != null && sms_use.equals("Y")) ||
-                                (lms_use != null && lms_use.equals("Y")) ||
-                                (slms_use != null && slms_use.equals("Y")))){
-                            MessageRtimeMove.setIsStart(true);
-                        }
-
                         if(!ResultReq.isStart){
                             ResultReq.setIsStart(true);
                         }
@@ -190,14 +162,6 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
 
                         if(LogTableCheck.isStart) {
                             LogTableCheck.setIsStart(false);
-                        }
-
-                        if(MessageMove.isStart) {
-                            MessageMove.setIsStart(false);
-                        }
-
-                        if(MessageRtimeMove.isStart) {
-                            MessageRtimeMove.setIsStart(false);
                         }
 
                         if(ResultReq.isStart) {

@@ -28,11 +28,6 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
-	public void updateKAOStatus(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_kao_status_update",param);
-	}
-
-	@Override
 	public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
 		return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.req_kao_select", param);
 	}
@@ -40,7 +35,7 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateKAOSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param);
-		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2_new", param);
+//		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2", param);
 	}
 
 	@Override
@@ -56,11 +51,6 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
-	public void updateMSGStatus(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_status_update",param);
-	}
-
-	@Override
 	public List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception {
 		return sqlSession.selectList("com.dhn.client.msg.mapper.SendRequest.req_msg_select", param);
 	}
@@ -68,17 +58,12 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateMSGSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete",param);
-		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2_new",param);
+//		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2",param);
 	}
 
 	@Override
 	public void updateMSGSendInit(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_init",param);
-	}
-
-	@Override
-	public String select2ndFlag(Msg_Log ml) throws Exception {
-		return sqlSession.selectOne("com.dhn.client.result.mapper.SendRequest.select_2nd_flag",ml);
 	}
 
 	@Override
@@ -142,28 +127,6 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
-	public int moveDataCount(SQLParameter param) throws Exception {
-		int cnt;
-		cnt = sqlSession.selectOne("com.dhn.client.move.mapper.SendRequest.move_data_count", param);
-		return cnt;
-	}
-
-	@Override
-	public List<MoveData> moveDataSelect(SQLParameter param) throws Exception {
-		return sqlSession.selectList("com.dhn.client.move.mapper.SendRequest.move_data_select", param);
-	}
-
-	@Override
-	public void moveDataInsert(SQLParameter param) throws Exception {
-		sqlSession.insert("com.dhn.client.move.mapper.SendRequest.move_data_insert_new", param);
-	}
-
-	@Override
-	public void updateMoveStatus(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.move.mapper.SendRequest.update_move_status_new", param);
-	}
-
-	@Override
 	public void phnErrUpdateDelete(Msg_Log ml) throws Exception {
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_log_update",ml);
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.phn_err_mst_update",ml);
@@ -178,14 +141,20 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
-	public int moveRtimeDataCount(SQLParameter param) throws Exception {
-		int cnt;
-		cnt = sqlSession.selectOne("com.dhn.client.move.mapper.SendRequest.move_rtime_data_count", param);
-		return cnt;
+	public void kaoGroupUpdate(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kao_group_update",param);
 	}
 
 	@Override
-	public List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception {
-		return sqlSession.selectList("com.dhn.client.move.mapper.SendRequest.move_rtime_data_select", param);
+	public void msgGroupUpdate(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msg_group_update",param);
+	}
+
+	@Override
+	public void update_msg_log_success(Msg_Log result) throws Exception {
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.log_update_suc",result);
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_update_suc",result);
+		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_insert_suc",result);
+		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.dhn_log_delete_suc",result);
 	}
 }

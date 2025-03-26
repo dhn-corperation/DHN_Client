@@ -24,11 +24,6 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public void updateKAOStatus(SQLParameter param) throws Exception {
-		requestDAO.updateKAOStatus(param);
-	}
-
-	@Override
 	public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
 		return requestDAO.selectKAORequests(param);
 	}
@@ -49,11 +44,6 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public void updateMSGStatus(SQLParameter param) throws Exception {
-		requestDAO.updateMSGStatus(param);
-	}
-
-	@Override
 	public List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception {
 		return requestDAO.selectMSGRequests(param);
 	}
@@ -66,11 +56,6 @@ public class RequestServiceImpl implements RequestService {
 	@Override
 	public void updateMSGSendInit(SQLParameter param) throws Exception {
 		requestDAO.updateMSGSendInit(param);
-	}
-
-	@Override
-	public String select2ndFlag(Msg_Log ml) throws Exception {
-		return requestDAO.select2ndFlag(ml);
 	}
 
 	@Override
@@ -101,26 +86,6 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public int moveDataCount(SQLParameter param) throws Exception {
-		return requestDAO.moveDataCount(param);
-	}
-
-	@Override
-	public List<MoveData> moveDataSelect(SQLParameter param) throws Exception {
-		return requestDAO.moveDataSelect(param);
-	}
-
-	@Override
-	public void moveDataInsert(SQLParameter param) throws Exception {
-		requestDAO.moveDataInsert(param);
-	}
-
-	@Override
-	public void updateMoveStatus(SQLParameter param) throws Exception {
-		requestDAO.updateMoveStatus(param);
-	}
-
-	@Override
 	public void phnErrUpdateDelete(Msg_Log ml) throws Exception {
 		requestDAO.phnErrUpdateDelete(ml);
 	}
@@ -131,12 +96,17 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public int moveRtimeDataCount(SQLParameter param) throws Exception {
-		return requestDAO.moveRtimeDataCount(param);
+	public void kaoGroupUpdate(SQLParameter param) throws Exception {
+		requestDAO.kaoGroupUpdate(param);
 	}
 
 	@Override
-	public List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception {
-		return requestDAO.moveRtimeDataSelect(param);
+	public void msgGroupUpdate(SQLParameter param) throws Exception {
+		requestDAO.msgGroupUpdate(param);
+	}
+
+	@Override
+	public void update_msg_log_success(Msg_Log result) throws Exception {
+		requestDAO.update_msg_log_success(result);
 	}
 }

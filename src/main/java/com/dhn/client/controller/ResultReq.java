@@ -22,7 +22,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -209,6 +213,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		} catch (Exception e) {
 			log.error("테이블 확인 및 생성 실패: " + e.getMessage());
 		}
+
+		LocalDate now = LocalDate.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+		String currentMonth = now.format(formatter);
+
+		List<String> msg_list = new ArrayList<String>();
 		
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
@@ -217,23 +227,19 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			_ml.setMod_id(mod_id);
 			_ml.setMsgid(ent.getString("msgid"));
 
-			_ml.setLog_date_table(logTable+"_"+ent.getString("reg_dt").substring(0,7).replace("-",""));
+//			_ml.setLog_date_table(logTable+"_"+ent.getString("reg_dt").substring(0,7).replace("-",""));
+			_ml.setLog_date_table(logTable+"_"+currentMonth);
 
 			String code = "0000";
 
-//			String flag = "N";
-
 			if(ent.getString("message_type").equalsIgnoreCase("AT")){
 
-				/*
-				try{
-					flag = requestService.select2ndFlag(_ml);
-				}catch (Exception e){
-					log.info("알림톡 결과처리 2차여부 조회 오류 : " + e.getMessage());
-				}
-
-				 */
 				code = _kaoCode.getOrDefault(ent.getString("code"),"E999");
+
+				if(ent.getString("code").equals("0000")){
+					msg_list.add(ent.getString("msgid"));
+					continue;
+				}
 				_ml.setReal_send_date(ent.getString("res_dt"));
 				_ml.setResult_msg(ent.getString("message"));
 				_ml.setMsg_type("K1");
@@ -248,14 +254,28 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				}
 			}
 
-//			_ml.setFlag_2nd(flag);
-
 			_ml.setResult_code(code);
 
 			try {
 				requestService.update_msg_log(_ml);
 			}catch (Exception e) {
 				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
+			}
+		}
+
+		if(msg_list.size() > 0) {
+			String msg_id = String.join(",", msg_list);
+
+			Msg_Log result = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+			result.setLog_date_table(logTable+"_"+currentMonth);
+			result.setMsgid(msg_id);
+			result.setMod_id(mod_id);
+			result.setResult_code("0000");
+
+			try{
+				requestService.update_msg_log_success(result);
+			}catch (Exception e){
+				log.info("결과 처리 오류 / {} / {}",msg_id, e.toString());
 			}
 		}
 		log.info("결과 수신 완료 : " + json.length() + " 건");		

@@ -8,8 +8,6 @@ public interface RequestDAO {
 
 	int selectKAORequestCount(SQLParameter param) throws Exception;
 
-	void updateKAOStatus(SQLParameter param) throws Exception;
-
 	List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception;
 
 	void updateKAOSendComplete(SQLParameter param) throws Exception;
@@ -18,15 +16,11 @@ public interface RequestDAO {
 
     int selectMSGRequestCount(SQLParameter param) throws Exception;
 
-	void updateMSGStatus(SQLParameter param) throws Exception;
-
 	List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception;
 
 	void updateMSGSendComplete(SQLParameter param) throws Exception;
 
 	void updateMSGSendInit(SQLParameter param) throws Exception;
-
-	String select2ndFlag(Msg_Log ml) throws Exception;
 
 	void update_msg_log(Msg_Log ml) throws Exception;
 
@@ -36,20 +30,13 @@ public interface RequestDAO {
 
 	void tableCreate(SQLParameter param) throws Exception;
 
-	int moveDataCount(SQLParameter param) throws Exception;
-
-	List<MoveData> moveDataSelect(SQLParameter param) throws Exception;
-
-	void moveDataInsert(SQLParameter param) throws Exception;
-
-	void updateMoveStatus(SQLParameter param) throws Exception;
-
     void phnErrUpdateDelete(Msg_Log ml) throws Exception;
 
 	void sourceErrUpdate(Msg_Log ml) throws Exception;
 
-    int moveRtimeDataCount(SQLParameter param) throws Exception;
+	void kaoGroupUpdate(SQLParameter param) throws Exception;
 
-	List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception;
-;
+	void msgGroupUpdate(SQLParameter param) throws Exception;
+
+	void update_msg_log_success(Msg_Log result) throws Exception;
 }

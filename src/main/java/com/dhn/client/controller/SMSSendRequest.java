@@ -23,6 +23,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
@@ -44,6 +47,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String mainTable = "";
     private String mainLogTable = "";
     private String mod_id = "";
+
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     @Autowired
     private RequestService requestService;
@@ -96,154 +101,184 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
         if(isStart && !isProc) {
             isProc = true;
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-            LocalDateTime now = LocalDateTime.now();
-            String group_no = now.format(formatter);
+            ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+            int activeThreads = poolExecutor.getActiveCount();
 
-            try{
-                int cnt = requestService.selectMSGRequestCount(param);
+            if(activeThreads < 5){
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+                LocalDateTime now = LocalDateTime.now();
+                String group_no = "S"+now.format(formatter);
 
-                if(cnt > 0){
-                    requestService.updateMSGStatus(param);
+                if(!group_no.equals(preGroupNo)){
+                    try{
+                        int cnt = requestService.selectMSGRequestCount(param);
 
-                    List<RequestBean> _list = requestService.selectMSGRequests(param);
-                    List<String> msg_list = new ArrayList<>();
-                    List<String> phnerr_msgid = new ArrayList<>();
-                    List<String> syserr_msgid = new ArrayList<>();
-                    List<String> dateerr_msgid = new ArrayList<>();
+                        if(cnt > 0){
 
-                    List<RequestBean> sendList = new ArrayList<>();
+                            param.setGroup_no(group_no);
+                            requestService.msgGroupUpdate(param);
 
-                    for (RequestBean bean : _list) {
+                            executorService.submit(() -> APIProcess(group_no));
 
-                        if(bean.getDateflag().equalsIgnoreCase("0")){
-                            dateerr_msgid.add(bean.getMsgid());
-                            continue;
                         }
-
-                        if(StringUtils.isBlank(bean.getSyscd()) || StringUtils.isEmpty(bean.getSyscd())){
-                            syserr_msgid.add(bean.getMsgid());
-                            continue;
-                        }
-
-                        if(StringUtils.isBlank(bean.getSmssender())
-                                || StringUtils.length(bean.getSmssender()) > senderMaxLen
-                                || !bean.getSmssender().matches("^[0-9-]+$")){
-
-                            phnerr_msgid.add(bean.getMsgid());
-                            continue;
-                        }
-
-                        if(StringUtils.isBlank(bean.getPhn())
-                                || StringUtils.length(bean.getPhn()) > receiverMaxLen
-                                || !bean.getPhn().matches("^[0-9-]+$")){
-
-                            phnerr_msgid.add(bean.getMsgid());
-                            continue;
-                        }
-
-
-                        msg_list.add(bean.getMsgid());
-
-                        sendList.add(bean);
+                    }catch (Exception e){
+                        log.error("SMS 메세지 전송 오류(Send) : " + e.toString());
                     }
-
-                    DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMM");
-                    String ym = LocalDateTime.now().format(formatter2);
-
-                    if(phnerr_msgid.size() > 0){
-                        String strerrmsg = String.join(",", phnerr_msgid);
-
-                        Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
-                        _ml.setMod_id(mod_id);
-                        _ml.setMsgid(strerrmsg);
-
-                        _ml.setLog_date_table(logTable+"_"+ym);
-
-                        _ml.setResult_code("U010");
-                        _ml.setResult_msg("번호 체크 오류처리");
-
-                        requestService.phnErrUpdateDelete(_ml);
-                        log.info("SMS {} 건 번호체크 오류", phnerr_msgid.size());
-                    }
-
-                    if(syserr_msgid.size() > 0){
-                        String syserrmsg = String.join(",", syserr_msgid);
-
-                        Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
-                        _ml.setMod_id(mod_id);
-                        _ml.setMsgid(syserrmsg);
-
-                        _ml.setLog_date_table(logTable+"_"+ym);
-
-                        _ml.setResult_code("U005");
-                        _ml.setResult_msg("등록되지 않은 시스템코드");
-
-                        requestService.phnErrUpdateDelete(_ml);
-                        log.info("SMS {} 건 미등록 시스템코드", syserr_msgid.size());
-                    }
-
-                    if(dateerr_msgid.size() > 0){
-                        String syserrmsg = String.join(",", dateerr_msgid);
-
-                        Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
-                        _ml.setMod_id(mod_id);
-                        _ml.setMsgid(syserrmsg);
-
-                        _ml.setLog_date_table(logTable+"_"+ym);
-
-                        _ml.setResult_code("U009");
-                        _ml.setResult_msg("오늘보다 작은 발송일자 오류처리");
-
-                        requestService.phnErrUpdateDelete(_ml);
-                        log.info("SMS {} 건 지난 발송일자", dateerr_msgid.size());
-                    }
-
-                    if(sendList.size() > 0){
-                        String strmsg = String.join(",", msg_list);
-
-                        param.setMsgid_list(msg_list);
-                        param.setStrmsgid(strmsg);
-
-                        StringWriter sw = new StringWriter();
-                        ObjectMapper om = new ObjectMapper();
-                        om.writeValue(sw, sendList);
-
-                        if(dbug.equalsIgnoreCase("Y")){
-                            log.info("LMS data : " + sw.toString());
-                        }
-
-                        HttpHeaders header = new HttpHeaders();
-
-                        header.setContentType(MediaType.APPLICATION_JSON);
-                        header.set("userid", userid);
-
-                        RestTemplate rt = new RestTemplate();
-                        HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-                        try {
-                            ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                            Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                            log.info(res.toString());
-                            if (response.getStatusCode() == HttpStatus.OK) {
-                                requestService.updateMSGSendComplete(param);
-                                log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
-                            } else {
-                                log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
-                                requestService.updateMSGSendInit(param);
-                            }
-                        } catch (Exception e) {
-                            log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
-                            requestService.updateMSGSendInit(param);
-                        }
-                    }
-
+                    preGroupNo = group_no;
                 }
-            }catch (Exception e){
-                log.error("SMS 메세지 전송 오류(Send) : " + e.toString());
+            }
+            isProc = false;
+        }
+    }
+
+    private void APIProcess(String group_no) {
+
+        try{
+
+            SQLParameter sendParam = new SQLParameter();
+            sendParam.setGroup_no(group_no);
+            sendParam.setMsg_table(msgTable);
+            sendParam.setLog_table(logTable);
+            sendParam.setMod_id(mod_id);
+
+            List<RequestBean> _list = requestService.selectMSGRequests(sendParam);
+            List<String> msg_list = new ArrayList<>();
+            List<String> phnerr_msgid = new ArrayList<>();
+            List<String> syserr_msgid = new ArrayList<>();
+            List<String> dateerr_msgid = new ArrayList<>();
+
+            List<RequestBean> sendList = new ArrayList<>();
+
+            for (RequestBean bean : _list) {
+
+                if(bean.getDateflag().equalsIgnoreCase("0")){
+                    dateerr_msgid.add(bean.getMsgid());
+                    continue;
+                }
+
+                if(StringUtils.isBlank(bean.getSyscd()) || StringUtils.isEmpty(bean.getSyscd())){
+                    syserr_msgid.add(bean.getMsgid());
+                    continue;
+                }
+
+                if(StringUtils.isBlank(bean.getSmssender())
+                        || StringUtils.length(bean.getSmssender()) > senderMaxLen
+                        || !bean.getSmssender().matches("^[0-9-]+$")){
+
+                    phnerr_msgid.add(bean.getMsgid());
+                    continue;
+                }
+
+                if(StringUtils.isBlank(bean.getPhn())
+                        || StringUtils.length(bean.getPhn()) > receiverMaxLen
+                        || !bean.getPhn().matches("^[0-9-]+$")){
+
+                    phnerr_msgid.add(bean.getMsgid());
+                    continue;
+                }
+
+
+                msg_list.add(bean.getMsgid());
+
+                sendList.add(bean);
             }
 
-            isProc = false;
+            DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMM");
+            String ym = LocalDateTime.now().format(formatter2);
+
+            if(phnerr_msgid.size() > 0){
+                String strerrmsg = String.join(",", phnerr_msgid);
+
+                Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+                _ml.setMod_id(mod_id);
+                _ml.setMsgid(strerrmsg);
+
+                _ml.setLog_date_table(logTable+"_"+ym);
+
+                _ml.setResult_code("U010");
+                _ml.setResult_msg("번호 체크 오류처리");
+
+                requestService.phnErrUpdateDelete(_ml);
+                log.info("SMS {} 건 번호체크 오류", phnerr_msgid.size());
+            }
+
+            if(syserr_msgid.size() > 0){
+                String syserrmsg = String.join(",", syserr_msgid);
+
+                Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+                _ml.setMod_id(mod_id);
+                _ml.setMsgid(syserrmsg);
+
+                _ml.setLog_date_table(logTable+"_"+ym);
+
+                _ml.setResult_code("U005");
+                _ml.setResult_msg("등록되지 않은 시스템코드");
+
+                requestService.phnErrUpdateDelete(_ml);
+                log.info("SMS {} 건 미등록 시스템코드", syserr_msgid.size());
+            }
+
+            if(dateerr_msgid.size() > 0){
+                String syserrmsg = String.join(",", dateerr_msgid);
+
+                Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+                _ml.setMod_id(mod_id);
+                _ml.setMsgid(syserrmsg);
+
+                _ml.setLog_date_table(logTable+"_"+ym);
+
+                _ml.setResult_code("U009");
+                _ml.setResult_msg("오늘보다 작은 발송일자 오류처리");
+
+                requestService.phnErrUpdateDelete(_ml);
+                log.info("SMS {} 건 지난 발송일자", dateerr_msgid.size());
+            }
+
+            if(sendList.size() > 0){
+                String strmsg = String.join(",", msg_list);
+
+                sendParam.setMsgid_list(msg_list);
+                sendParam.setStrmsgid(strmsg);
+
+                StringWriter sw = new StringWriter();
+                ObjectMapper om = new ObjectMapper();
+                om.writeValue(sw, sendList);
+
+                if(dbug.equalsIgnoreCase("Y")){
+                    log.info("LMS data : " + sw.toString());
+                }
+
+                HttpHeaders header = new HttpHeaders();
+
+                header.setContentType(MediaType.APPLICATION_JSON);
+                header.set("userid", userid);
+
+                RestTemplate rt = new RestTemplate();
+                HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+                try {
+                    ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                    Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                    log.info(res.toString());
+                    if (response.getStatusCode() == HttpStatus.OK) {
+                        requestService.updateMSGSendComplete(sendParam);
+                        log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
+                    } else {
+                        log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                        requestService.updateMSGSendInit(sendParam);
+                    }
+                } catch (Exception e) {
+                    log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
+                    requestService.updateMSGSendInit(sendParam);
+                }
+            }
+        }catch (Exception e){
+            log.error("MM 메세지 전송 오류(Send) : " + e.toString());
+        }finally {
+            if (executorService.isTerminated()) {
+                executorService.shutdown();
+                log.info("ExecutorService 종료 완료");
+            }
         }
     }
 

@@ -9,8 +9,6 @@ public interface RequestService {
 	// 알림톡
 	int selectKAORequestCount(SQLParameter param) throws Exception;
 
-	void updateKAOStatus(SQLParameter param) throws Exception;
-
 	List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception;
 
 	void updateKAOSendComplete(SQLParameter param) throws Exception;
@@ -20,16 +18,11 @@ public interface RequestService {
 	// 문자
 	int selectMSGRequestCount(SQLParameter param) throws Exception;
 
-	void updateMSGStatus(SQLParameter param) throws Exception;
-
 	List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception;
 
 	void updateMSGSendComplete(SQLParameter param) throws Exception;
 
 	void updateMSGSendInit(SQLParameter param) throws Exception;
-
-	// 결과처리
-	String select2ndFlag(Msg_Log ml) throws Exception;
 
 	void update_msg_log(Msg_Log ml) throws Exception;
 
@@ -38,19 +31,15 @@ public interface RequestService {
 
 	void tableCheck(SQLParameter param) throws Exception;
 
-	int moveDataCount(SQLParameter param) throws Exception;
-
-	List<MoveData> moveDataSelect(SQLParameter param) throws Exception;
-
-	void moveDataInsert(SQLParameter param) throws Exception;
-
-	void updateMoveStatus(SQLParameter param) throws Exception;
-
     void phnErrUpdateDelete(Msg_Log ml) throws Exception;
 
     void sourceErrUpdate(Msg_Log ml) throws Exception;
 
-    int moveRtimeDataCount(SQLParameter param) throws Exception;
+	// 그룹핑
+	void kaoGroupUpdate(SQLParameter param) throws Exception;
 
-	List<MoveData> moveRtimeDataSelect(SQLParameter param) throws Exception;
+	void msgGroupUpdate(SQLParameter param) throws Exception;
+
+	// 성공 결과값 한번에 update
+	void update_msg_log_success(Msg_Log result) throws Exception;
 }

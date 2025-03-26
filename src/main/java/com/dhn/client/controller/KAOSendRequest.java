@@ -6,6 +6,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import com.dhn.client.bean.ButtonJsonBean;
 import com.dhn.client.bean.Msg_Log;
@@ -53,6 +56,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String mainTable = "";
 	private String mainLogTable = "";
 	private String mod_id = "";
+
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
 	@Autowired
 	private RequestService requestService;
@@ -108,224 +113,250 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		if(isStart && !isProc) {
 			isProc = true;
 
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-			LocalDateTime now = LocalDateTime.now();
-			String group_no = now.format(formatter);
+			ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+			int activeThreads = poolExecutor.getActiveCount();
 
-			try{
-				int cnt = requestService.selectKAORequestCount(param);
+			if(activeThreads < 5){
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+				LocalDateTime now = LocalDateTime.now();
+				String group_no = "K" + now.format(formatter);
 
-				if(cnt > 0){
-					requestService.updateKAOStatus(param);
+				if(!group_no.equals(preGroupNo)){
+					try{
+						int cnt = requestService.selectKAORequestCount(param);
 
-					List<KAORequestBean> _list = requestService.selectKAORequests(param);
-					List<String> msg_list = new ArrayList<String>();
-					List<String> phnerr_msgid = new ArrayList<>();
-					List<String> syserr_msgid = new ArrayList<>();
-					List<String> dateerr_msgid = new ArrayList<>();
+						if(cnt > 0){
+							param.setGroup_no(group_no);
+							requestService.kaoGroupUpdate(param);
 
-					List<KAORequestBean> sendList = new ArrayList<>();
+							executorService.submit(() -> APIProcess(group_no));
 
-					for (KAORequestBean kaoRequestBean : _list) {
-
-						try{
-							if(kaoRequestBean.getDateflag().equalsIgnoreCase("0")){
-								dateerr_msgid.add(kaoRequestBean.getMsgid());
-								continue;
-							}
-
-							if(StringUtils.isBlank(kaoRequestBean.getSyscd()) || StringUtils.isEmpty(kaoRequestBean.getSyscd())){
-								syserr_msgid.add(kaoRequestBean.getMsgid());
-								continue;
-							}
-
-							if(StringUtils.isBlank(kaoRequestBean.getSmssender())
-									|| StringUtils.length(kaoRequestBean.getSmssender()) > senderMaxLen
-									|| !kaoRequestBean.getSmssender().matches("^[0-9-]+$")){
-
-								phnerr_msgid.add(kaoRequestBean.getMsgid());
-								continue;
-							}
-
-							if(StringUtils.isBlank(kaoRequestBean.getPhn())
-									|| StringUtils.length(kaoRequestBean.getPhn()) > receiverMaxLen
-									|| !kaoRequestBean.getPhn().matches("^[0-9-]+$")){
-
-								phnerr_msgid.add(kaoRequestBean.getMsgid());
-								continue;
-							}
-
-							if(kaoRequestBean.getPhn().startsWith("0")){
-								kaoRequestBean.setPhn("82"+kaoRequestBean.getPhn().substring(1));
-							}
-
-
-
-							if(kaoRequestBean.getBtnname() != null){
-
-								String[] btnname = kaoRequestBean.getBtnname().split("\\|",-1);
-								String[] btntype = kaoRequestBean.getBtntype() != null && !kaoRequestBean.getBtntype().isEmpty() ? kaoRequestBean.getBtntype().split("\\|",-1) : new String[btnname.length];
-
-								String[] btnmo = kaoRequestBean.getBtnmo() != null && !kaoRequestBean.getBtnmo().isEmpty() ? kaoRequestBean.getBtnmo().split("\\|",-1) : new String[btnname.length];
-								String[] btnpc = kaoRequestBean.getBtnpc() != null && !kaoRequestBean.getBtnpc().isEmpty() ? kaoRequestBean.getBtnpc().split("\\|",-1) : new String[btnname.length];
-
-								if (btntype.length < btnname.length) {
-									String[] tempBtntype = new String[btnname.length];
-									for (int i = 0; i < tempBtntype.length; i++) {
-										tempBtntype[i] = (i < btntype.length) ? btntype[i] : "";
-									}
-									btntype = tempBtntype;
-								}
-
-								if (btnpc.length < btnname.length) {
-									String[] tempBtnpc = new String[btnname.length];
-									for (int i = 0; i < tempBtnpc.length; i++) {
-										tempBtnpc[i] = (i < btnpc.length) ? btnpc[i] : "";
-									}
-									btnpc = tempBtnpc;
-								}
-
-								if (btnmo.length < btnname.length) {
-									String[] tempBtnmo = new String[btnname.length];
-									for (int i = 0; i < tempBtnmo.length; i++) {
-										tempBtnmo[i] = (i < btnmo.length) ? btnmo[i] : "";
-									}
-									btnmo = tempBtnmo;
-								}
-
-								if(btnname.length > 0){
-									kaoRequestBean.setButton1(Btn_json(btnname[0],btntype[0],btnpc[0],btnmo[0]));
-								}
-								if(btnname.length > 1){
-									kaoRequestBean.setButton2(Btn_json(btnname[1],btntype[1],btnpc[1],btnmo[1]));
-								}
-								if(btnname.length > 2){
-									kaoRequestBean.setButton3(Btn_json(btnname[2],btntype[2],btnpc[2],btnmo[2]));
-								}
-								if(btnname.length > 3){
-									kaoRequestBean.setButton4(Btn_json(btnname[3],btntype[3],btnpc[3],btnmo[3]));
-								}
-								if(btnname.length > 4){
-									kaoRequestBean.setButton5(Btn_json(btnname[4],btntype[4],btnpc[4],btnmo[4]));
-								}
-
-							}
-						}catch (Exception e){
-							Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
-							_ml.setMod_id(mod_id);
-							_ml.setMsgid(kaoRequestBean.getMsgid());
-							_ml.setSource_err_msg(e.getMessage());
-							requestService.sourceErrUpdate(_ml);
-							log.error("KAO 데이터 제조 오류 발생 : " + e.getMessage());
 						}
-
-						msg_list.add(kaoRequestBean.getMsgid());
-						sendList.add(kaoRequestBean);
+					}catch (Exception e){
+						log.error("KAO 메세지 전송 오류(Send) : " + e.toString());
 					}
-
-					DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMM");
-					String ym = LocalDateTime.now().format(formatter2);
-
-					if(phnerr_msgid.size() > 0){
-						String strerrmsg = String.join(",", phnerr_msgid);
-
-						Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
-						_ml.setMod_id(mod_id);
-						_ml.setMsgid(strerrmsg);
-
-						_ml.setLog_date_table(logTable+"_"+ym);
-
-						_ml.setResult_code("U010");
-						_ml.setResult_msg("번호 체크 오류처리");
-
-						requestService.phnErrUpdateDelete(_ml);
-						log.info("KAO {} 건 번호체크 오류", phnerr_msgid.size());
-					}
-
-					if(syserr_msgid.size() > 0){
-						String syserrmsg = String.join(",", syserr_msgid);
-
-						Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
-						_ml.setMod_id(mod_id);
-						_ml.setMsgid(syserrmsg);
-
-						_ml.setLog_date_table(logTable+"_"+ym);
-
-						_ml.setResult_code("U005");
-						_ml.setResult_msg("등록되지 않은 시스템코드");
-
-						requestService.phnErrUpdateDelete(_ml);
-						log.info("KAO {} 건 미등록 시스템코드", syserr_msgid.size());
-					}
-
-					if(dateerr_msgid.size() > 0){
-						String syserrmsg = String.join(",", dateerr_msgid);
-
-						Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
-						_ml.setMod_id(mod_id);
-						_ml.setMsgid(syserrmsg);
-
-						_ml.setLog_date_table(logTable+"_"+ym);
-
-						_ml.setResult_code("U009");
-						_ml.setResult_msg("오늘보다 작은 발송일자 오류처리");
-
-						requestService.phnErrUpdateDelete(_ml);
-						log.info("KAO {} 건 지난 발송일자", dateerr_msgid.size());
-					}
-
-					if(sendList.size() > 0){
-						String strmsg = String.join(",", msg_list);
-
-						param.setMsgid_list(msg_list);
-						param.setStrmsgid(strmsg);
-
-						StringWriter sw = new StringWriter();
-						ObjectMapper om = new ObjectMapper();
-						om.writeValue(sw, sendList);
-
-						if(dbug.equalsIgnoreCase("Y")){
-							log.info("KAO data : " + sw.toString());
-						}
-
-						HttpHeaders header = new HttpHeaders();
-
-						header.setContentType(MediaType.APPLICATION_JSON);
-						header.set("userid", userid);
-
-						RestTemplate rt = new RestTemplate();
-						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
-						try {
-							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-							log.info(res.toString());
-							if (response.getStatusCode() == HttpStatus.OK) {
-								requestService.updateKAOSendComplete(param);
-								log.info("KAO 메세지 전송 완료(" + response.getStatusCode() + ") : "+ sendList.size() + " 건");
-							} else {
-								log.error("KAO 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
-								requestService.updateKAOSendInit(param);
-							}
-						} catch (Exception e) {
-							log.error("KAO 메세지 전송 오류(Response) : " + e.toString());
-							requestService.updateKAOSendInit(param);
-						}
-					}
-
+					preGroupNo = group_no;
 				}
-			}catch (Exception e){
-				log.error("KAO 메세지 전송 오류(Send) : " + e.toString());
 			}
-			
+
 			isProc = false;
 		}
 	}
 
-	static public void setIsStart(boolean _flag) {
-		log.info(role + " KAO Process is change : " + _flag);
-		isStart = _flag;
+	private void APIProcess(String group_no) {
+		try{
+
+			SQLParameter sendParam = new SQLParameter();
+			sendParam.setGroup_no(group_no);
+			sendParam.setMsg_table(msgTable);
+			sendParam.setLog_table(logTable);
+			sendParam.setMod_id(mod_id);
+
+
+			List<KAORequestBean> _list = requestService.selectKAORequests(sendParam);
+			List<String> msg_list = new ArrayList<String>();
+			List<String> phnerr_msgid = new ArrayList<>();
+			List<String> syserr_msgid = new ArrayList<>();
+			List<String> dateerr_msgid = new ArrayList<>();
+
+			List<KAORequestBean> sendList = new ArrayList<>();
+
+			for (KAORequestBean kaoRequestBean : _list) {
+
+				try{
+					if(kaoRequestBean.getDateflag().equalsIgnoreCase("0")){
+						dateerr_msgid.add(kaoRequestBean.getMsgid());
+						continue;
+					}
+
+					if(StringUtils.isBlank(kaoRequestBean.getSyscd()) || StringUtils.isEmpty(kaoRequestBean.getSyscd())){
+						syserr_msgid.add(kaoRequestBean.getMsgid());
+						continue;
+					}
+
+					if(StringUtils.isBlank(kaoRequestBean.getSmssender())
+							|| StringUtils.length(kaoRequestBean.getSmssender()) > senderMaxLen
+							|| !kaoRequestBean.getSmssender().matches("^[0-9-]+$")){
+
+						phnerr_msgid.add(kaoRequestBean.getMsgid());
+						continue;
+					}
+
+					if(StringUtils.isBlank(kaoRequestBean.getPhn())
+							|| StringUtils.length(kaoRequestBean.getPhn()) > receiverMaxLen
+							|| !kaoRequestBean.getPhn().matches("^[0-9-]+$")){
+
+						phnerr_msgid.add(kaoRequestBean.getMsgid());
+						continue;
+					}
+
+					if(kaoRequestBean.getPhn().startsWith("0")){
+						kaoRequestBean.setPhn("82"+kaoRequestBean.getPhn().substring(1));
+					}
+
+
+
+					if(kaoRequestBean.getBtnname() != null){
+
+						String[] btnname = kaoRequestBean.getBtnname().split("\\|",-1);
+						String[] btntype = kaoRequestBean.getBtntype() != null && !kaoRequestBean.getBtntype().isEmpty() ? kaoRequestBean.getBtntype().split("\\|",-1) : new String[btnname.length];
+
+						String[] btnmo = kaoRequestBean.getBtnmo() != null && !kaoRequestBean.getBtnmo().isEmpty() ? kaoRequestBean.getBtnmo().split("\\|",-1) : new String[btnname.length];
+						String[] btnpc = kaoRequestBean.getBtnpc() != null && !kaoRequestBean.getBtnpc().isEmpty() ? kaoRequestBean.getBtnpc().split("\\|",-1) : new String[btnname.length];
+
+						if (btntype.length < btnname.length) {
+							String[] tempBtntype = new String[btnname.length];
+							for (int i = 0; i < tempBtntype.length; i++) {
+								tempBtntype[i] = (i < btntype.length) ? btntype[i] : "";
+							}
+							btntype = tempBtntype;
+						}
+
+						if (btnpc.length < btnname.length) {
+							String[] tempBtnpc = new String[btnname.length];
+							for (int i = 0; i < tempBtnpc.length; i++) {
+								tempBtnpc[i] = (i < btnpc.length) ? btnpc[i] : "";
+							}
+							btnpc = tempBtnpc;
+						}
+
+						if (btnmo.length < btnname.length) {
+							String[] tempBtnmo = new String[btnname.length];
+							for (int i = 0; i < tempBtnmo.length; i++) {
+								tempBtnmo[i] = (i < btnmo.length) ? btnmo[i] : "";
+							}
+							btnmo = tempBtnmo;
+						}
+
+						if(btnname.length > 0){
+							kaoRequestBean.setButton1(Btn_json(btnname[0],btntype[0],btnpc[0],btnmo[0]));
+						}
+						if(btnname.length > 1){
+							kaoRequestBean.setButton2(Btn_json(btnname[1],btntype[1],btnpc[1],btnmo[1]));
+						}
+						if(btnname.length > 2){
+							kaoRequestBean.setButton3(Btn_json(btnname[2],btntype[2],btnpc[2],btnmo[2]));
+						}
+						if(btnname.length > 3){
+							kaoRequestBean.setButton4(Btn_json(btnname[3],btntype[3],btnpc[3],btnmo[3]));
+						}
+						if(btnname.length > 4){
+							kaoRequestBean.setButton5(Btn_json(btnname[4],btntype[4],btnpc[4],btnmo[4]));
+						}
+
+					}
+				}catch (Exception e){
+					Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+					_ml.setMod_id(mod_id);
+					_ml.setMsgid(kaoRequestBean.getMsgid());
+					_ml.setSource_err_msg(e.getMessage());
+					requestService.sourceErrUpdate(_ml);
+					log.error("KAO 데이터 제조 오류 발생 : " + e.getMessage());
+				}
+
+				msg_list.add(kaoRequestBean.getMsgid());
+				sendList.add(kaoRequestBean);
+			}
+
+			DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyyMM");
+			String ym = LocalDateTime.now().format(formatter2);
+
+			if(phnerr_msgid.size() > 0){
+				String strerrmsg = String.join(",", phnerr_msgid);
+
+				Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+				_ml.setMod_id(mod_id);
+				_ml.setMsgid(strerrmsg);
+
+				_ml.setLog_date_table(logTable+"_"+ym);
+
+				_ml.setResult_code("U010");
+				_ml.setResult_msg("번호 체크 오류처리");
+
+				requestService.phnErrUpdateDelete(_ml);
+				log.info("KAO {} 건 번호체크 오류", phnerr_msgid.size());
+			}
+
+			if(syserr_msgid.size() > 0){
+				String syserrmsg = String.join(",", syserr_msgid);
+
+				Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+				_ml.setMod_id(mod_id);
+				_ml.setMsgid(syserrmsg);
+
+				_ml.setLog_date_table(logTable+"_"+ym);
+
+				_ml.setResult_code("U005");
+				_ml.setResult_msg("등록되지 않은 시스템코드");
+
+				requestService.phnErrUpdateDelete(_ml);
+				log.info("KAO {} 건 미등록 시스템코드", syserr_msgid.size());
+			}
+
+			if(dateerr_msgid.size() > 0){
+				String syserrmsg = String.join(",", dateerr_msgid);
+
+				Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
+				_ml.setMod_id(mod_id);
+				_ml.setMsgid(syserrmsg);
+
+				_ml.setLog_date_table(logTable+"_"+ym);
+
+				_ml.setResult_code("U009");
+				_ml.setResult_msg("오늘보다 작은 발송일자 오류처리");
+
+				requestService.phnErrUpdateDelete(_ml);
+				log.info("KAO {} 건 지난 발송일자", dateerr_msgid.size());
+			}
+
+			if(sendList.size() > 0){
+				String strmsg = String.join(",", msg_list);
+
+				sendParam.setMsgid_list(msg_list);
+				sendParam.setStrmsgid(strmsg);
+
+				StringWriter sw = new StringWriter();
+				ObjectMapper om = new ObjectMapper();
+				om.writeValue(sw, sendList);
+
+				if(dbug.equalsIgnoreCase("Y")){
+					log.info("KAO data : " + sw.toString());
+				}
+
+				HttpHeaders header = new HttpHeaders();
+
+				header.setContentType(MediaType.APPLICATION_JSON);
+				header.set("userid", userid);
+
+				RestTemplate rt = new RestTemplate();
+				HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+
+				try {
+					ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+					Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+					log.info(res.toString());
+					if (response.getStatusCode() == HttpStatus.OK) {
+						requestService.updateKAOSendComplete(sendParam);
+						log.info("KAO 메세지 전송 완료(" + response.getStatusCode() + ") : "+ sendList.size() + " 건");
+					} else {
+						log.error("KAO 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+						requestService.updateKAOSendInit(sendParam);
+					}
+				} catch (Exception e) {
+					log.error("KAO 메세지 전송 오류(Response) : " + e.toString());
+					requestService.updateKAOSendInit(sendParam);
+				}
+			}
+		} catch (Exception e){
+			log.error("KAO 메세지 전송 오류(Send) : " + e.toString());
+		} finally {
+			if (executorService.isTerminated()) {
+				executorService.shutdown();
+				log.info("ExecutorService 종료 완료");
+			}
+		}
 	}
+
 
 	private String Btn_json(String btnname, String btntype, String btnpc, String btnmo) {
 
@@ -353,4 +384,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		return jsonString;
 	}
 
+	static public void setIsStart(boolean _flag) {
+		log.info(role + " KAO Process is change : " + _flag);
+		isStart = _flag;
+	}
 }
