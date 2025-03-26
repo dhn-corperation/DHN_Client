@@ -35,7 +35,7 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateKAOSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param);
-//		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2", param);
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete2", param);
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateMSGSendComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete",param);
-//		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2",param);
+		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.req_msg_sent_complete2",param);
 	}
 
 	@Override
