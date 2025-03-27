@@ -217,8 +217,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		LocalDate now = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 		String currentMonth = now.format(formatter);
-
-		List<String> msg_list = new ArrayList<String>();
 		
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
@@ -235,11 +233,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			if(ent.getString("message_type").equalsIgnoreCase("AT")){
 
 				code = _kaoCode.getOrDefault(ent.getString("code"),"E999");
-
-				if(ent.getString("code").equals("0000")){
-					msg_list.add(ent.getString("msgid"));
-					continue;
-				}
 				_ml.setReal_send_date(ent.getString("res_dt"));
 				_ml.setResult_msg(ent.getString("message"));
 				_ml.setMsg_type("K1");
@@ -255,22 +248,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				requestService.update_msg_log(_ml);
 			}catch (Exception e) {
 				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
-			}
-		}
-
-		if(msg_list.size() > 0) {
-			String msg_id = String.join(",", msg_list);
-
-			Msg_Log result = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
-			result.setLog_date_table(logTable+"_"+currentMonth);
-			result.setMsgid(msg_id);
-			result.setMod_id(mod_id);
-			result.setResult_code("0000");
-
-			try{
-				requestService.update_msg_log_success(result);
-			}catch (Exception e){
-				log.info("결과 처리 오류 / {} / {}",msg_id, e.toString());
 			}
 		}
 		log.info("결과 수신 완료 : " + json.length() + " 건");
