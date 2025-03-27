@@ -48,7 +48,7 @@ public class MMSendRequest implements ApplicationListener<ContextRefreshedEvent>
     private String mainLogTable = "";
     private String mod_id = "";
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     @Autowired
     private RequestService requestService;
@@ -103,7 +103,7 @@ public class MMSendRequest implements ApplicationListener<ContextRefreshedEvent>
             ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
             int activeThreads = poolExecutor.getActiveCount();
 
-            if(activeThreads < 5){
+            if(activeThreads < 3){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
                 LocalDateTime now = LocalDateTime.now();
                 String group_no = "MM"+now.format(formatter);
