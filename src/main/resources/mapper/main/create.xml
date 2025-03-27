@@ -80,7 +80,11 @@
     </update>
 
     <update id="createIndex1" parameterType="com.dhn.client.bean.SQLParameter">
-        CREATE INDEX "${msg_table}_SELECT_IDX" ON "${msg_table}" ("MSG_STTS_CD", "SNDNG_TYPE_CD", "GDBK_TRSM_MTHD_CD", "MOBL_REG_TYPE_CD", "SNDNG_PRNMNT_YMD", "GDBK_SNDNG_PRNMNT_TM")
+        CREATE INDEX "${msg_table}_SELECT_IDX01" ON "${msg_table}" ("SEND_TYPE_CD", "MESSAGE_STATUS_CD", "REG_TYPE_CD", "ETRS_MTCD", "SEND_EXPECTED_DT", "SEND_EXPECTED_TIME")
+    </update>
+
+    <update id="createIndex2" parameterType="com.dhn.client.bean.SQLParameter">
+        CREATE INDEX "${msg_table}_SELECT_IDX02" ON "${msg_table}" ("INTENAL_MESSAGE")
     </update>
 
 </mapper>
