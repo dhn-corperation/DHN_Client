@@ -28,6 +28,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
@@ -47,6 +50,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String mod_id = "";
 	private String dual;
 	private static String role;
+
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
 	@Autowired
 	private RequestService requestService;
@@ -140,11 +145,13 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		}
 	}
 
+
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
-		if(isStart && !isProc && procCnt < 10) {
+		ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+		int activeThreads = poolExecutor.getActiveCount();
+		if(isStart && !isProc && activeThreads < 10) {
 			isProc = true;
-			procCnt++;
 
 			try {
 				ObjectMapper om = new ObjectMapper();
@@ -172,41 +179,34 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 								JSONArray jsonArray = dataObject.getJSONArray("detail");
 
 								if (jsonArray.length() > 0) {
-									Thread res = new Thread(() -> ResultProc(jsonArray, procCnt));
-									res.start();
+									executorService.submit(() ->  ResultProc(jsonArray));
 								} else {
 									Thread.sleep(5000);
-									procCnt--;
 								}
 							} else {
 								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
-								procCnt--;
 							}
 						} else {
 							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
-							procCnt--;
 						}
 
 					} else {
 						log.info("결과 수신 오류 (Http Err) : " + response.getStatusCode());
 
-						procCnt--;
 					}
 				} catch(Exception ex) {
 					log.info("결과 수신 오류 (response Err): " + ex.toString());
 					Thread.sleep(10000);
-					procCnt--;
 				}
 				
 			}catch (Exception e) {
 				log.info("결과 수신 오류 : " + e.toString());
-				procCnt--;
 			}
 			isProc = false;
 		}
 	}
 
-	private void ResultProc(JSONArray json, int _pc) {
+	private void ResultProc(JSONArray json) {
 
 		try {
 			requestService.logTableCheck(msgTable, logTable);
@@ -273,8 +273,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				log.info("결과 처리 오류 / {} / {}",msg_id, e.toString());
 			}
 		}
-		log.info("결과 수신 완료 : " + json.length() + " 건");		
-		procCnt--;
+		log.info("결과 수신 완료 : " + json.length() + " 건");
 		
 	}
 

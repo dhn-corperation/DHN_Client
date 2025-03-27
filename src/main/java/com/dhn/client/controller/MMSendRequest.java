@@ -278,11 +278,6 @@ public class MMSendRequest implements ApplicationListener<ContextRefreshedEvent>
             }
         }catch (Exception e){
             log.error("MM 메세지 전송 오류(Send) : " + e.toString());
-        }finally {
-            if (executorService.isTerminated()) {
-                executorService.shutdown();
-                log.info("ExecutorService 종료 완료");
-            }
         }
     }
 

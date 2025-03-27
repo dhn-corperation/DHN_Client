@@ -274,11 +274,6 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
             }
         }catch (Exception e){
             log.error("LMS 메세지 전송 오류(Send) : " + e.toString());
-        }finally {
-            if (executorService.isTerminated()) {
-                executorService.shutdown();
-                log.info("ExecutorService 종료 완료");
-            }
         }
     }
 
