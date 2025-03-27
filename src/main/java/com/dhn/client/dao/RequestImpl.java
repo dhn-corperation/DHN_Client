@@ -124,6 +124,7 @@ public class RequestImpl implements RequestDAO{
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createTable_new", param);
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createPrimaryKey", param);
 		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex1", param);
+		sqlSession.update("com.dhn.client.create.mapper.SendRequest.createIndex2", param);
 	}
 
 	@Override
