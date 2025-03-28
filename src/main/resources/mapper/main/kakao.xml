@@ -118,6 +118,13 @@
 			MOD_DT = SYSTIMESTAMP,
 			MOD_ID = #{mod_id}
 		where MESSAGE_MST_NO IN (${strmsgid})
+
+		update ${main_table}
+		set MSG_STTS_CD = '02',
+			ISND_PRCS_DT = SYSTIMESTAMP,
+			MDFCN_DT = SYSTIMESTAMP,
+			MDFR_ID = #{mod_id}
+		where MSG_MST_NO IN (${strmsgid})
 	</update>
 
 	<update id="req_sent_init" parameterType="com.dhn.client.bean.SQLParameter">

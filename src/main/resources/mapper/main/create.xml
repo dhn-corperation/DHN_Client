@@ -20,11 +20,6 @@
     </select>
 
     <update id="createTable" parameterType="com.dhn.client.bean.SQLParameter">
-        CREATE TABLE "${msg_table}" AS
-        SELECT * FROM "${main_table}" WHERE 1=0
-    </update>
-
-    <update id="createTable_new" parameterType="com.dhn.client.bean.SQLParameter">
         CREATE TABLE "${msg_table}"
         (	"SEND_EXPECTED_DT" VARCHAR2(8),
              "MESSAGE_MST_NO" NUMBER NOT NULL ENABLE,
