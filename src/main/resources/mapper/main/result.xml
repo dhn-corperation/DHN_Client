@@ -36,11 +36,6 @@
         where MESSAGE_MST_NO = '${msgid}'
     </update>
 
-    <delete id="log_delete" parameterType="com.dhn.client.bean.Msg_Log">
-        delete from ${main_table}
-        where MESSAGE_MST_NO = '${msgid}'
-    </delete>
-
     <update id="phn_err_log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${main_table}
         set SEND_RESULT_DT = SYSTIMESTAMP,
@@ -84,11 +79,6 @@
 
     <delete id="phn_err_dhn_log_delete" parameterType="com.dhn.client.bean.Msg_Log">
         delete from ${msg_table}
-        where MESSAGE_MST_NO in (${msgid})
-    </delete>
-
-    <delete id="phn_err_log_delete" parameterType="com.dhn.client.bean.Msg_Log">
-        delete from ${main_table}
         where MESSAGE_MST_NO in (${msgid})
     </delete>
 
