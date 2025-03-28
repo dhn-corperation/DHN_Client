@@ -40,7 +40,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private boolean isProc = false;
 	private String dhnServer;
 	private String userid;
-	private static int procCnt = 0;
 	private Map<String, String> _msgCode = new HashMap<>();
 	private Map<String, String> _kaoCode = new HashMap<>();
 	private String msgTable = "";
@@ -213,6 +212,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		} catch (Exception e) {
 			log.error("테이블 확인 및 생성 실패: " + e.getMessage());
 		}
+		log.info("결과 처리 시작 [ {} ] 건", json.length());
 
 		LocalDate now = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
@@ -250,7 +250,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
 			}
 		}
-		log.info("결과 수신 완료 : " + json.length() + " 건");
+		log.info("결과 처리 완료 [ {} ] 건",json.length());
 		
 	}
 
