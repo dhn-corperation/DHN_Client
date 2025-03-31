@@ -4,7 +4,7 @@
 <mapper namespace="com.dhn.client.create.mapper.SendRequest">
     <select id="logTableCheck" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
         SELECT COUNT(1)
-        FROM ALL_TABLES
+        FROM USER_TABLES
         WHERE TABLE_NAME = UPPER(#{logTable})
     </select>
 
@@ -15,7 +15,7 @@
 
     <select id="tableCheck" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
         SELECT COUNT(1)
-        FROM ALL_TABLES
+        FROM USER_TABLES
         WHERE TABLE_NAME = UPPER(#{msg_table})
     </select>
 
