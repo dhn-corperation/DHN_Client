@@ -24,6 +24,7 @@ public class ResultOldLMS implements ApplicationListener<ContextRefreshedEvent> 
     private String kakaotl = "";
     private String tableseq = "";
     private SQLParameter param = new SQLParameter();
+    private String oldflag = "N";
 
     @Autowired
     private RequestService requestService;
@@ -45,7 +46,12 @@ public class ResultOldLMS implements ApplicationListener<ContextRefreshedEvent> 
         param.setMsg_type("3");
         param.setTime("4");
 
-        isStart = true;
+        oldflag = appContext.getEnvironment().getProperty("dhnclient.oldflag");
+
+        if(oldflag.equalsIgnoreCase("Y")){
+            isStart = true;
+            log.info("LMS OLD DATA 프로세스 초기화 완료");
+        }
     }
 
 

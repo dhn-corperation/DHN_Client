@@ -24,6 +24,7 @@ public class ResultOldSMS implements ApplicationListener<ContextRefreshedEvent> 
     private String kakaotl = "";
     private String tableseq = "";
     private SQLParameter param = new SQLParameter();
+    private String oldflag = "N";
 
     @Autowired
     private RequestService requestService;
@@ -44,7 +45,12 @@ public class ResultOldSMS implements ApplicationListener<ContextRefreshedEvent> 
         param.setMsg_type("1");
         param.setTime("2");
 
-        isStart = true;
+        oldflag = appContext.getEnvironment().getProperty("dhnclient.oldflag");
+
+        if(oldflag.equalsIgnoreCase("Y")){
+            isStart = true;
+            log.info("SMS OLD DATA 프로세스 초기화 완료");
+        }
     }
 
     @Scheduled(fixedDelay = 60000)
