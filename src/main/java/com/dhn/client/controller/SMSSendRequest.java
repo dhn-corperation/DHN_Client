@@ -57,8 +57,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_type("1");
 		
 
-//		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
-		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+//		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
 		log.info("SMS 초기화 완료");
