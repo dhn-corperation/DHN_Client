@@ -5,7 +5,7 @@
 
     <update id="dhn_log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${msg_table}
-        set SEND_RESULT_DT = SYSTIMESTAMP,
+        set SEND_RESULT_DT = TO_TIMESTAMP('${real_send_date}','YYYY-MM-DD HH24:MI:SS'),
             MESSAGE_STATUS_CD = '03',
             SEND_RESULT_CD = '${result_code}',
             SEND_RESULT_MESSAGE = #{result_msg},
@@ -27,7 +27,7 @@
 
     <update id="log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update ${main_table}
-            set SEND_RESULT_DT = SYSTIMESTAMP,
+            set SEND_RESULT_DT = TO_TIMESTAMP('${real_send_date}','YYYY-MM-DD HH24:MI:SS'),
                 MESSAGE_STATUS_CD = '02',
                 SEND_RESULT_CD = '${result_code}',
                 SEND_RESULT_MESSAGE = #{result_msg},
