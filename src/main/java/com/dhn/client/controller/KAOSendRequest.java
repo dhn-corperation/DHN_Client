@@ -151,6 +151,9 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 			sendParam.setMsg_table(msgTable);
 			sendParam.setLog_table(logTable);
 			sendParam.setMain_table(mainTable);
+			sendParam.setNps_profile_key(param.getNps_profile_key());
+			sendParam.setFibp_profile_key(param.getFibp_profile_key());
+			sendParam.setInsure_profile_key(param.getInsure_profile_key());
 			sendParam.setMod_id(mod_id);
 
 
