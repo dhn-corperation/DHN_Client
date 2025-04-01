@@ -91,36 +91,4 @@
         where MESSAGE_MST_NO = '${msgid}'
     </update>
 
-
-    <update id="dhn_log_update_suc" parameterType="com.dhn.client.bean.Msg_Log">
-        update ${msg_table}
-        set SEND_RESULT_DT = SYSTIMESTAMP,
-            MESSAGE_STATUS_CD = '03',
-            SEND_RESULT_CD = '${result_code}',
-            MOD_DT = SYSTIMESTAMP,
-            MOD_ID = #{mod_id}
-        where MESSAGE_MST_NO IN (${msgid})
-    </update>
-
-    <insert id="dhn_log_insert_suc" parameterType="com.dhn.client.bean.Msg_Log">
-        INSERT INTO ${log_date_table}
-        SELECT * FROM ${msg_table}
-        WHERE MESSAGE_MST_NO IN (${msgid})
-
-    </insert>
-
-    <delete id="dhn_log_delete_suc" parameterType="com.dhn.client.bean.Msg_Log">
-        delete from ${msg_table}
-        where MESSAGE_MST_NO IN (${msgid})
-    </delete>
-
-    <update id="log_update_suc" parameterType="com.dhn.client.bean.Msg_Log">
-        update ${main_table}
-        set SEND_RESULT_DT = SYSTIMESTAMP,
-            MESSAGE_STATUS_CD = '02',
-            SEND_RESULT_CD = '${result_code}',
-            MOD_DT = SYSTIMESTAMP,
-            MOD_ID = #{mod_id}
-        where MESSAGE_MST_NO IN (${msgid})
-    </update>
 </mapper>
