@@ -164,7 +164,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				
 				try {
 					ResponseEntity<String> response = rt.postForEntity(dhnServer + "result", entity, String.class);
-											
+
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
 
@@ -179,8 +179,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 								if (jsonArray.length() > 0) {
 									executorService.submit(() ->  ResultProc(jsonArray));
-								} else {
-									Thread.sleep(5000);
 								}
 							} else {
 								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
