@@ -1,8 +1,8 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.PUSHRequestBean;
+import com.dhn.client.bean.MessageRequestBean;
 import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.PUSHService;
+import com.dhn.client.service.MessageService;
 import com.dhn.client.service.RequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -17,21 +17,20 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.StringWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class PUSHSendRequest implements ApplicationListener<ContextRefreshedEvent> {
+public class MSGSendRequest implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
     private SQLParameter param = new SQLParameter();
-    private String pushServer;
+    private String dhnServer;
     private String userid;
-    private String preGroupNo = "";
     private String crypto = "";
 
     @Autowired
@@ -41,7 +40,8 @@ public class PUSHSendRequest implements ApplicationListener<ContextRefreshedEven
     private ApplicationContext appContext;
 
     @Autowired
-    private PUSHService pushService;
+    private MessageService messageService;
+
 
     @Autowired
     ScheduledAnnotationBeanPostProcessor posts;
@@ -49,20 +49,15 @@ public class PUSHSendRequest implements ApplicationListener<ContextRefreshedEven
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        param.setPush_use(appContext.getEnvironment().getProperty("dhnclient.push_use"));
         param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.kakao_profile_key"));
-        param.setMsg_type("P");
 
-        pushServer = appContext.getEnvironment().getProperty("dhnclient.dhn_push_server");
+        dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         crypto = appContext.getEnvironment().getProperty("dhnclient.crypto");
 
-        if (param.getPush_use() != null && param.getPush_use().equalsIgnoreCase("Y")) {
-            log.info("PUSH 초기화 완료");
-            isStart = true;
-        } else {
-            posts.postProcessBeforeDestruction(this, null);
-        }
+        log.info("MSG 초기화 완료");
+        isStart = true;
+
     }
 
     @Scheduled(fixedDelay = 100)
@@ -70,21 +65,44 @@ public class PUSHSendRequest implements ApplicationListener<ContextRefreshedEven
         if(isStart && !isProc) {
             isProc = true;
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-            LocalDateTime now = LocalDateTime.now();
-            String group_no = now.format(formatter);
-
             try{
-                int cnt = requestService.selectPUSHRequestCount(param);
+                int cnt = requestService.selectMessageRequestCount(param);
 
                 if(cnt > 0){
-                    requestService.updatePUSHStatus(param);
+                    log.info("메세지 데이터 조회 시작");
 
-                    List<PUSHRequestBean> _list = requestService.selectPUSHRequests(param);
+                    List<MessageRequestBean> _list = requestService.selectMessageRequests(param);
+
+                    log.info("메세지 전송 시작(" + _list.size() + " 건)");
+
+                    List<String> messageidList = new ArrayList<>();
+                    for (MessageRequestBean messageRequestBean : _list) {
+
+                        if(messageRequestBean.getMessagetype().equalsIgnoreCase("P")){
+                            messageRequestBean.setMessagetype("AP");
+                        }else if(messageRequestBean.getMessagetype().equalsIgnoreCase("K")){
+                            messageRequestBean.setMessagetype("AT");
+                        }
+                        param.setMsgid(messageRequestBean.getMsgid());
+                        messageidList.add(messageRequestBean.getMsgid());
+                        requestService.updateMessageStatus(param);
+
+                    }
+
+                    /*
+                    String messageid = _list.stream()
+                            .map(MessageRequestBean::getMsgid)
+                            .map(msgid -> "'" + msgid + "'")
+                            .collect(Collectors.joining(","));
+
+                    param.setMessageid(messageid);
+                     */
+
+                    param.setMessageid(messageidList);
 
                     if(!crypto.isEmpty() && !crypto.equals("")){
-                        for (PUSHRequestBean pushRequestBean : _list) {
-                            pushRequestBean = pushService.encryption(pushRequestBean, crypto);
+                        for (MessageRequestBean messageRequestBean : _list) {
+                            messageRequestBean = messageService.encryption(messageRequestBean, crypto);
                         }
                     }
 
@@ -101,28 +119,29 @@ public class PUSHSendRequest implements ApplicationListener<ContextRefreshedEven
                     HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
                     try {
-                        ResponseEntity<String> response = rt.postForEntity(pushServer + "req", entity, String.class);
+                        ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                         Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                         log.info(res.toString());
                         if (response.getStatusCode() == HttpStatus.OK) {
-                            requestService.updatePUSHSendComplete(param);
-                            log.info("PUSH 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
+                            //log.info("메세지 상태 102 Update 시작");
+//                            requestService.updateMessageComplete(param);
+                            log.info("메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
                         } else {
-                            log.error("PUSH 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
-                            requestService.updatePUSHSendInit(param);
+                            log.error("메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                            requestService.updateMessageInit(param);
                         }
                     } catch (Exception e) {
-                        log.error("PUSH 메세지 전송 오류(Response) : " + e.toString());
-                        requestService.updatePUSHSendInit(param);
+                        log.error("메세지 전송 오류(Response) : " + e.toString());
+                        requestService.updateMessageInit(param);
                     }
+
 
                 }
             }catch (Exception e){
-                log.error("PUSH 메세지 전송 오류(Send) : " + e.toString());
+                log.error("메세지 전송 오류(Send) : " + e.toString());
             }
 
             isProc = false;
         }
     }
-
 }
