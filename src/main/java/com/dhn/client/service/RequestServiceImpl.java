@@ -105,8 +105,4 @@ public class RequestServiceImpl implements RequestService {
 		requestDAO.msgGroupUpdate(param);
 	}
 
-	@Override
-	public void update_msg_log_success(Msg_Log result) throws Exception {
-		requestDAO.update_msg_log_success(result);
-	}
 }

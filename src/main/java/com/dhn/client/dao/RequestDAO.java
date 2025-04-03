@@ -38,5 +38,4 @@ public interface RequestDAO {
 
 	void msgGroupUpdate(SQLParameter param) throws Exception;
 
-	void update_msg_log_success(Msg_Log result) throws Exception;
 }

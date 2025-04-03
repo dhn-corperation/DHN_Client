@@ -40,6 +40,4 @@ public interface RequestService {
 
 	void msgGroupUpdate(SQLParameter param) throws Exception;
 
-	// 성공 결과값 한번에 update
-	void update_msg_log_success(Msg_Log result) throws Exception;
 }

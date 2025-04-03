@@ -151,11 +151,4 @@ public class RequestImpl implements RequestDAO{
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msg_group_update",param);
 	}
 
-	@Override
-	public void update_msg_log_success(Msg_Log result) throws Exception {
-		sqlSession.update("com.dhn.client.result.mapper.SendRequest.log_update_suc",result);
-		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_update_suc",result);
-		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_insert_suc",result);
-		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.dhn_log_delete_suc",result);
-	}
 }

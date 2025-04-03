@@ -179,8 +179,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 								if (jsonArray.length() > 0) {
 									executorService.submit(() ->  ResultProc(jsonArray));
-								} else {
-									Thread.sleep(5000);
 								}
 							} else {
 								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
@@ -225,7 +223,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			_ml.setMod_id(mod_id);
 			_ml.setMsgid(ent.getString("msgid"));
 
-//			_ml.setLog_date_table(logTable+"_"+ent.getString("reg_dt").substring(0,7).replace("-",""));
 			_ml.setLog_date_table(logTable+"_"+currentMonth);
 
 			String code = "0000";
