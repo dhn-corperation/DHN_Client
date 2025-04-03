@@ -24,11 +24,6 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
-	public List<MessageRequestBean> selectMessageRequests(SQLParameter param) throws Exception {
-		return sqlSession.selectList("com.dhn.client.message.mapper.SendRequest.req_message_select", param);
-	}
-
-	@Override
 	public void updateMessageComplete(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.message.mapper.SendRequest.req_message_sent_complete",param);
 	}
@@ -44,7 +39,17 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
-	public void updateMessageStatus(SQLParameter param) throws Exception {
-		sqlSession.update("com.dhn.client.message.mapper.SendRequest.req_message_status",param);
+	public void updateGroupNo(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.message.mapper.SendRequest.update_group_no",param);
+	}
+
+	@Override
+	public List<MessageRequestBean> selectKaoMessageRequests(SQLParameter param) throws Exception {
+		return sqlSession.selectList("com.dhn.client.message.mapper.SendRequest.req_kao_message_select", param);
+	}
+
+	@Override
+	public List<MessageRequestBean> selectPushMessageRequests(SQLParameter param) throws Exception {
+		return sqlSession.selectList("com.dhn.client.message.mapper.SendRequest.req_push_message_select", param);
 	}
 }

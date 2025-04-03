@@ -21,11 +21,6 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public List<MessageRequestBean> selectMessageRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectMessageRequests(param);
-	}
-
-	@Override
 	public void updateMessageComplete(SQLParameter param) throws Exception {
 		requestDAO.updateMessageComplete(param);
 	}
@@ -41,7 +36,17 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public void updateMessageStatus(SQLParameter param) throws Exception {
-		requestDAO.updateMessageStatus(param);
+	public void updateGroupNo(SQLParameter param) throws Exception {
+		requestDAO.updateGroupNo(param);
+	}
+
+	@Override
+	public List<MessageRequestBean> selectKaoMessageRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectKaoMessageRequests(param);
+	}
+
+	@Override
+	public List<MessageRequestBean> selectPushMessageRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectPushMessageRequests(param);
 	}
 }
