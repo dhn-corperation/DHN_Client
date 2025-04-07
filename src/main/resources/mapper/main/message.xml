@@ -9,7 +9,7 @@
         from ${msg_table}
         where REQDTTM &gt;= sysdate - 14
           AND NVL(REQDTTM, sysdate) &lt;= sysdate
-          and TYPE IN ('${msg_type}')
+          and TYPE IN (${msg_type})
           and STATUS = '100'
           and GROUP_ID is null
     </select>
@@ -20,10 +20,10 @@
         set GROUP_ID = '${group_no}'
         where REQDTTM &gt;= sysdate - 14
           AND NVL(REQDTTM, sysdate) &lt;= sysdate
-          and TYPE IN ('${msg_type}')
+          and TYPE IN (${msg_type})
           and STATUS = '100'
           and GROUP_ID is null
-          and ROWNUM &lt;= 2
+          and ROWNUM &lt;= 500
     </update>
 
     <resultMap id="RequestTable" type="com.dhn.client.bean.MessageRequestBean">

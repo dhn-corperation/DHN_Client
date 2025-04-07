@@ -46,10 +46,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
     private ApplicationContext appContext;
 
     @Autowired
-    private MessageService messageService;
-
-
-    @Autowired
     ScheduledAnnotationBeanPostProcessor posts;
 
     @Override
@@ -61,7 +57,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         crypto = appContext.getEnvironment().getProperty("dhnclient.crypto");
 
-        param.setMsg_type("K','J");
+        param.setMsg_type("'K','J'");
 
         log.info("KAO 초기화 완료");
         isStart = true;
@@ -116,7 +112,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
             ObjectMapper om = new ObjectMapper();
             om.writeValue(sw, _list);
 
-            log.info(sw.toString());
+//            log.info(sw.toString());
 
             HttpHeaders header = new HttpHeaders();
 

@@ -21,6 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+
 @Component
 @Slf4j
 public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
@@ -32,6 +36,9 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private static int procCnt = 0;
 	private String msgTable = "";
 	private String logTable = "";
+
+	private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
+
 
 	@Autowired
 	private RequestService requestService;
@@ -54,9 +61,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
-		if(isStart && !isProc && procCnt < 10) {
+		ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
+		int activeThreads = poolExecutor.getActiveCount();
+		if(isStart && !isProc && activeThreads < 10) {
 			isProc = true;
-			procCnt++;
+
 			try {
 				ObjectMapper om = new ObjectMapper();
 				HttpHeaders header = new HttpHeaders();
@@ -83,48 +92,32 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 								JSONArray jsonArray = dataObject.getJSONArray("detail");
 
 								if (jsonArray.length() > 0) {
-									Thread res = new Thread(() -> ResultProc(jsonArray, procCnt));
-									res.start();
-								} else {
-									Thread.sleep(5000);
-									procCnt--;
+									executorService.submit(() -> ResultProc(jsonArray));
 								}
 							} else {
 								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
-								procCnt--;
 							}
 						} else {
 							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
-							procCnt--;
 						}
-
-//						JSONArray json = new JSONArray(response.getBody().toString());
-//						if(json.length()>0) {
-//							Thread res = new Thread(() ->ResultProc(json, procCnt) );
-//							res.start();
-//						} else {
-//							procCnt--;
-//						}
 
 					} else {
 						log.info("결과 수신 오류 (Http Err) : " + response.getStatusCode());
-						procCnt--;
 					}
 				} catch(Exception ex) {
 					log.info("결과 수신 오류 (response Err): " + ex.toString());
-					procCnt--;
+					Thread.sleep(10000);
 				}
 				
 			}catch (Exception e) {
 				log.info("결과 수신 오류 : " + e.toString());
-				procCnt--;
 			}
 			isProc = false;
 		}
 	}
 
 
-	private void ResultProc(JSONArray json, int _pc) {
+	private void ResultProc(JSONArray json) {
 		
 		for(int i=0; i<json.length(); i++) {
 			JSONObject ent = json.getJSONObject(i);
@@ -139,7 +132,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				if(ent.getString("code").equals("0000")){
 					_ml.setCode("4");
 				}else{
-					_ml.setCode(ent.getString("code"));
+//					_ml.setCode(ent.getString("code"));
+					_ml.setCode(ent.getString("remark5"));
 				}
 				_ml.setReal_send_date(ent.getString("remark2"));
 				_ml.setTel_code("0");
@@ -173,12 +167,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			try {
 				requestService.update_msg_log(_ml);
+
 			}catch (Exception e) {
 				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
 			}
 		}
-		log.info("결과 수신 완료 : " + json.length() + " 건");		
-		procCnt--;
+		log.info("결과 수신 완료 : " + json.length() + " 건");
 		
 	}
 
