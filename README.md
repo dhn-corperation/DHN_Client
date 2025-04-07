@@ -1,4 +1,4 @@
-# 자바 DHN_CLIENT 국민연금공단 메인
+# 자바 DHN_CLIENT 국민연금공단 메인 (구 버전)
 ## Service
 - Oracle DB
 
