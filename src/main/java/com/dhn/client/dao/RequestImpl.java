@@ -52,4 +52,14 @@ public class RequestImpl implements RequestDAO{
 	public List<MessageRequestBean> selectPushMessageRequests(SQLParameter param) throws Exception {
 		return sqlSession.selectList("com.dhn.client.message.mapper.SendRequest.req_push_message_select", param);
 	}
+
+	@Override
+	public List<MessageRequestBean> selectPushImmediateRequests(SQLParameter param) throws Exception {
+		return sqlSession.selectList("com.dhn.client.message.mapper.SendRequest.req_push_immediate_select", param);
+	}
+
+	@Override
+	public List<MessageRequestBean> selectKaoImmediateRequests(SQLParameter param) throws Exception {
+		return sqlSession.selectList("com.dhn.client.message.mapper.SendRequest.req_kao_immediate_select", param);
+	}
 }

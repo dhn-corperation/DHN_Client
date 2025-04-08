@@ -75,7 +75,6 @@
                 WHEN TYPE = 'P' OR TYPE = 'I' THEN KAKAO_CODE
                 ELSE ''
             END AS KAKAO_CODE,
-            KAKAO_CODE,
             '${profile_key}' AS PROFILE_KEY,
             CASE
                 WHEN REQDTTM IS NULL THEN '00000000000000'
@@ -120,6 +119,70 @@
                 WHEN REQDTTM IS NULL THEN '00000000000000'
                 ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
             END AS REQDTTM
+        FROM ${msg_table}
+        WHERE GROUP_ID = '${group_no}'
+    </select>
+
+    <select id="req_push_immediate_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+        SELECT /* O.dhncorp.findAllBySearchParam */
+            SEQNO,
+            'AP' AS TYPE,
+            MSG,
+            MSG as MSG_SMS,
+            CASE
+                WHEN LENGTHB(MSG) &lt;= 90 THEN 'S'
+                ELSE 'L'
+            END AS SMSKIND,
+            CASE
+                WHEN DESTNO LIKE '82%' THEN DESTNO
+                WHEN DESTNO LIKE '010%' THEN '82' || SUBSTR(DESTNO, 2, 15)
+                ELSE '82' || SUBSTR(DESTNO, 2, 15)
+                END AS DESTNO,
+            CALLBACK,
+            BILLID,
+            TITLE,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
+            KAKAO_CODE AS KAKAO_CODE,
+            '${profile_key}' AS PROFILE_KEY,
+            CASE
+                WHEN REQDTTM IS NULL THEN '00000000000000'
+                ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
+                END AS REQDTTM,
+            PUSH_ID,
+            APP_KEY,
+            APP_SECRET,
+            APP_LINK,
+            ATCH_FILE_SN,
+            APP_LAUNCH
+        FROM ${msg_table}
+        WHERE GROUP_ID = '${group_no}'
+    </select>
+
+    <select id="req_kao_immediate_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+        SELECT /* O.dhncorp.findAllBySearchParam */
+            SEQNO,
+            'AT' as TYPE,
+            MSG,
+            MSG as MSG_SMS,
+            CASE
+                WHEN LENGTHB(MSG) &lt;= 90 THEN 'S'
+                ELSE 'L'
+            END AS SMSKIND,
+            CASE
+                WHEN DESTNO LIKE '82%' THEN DESTNO
+                WHEN DESTNO LIKE '010%' THEN '82' || SUBSTR(DESTNO, 2, 15)
+                ELSE '82' || SUBSTR(DESTNO, 2, 15)
+                END AS DESTNO,
+            CALLBACK,
+            BILLID,
+            TITLE,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
+            KAKAO_CODE,
+            '${profile_key}' AS PROFILE_KEY,
+            CASE
+                WHEN REQDTTM IS NULL THEN '00000000000000'
+                ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
+                END AS REQDTTM
         FROM ${msg_table}
         WHERE GROUP_ID = '${group_no}'
     </select>
