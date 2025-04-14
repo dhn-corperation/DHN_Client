@@ -4,28 +4,28 @@
 <mapper namespace="com.dhn.client.msg.mapper.SendRequest">
 
     <select id = "req_msg_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-        SELECT count(MESSAGE_MST_NO) AS cnt
+        SELECT count(MSG_MST_NO) AS cnt
         FROM ${msg_table}
-        WHERE SEND_TYPE_CD = '${msg_type}'
-          AND MESSAGE_STATUS_CD = '00'
-          AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
-            OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
+        WHERE SNDNG_TYPE_CD = '${msg_type}'
+          AND MSG_STTS_CD = '00'
+          AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+            OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
     </select>
 
     <update id="msg_group_update" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET MESSAGE_STATUS_CD = '01',
-            INTENAL_MESSAGE = '${group_no}',
-            MOD_DT = SYSTIMESTAMP,
-            MOD_ID = #{mod_id}
+        SET MSG_STTS_CD = '01',
+            GROUP_NO = '${group_no}',
+            MDFCN_DT = SYSTIMESTAMP,
+            MDFR_ID = #{mod_id}
         WHERE ROWID IN (
             SELECT ROWID
             FROM ${msg_table}
-            WHERE SEND_TYPE_CD = '${msg_type}'
-              AND MESSAGE_STATUS_CD = '00'
-              AND (SEND_EXPECTED_DT &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
-                OR (SEND_EXPECTED_DT = TO_CHAR(SYSDATE, 'YYYYMMDD') AND SEND_EXPECTED_TIME &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
-                ) ORDER BY REG_TYPE_CD , SEND_EXPECTED_DT, SEND_EXPECTED_TIME
+            WHERE SNDNG_TYPE_CD = '${msg_type}'
+              AND MSG_STTS_CD = '00'
+              AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+                OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
+                ) ORDER BY MOBL_REG_TYPE_CD , SNDNG_PRNMNT_YMD, GDBK_SNDNG_PRNMNT_TM
                 FETCH FIRST 500 ROWS ONLY
         )
     </update>
@@ -47,51 +47,51 @@
 
     <select id="req_msg_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
         SELECT
-            MESSAGE_MST_NO AS MSGID,
+            MSG_MST_NO AS MSGID,
             'PH' AS MSGTYPE,
             CASE
-                WHEN SEND_TYPE_CD = 'M1' THEN 'S'
-                WHEN SEND_TYPE_CD = 'M2' THEN 'L'
-                WHEN (SEND_TYPE_CD = '99' OR SEND_TYPE_CD = 'MM') AND LENGTHB(MESSAGE_CONTENT) &lt;= 90 THEN 'S'
-                WHEN (SEND_TYPE_CD = '99' OR SEND_TYPE_CD = 'MM') AND LENGTHB(MESSAGE_CONTENT) &gt; 90 THEN 'L'
+                WHEN SNDNG_TYPE_CD = 'M1' THEN 'S'
+                WHEN SNDNG_TYPE_CD = 'M2' THEN 'L'
+                WHEN (SNDNG_TYPE_CD = '99' OR SNDNG_TYPE_CD = 'MM') AND LENGTHB(MSG_CN) &lt;= 90 THEN 'S'
+                WHEN (SNDNG_TYPE_CD = '99' OR SNDNG_TYPE_CD = 'MM') AND LENGTHB(MSG_CN) &gt; 90 THEN 'L'
                 ELSE 'L'
             END AS MSGKIND,
-            MESSAGE_CONTENT AS MSG,
-            MESSAGE_CONTENT AS MSGSMS,
+            MSG_CN AS MSG,
+            MSG_CN AS MSGSMS,
             CASE
-                WHEN SUBSTR(TRIM(RECEIVER_PHONE_NO), 1, 4) IN ('0010','0070')
-                    THEN SUBSTR(TRIM(RECEIVER_PHONE_NO), 2)
-                WHEN SUBSTR(TRIM(RECEIVER_PHONE_NO), 1, 4) IN ('0011','0019','0016','0017','0018')
-                    THEN SUBSTR(TRIM(RECEIVER_PHONE_NO), 2, 3) || DECODE(SUBSTR(TRIM(RECEIVER_PHONE_NO), 5, 1), '0', SUBSTR(TRIM(RECEIVER_PHONE_NO), 6), SUBSTR(TRIM(RECEIVER_PHONE_NO), 5))
-                WHEN SUBSTR(TRIM(RECEIVER_PHONE_NO), 1, 3) IN ('011','019','016','017','018')
-                    THEN SUBSTR(TRIM(RECEIVER_PHONE_NO), 1, 3) || DECODE(SUBSTR(TRIM(RECEIVER_PHONE_NO), 4, 1), '0', SUBSTR(TRIM(RECEIVER_PHONE_NO), 5), SUBSTR(TRIM(RECEIVER_PHONE_NO), 4))
-                ELSE TRIM(RECEIVER_PHONE_NO)
+                WHEN SUBSTR(TRIM(RCVR_TELNO), 1, 4) IN ('0010','0070')
+                    THEN SUBSTR(TRIM(RCVR_TELNO), 2)
+                WHEN SUBSTR(TRIM(RCVR_TELNO), 1, 4) IN ('0011','0019','0016','0017','0018')
+                    THEN SUBSTR(TRIM(RCVR_TELNO), 2, 3) || DECODE(SUBSTR(TRIM(RCVR_TELNO), 5, 1), '0', SUBSTR(TRIM(RCVR_TELNO), 6), SUBSTR(TRIM(RCVR_TELNO), 5))
+                WHEN SUBSTR(TRIM(RCVR_TELNO), 1, 3) IN ('011','019','016','017','018')
+                    THEN SUBSTR(TRIM(RCVR_TELNO), 1, 3) || DECODE(SUBSTR(TRIM(RCVR_TELNO), 4, 1), '0', SUBSTR(TRIM(RCVR_TELNO), 5), SUBSTR(TRIM(RCVR_TELNO), 4))
+                ELSE TRIM(RCVR_TELNO)
             END AS PHN,
-            NVL(TRIM(SENDER_PHONE_NO),'1355') AS SENDER,
-            BROF_CD AS PINVOICE,
-            MESSAGE_TITLE AS MSGTITLE,
+            NVL(TRIM(SNDPTY_TELNO),'1355') AS SENDER,
+            MOBL_BROF_CD AS PINVOICE,
+            MSG_TTL AS MSGTITLE,
             TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
             CASE
-                WHEN ETRS_MTCD = '01' THEN '00000000000000'
-				WHEN ETRS_MTCD = '02' THEN SEND_EXPECTED_DT || SEND_EXPECTED_TIME
+                WHEN GDBK_TRSM_MTHD_CD = '01' THEN '00000000000000'
+				WHEN GDBK_TRSM_MTHD_CD = '02' THEN SNDNG_PRNMNT_YMD || GDBK_SNDNG_PRNMNT_TM
 				ELSE '00000000000000'
             END AS RESERVEDT,
-            (SELECT SYSTEM_CD FROM MSB_LINK_SYS_E b WHERE b.MOBL_SYS_CD = a.SYSTEM_CD) AS SYSCD,
+            (SELECT MOBL_SYS_CD FROM MSB_LINK_SYS_E b WHERE b.MOBL_SYS_CD = a.MOBL_SYS_CD) AS SYSCD,
             CASE
-                WHEN TO_DATE(SEND_EXPECTED_DT, 'YYYYMMDD') &lt; TRUNC(SYSDATE) THEN '0'
+                WHEN TO_DATE(SNDNG_PRNMNT_YMD, 'YYYYMMDD') &lt; TRUNC(SYSDATE) THEN '0'
                 ELSE '1'
             END AS DATEFLAG
         FROM ${msg_table} a
-        WHERE INTENAL_MESSAGE = '${group_no}'
+        WHERE GROUP_NO = '${group_no}'
     </select>
 
     <update id="req_msg_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         update ${msg_table}
-        set MESSAGE_STATUS_CD = '02',
-            SEND_DT = SYSTIMESTAMP,
-            MOD_DT = SYSTIMESTAMP,
-            MOD_ID = #{mod_id}
-        where INTENAL_MESSAGE = '${group_no}'
+        set MSG_STTS_CD = '02',
+            ISND_PRCS_DT = SYSTIMESTAMP,
+            MDFCN_DT = SYSTIMESTAMP,
+            MDFR_ID = #{mod_id}
+        where GROUP_NO = '${group_no}'
     </update>
 
     <update id="req_msg_sent_complete2" parameterType="com.dhn.client.bean.SQLParameter">
@@ -105,11 +105,11 @@
 
     <update id="req_msg_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
         update ${msg_table}
-        set MESSAGE_STATUS_CD = '00',
-            INTENAL_MESSAGE = NULL,
-            MOD_DT = SYSTIMESTAMP,
-            MOD_ID = #{mod_id}
-        where INTENAL_MESSAGE = '${group_no}'
+        set MSG_STTS_CD = '00',
+            GROUP_NO = NULL,
+            MDFCN_DT = SYSTIMESTAMP,
+            MDFR_ID = #{mod_id}
+        where GROUP_NO = '${group_no}'
     </update>
 
 
