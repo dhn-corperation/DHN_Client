@@ -14,6 +14,7 @@ public class SQLParameter {
 	private String lms_use;
 	private String group_no;
 	private String msg_type;
+	private String priority;
 	private String profile_key;
 	private String file1;
 	private String file2;

@@ -51,12 +51,7 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
-	public List<MessageRequestBean> selectPushImmediateRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectPushImmediateRequests(param);
-	}
-
-	@Override
-	public List<MessageRequestBean> selectKaoImmediateRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectKaoImmediateRequests(param);
+	public List<MessageRequestBean> selectMsgMessageRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectMsgMessageRequests(param);
 	}
 }

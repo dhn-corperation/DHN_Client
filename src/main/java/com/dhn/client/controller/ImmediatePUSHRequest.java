@@ -55,9 +55,10 @@ public class ImmediatePUSHRequest implements ApplicationListener<ContextRefreshe
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         crypto = appContext.getEnvironment().getProperty("dhnclient.crypto");
 
-        param.setMsg_type("'O'");
+        param.setMsg_type("P");
+        param.setPriority("1");
 
-        log.info("Immediate PUSH 초기화 완료");
+        log.info("Immediate PUSH P 초기화 완료");
         isStart = true;
 
     }
@@ -71,9 +72,9 @@ public class ImmediatePUSHRequest implements ApplicationListener<ContextRefreshe
             int activeCount = poolExecutor.getActiveCount();
 
             if(activeCount < 2){
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
                 LocalDateTime now = LocalDateTime.now();
-                String group_no = "IP" + now.format(formatter);
+                String group_no = "P" + now.format(formatter);
 
                 if(!group_no.equals(preGroupNo)){
                     try{
@@ -87,7 +88,7 @@ public class ImmediatePUSHRequest implements ApplicationListener<ContextRefreshe
 
                         }
                     }catch (Exception e){
-                        log.error("Immediate PUSH 메세지 전송 오류(Send) : " + e.toString());
+                        log.error("Immediate PUSH P 메세지 전송 오류(Send) : " + e.toString());
                     }
                     preGroupNo = group_no;
                 }
@@ -105,7 +106,7 @@ public class ImmediatePUSHRequest implements ApplicationListener<ContextRefreshe
             sendParam.setProfile_key(param.getProfile_key());
             sendParam.setMsg_type(param.getMsg_type());
 
-            List<MessageRequestBean> _list = requestService.selectPushImmediateRequests(sendParam);
+            List<MessageRequestBean> _list = requestService.selectPushMessageRequests(sendParam);
 
             StringWriter sw = new StringWriter();
             ObjectMapper om = new ObjectMapper();
@@ -127,18 +128,18 @@ public class ImmediatePUSHRequest implements ApplicationListener<ContextRefreshe
                 log.info(res.toString());
                 if (response.getStatusCode() == HttpStatus.OK) {
                     requestService.updateMessageComplete(sendParam);
-                    log.info("Immediate PUSH 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
+                    log.info("Immediate PUSH P 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
                 } else {
-                    log.error("Immediate PUSH 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                    log.error("Immediate PUSH P 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
                     requestService.updateMessageInit(sendParam);
                 }
             } catch (Exception e) {
-                log.error("Immediate PUSH 메세지 전송 오류(Response) : " + e.toString());
+                log.error("Immediate PUSH P 메세지 전송 오류(Response) : " + e.toString());
                 requestService.updateMessageInit(sendParam);
             }
 
         }catch (Exception e){
-            log.error("Immediate PUSH 메세지 전송 오류(Send) : " + e.toString());
+            log.error("Immediate PUSH P 메세지 전송 오류(Send) : " + e.toString());
         }
     }
 }

@@ -20,7 +20,5 @@ public interface RequestDAO {
 
 	List<MessageRequestBean> selectPushMessageRequests(SQLParameter param) throws Exception;
 
-	List<MessageRequestBean> selectPushImmediateRequests(SQLParameter param) throws Exception;
-
-	List<MessageRequestBean> selectKaoImmediateRequests(SQLParameter param) throws Exception;
+	List<MessageRequestBean> selectMsgMessageRequests(SQLParameter param) throws Exception;
 }

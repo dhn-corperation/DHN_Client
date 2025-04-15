@@ -37,7 +37,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String crypto = "";
     private String preGroupNo = "";
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     @Autowired
     private RequestService requestService;
@@ -57,7 +57,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         crypto = appContext.getEnvironment().getProperty("dhnclient.crypto");
 
-        param.setMsg_type("'K','J'");
+        param.setMsg_type("K");
+        param.setPriority("5");
 
         log.info("KAO 초기화 완료");
         isStart = true;
@@ -72,7 +73,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
             ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
             int activeThreads = poolExecutor.getActiveCount();
 
-            if(activeThreads < 5){
+            if(activeThreads < 3){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
                 LocalDateTime now = LocalDateTime.now();
                 String group_no = "K" + now.format(formatter);
@@ -89,7 +90,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
                         }
                     }catch (Exception e){
-                        log.error("KAO 메세지 전송 오류(Send) : " + e.toString());
+                        log.error("KAO K 메세지 전송 오류(Send) : " + e.toString());
                     }
                     preGroupNo = group_no;
                 }
@@ -128,18 +129,18 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
                 log.info(res.toString());
                 if (response.getStatusCode() == HttpStatus.OK) {
                     requestService.updateMessageComplete(sendParam);
-                    log.info("KAO 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
+                    log.info("KAO K 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
                 } else {
-                    log.error("KAO 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                    log.error("KAO K 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
                     requestService.updateMessageInit(sendParam);
                 }
             } catch (Exception e) {
-                log.error("KAO 메세지 전송 오류(Response) : " + e.toString());
+                log.error("KAO K 메세지 전송 오류(Response) : " + e.toString());
                 requestService.updateMessageInit(sendParam);
             }
 
         }catch (Exception e){
-            log.error("KAO 메세지 전송 오류(Send) : " + e.toString());
+            log.error("KAO K 메세지 전송 오류(Send) : " + e.toString());
         }
     }
 }

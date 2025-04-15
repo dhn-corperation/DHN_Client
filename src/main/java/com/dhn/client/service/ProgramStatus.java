@@ -1,8 +1,6 @@
 package com.dhn.client.service;
 
-import com.dhn.client.controller.KAOSendRequest;
-import com.dhn.client.controller.PUSHSendRequest;
-import com.dhn.client.controller.ResultReq;
+import com.dhn.client.controller.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.CommandLineRunner;
@@ -26,7 +24,17 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
     @Override
     public void onApplicationEvent(ContextClosedEvent event) {
         KAOSendRequest.isStart = false;
+        KTSendRequest.isStart = false;
         PUSHSendRequest.isStart = false;
+        PDSendRequest.isStart = false;
+        PSSendRequest.isStart = false;
+        MSGSendRequest.isStart = false;
+        ImmediateKAORequest.isStart = false;
+        ImmediateKTSendRequest.isStart = false;
+        ImmediatePUSHRequest.isStart = false;
+        ImmediatePDSendRequest.isStart = false;
+        ImmediatePSSendRequest.isStart = false;
+        ImmediateMSGSendRequest.isStart = false;
         ResultReq.isStart = false;
 
         log.info("프로그램 종료 처리 중.....");

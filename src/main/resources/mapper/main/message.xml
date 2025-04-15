@@ -9,20 +9,20 @@
         from ${msg_table}
         where REQDTTM &gt;= sysdate - 14
           AND NVL(REQDTTM, sysdate) &lt;= sysdate
-          and TYPE IN (${msg_type})
+          and TYPE = '${msg_type}'
           and STATUS = '100'
-          and GROUP_ID is null
+          and PRIORITY = '${priority}'
     </select>
 
     <update id="update_group_no" parameterType="com.dhn.client.bean.SQLParameter">
         update /* O.dhncorp.updateGroupBySearchParam */
             ${msg_table}
-        set GROUP_ID = '${group_no}'
+        set TYPE = '${group_no}'
         where REQDTTM &gt;= sysdate - 14
           AND NVL(REQDTTM, sysdate) &lt;= sysdate
-          and TYPE IN (${msg_type})
+          and TYPE = '${msg_type}'
           and STATUS = '100'
-          and GROUP_ID is null
+          and PRIORITY = '${priority}'
           and ROWNUM &lt;= 500
     </update>
 
@@ -71,11 +71,11 @@
             BILLID,
             TITLE,
             TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
+            KAKAO_CODE,
             CASE
-                WHEN TYPE = 'P' OR TYPE = 'I' THEN KAKAO_CODE
+                WHEN TYPE = 'P' OR TYPE = 'D' THEN '${profile_key}'
                 ELSE ''
-            END AS KAKAO_CODE,
-            '${profile_key}' AS PROFILE_KEY,
+            END AS PROFILE_KEY,
             CASE
                 WHEN REQDTTM IS NULL THEN '00000000000000'
                 ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
@@ -87,7 +87,7 @@
             ATCH_FILE_SN,
             APP_LAUNCH
         FROM ${msg_table}
-        WHERE GROUP_ID = '${group_no}'
+        WHERE TYPE = '${group_no}'
     </select>
 
     <select id="req_kao_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -97,7 +97,7 @@
             MSG,
             MSG as MSG_SMS,
             CASE
-                WHEN TYPE = 'J' THEN ''
+                WHEN TYPE = 'T' THEN ''
                 WHEN TYPE = 'K' THEN
                     CASE
                         WHEN LENGTHB(MSG) &lt;= 90 THEN 'S'
@@ -120,86 +120,45 @@
                 ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
             END AS REQDTTM
         FROM ${msg_table}
-        WHERE GROUP_ID = '${group_no}'
+        WHERE TYPE = '${group_no}'
     </select>
 
-    <select id="req_push_immediate_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+    <select id="req_msg_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
         SELECT /* O.dhncorp.findAllBySearchParam */
             SEQNO,
-            'AP' AS TYPE,
+            'PH' as TYPE,
             MSG,
             MSG as MSG_SMS,
             CASE
                 WHEN LENGTHB(MSG) &lt;= 90 THEN 'S'
                 ELSE 'L'
             END AS SMSKIND,
-            CASE
-                WHEN DESTNO LIKE '82%' THEN DESTNO
-                WHEN DESTNO LIKE '010%' THEN '82' || SUBSTR(DESTNO, 2, 15)
-                ELSE '82' || SUBSTR(DESTNO, 2, 15)
-                END AS DESTNO,
+            DESTNO,
             CALLBACK,
             BILLID,
             TITLE,
             TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
-            KAKAO_CODE AS KAKAO_CODE,
-            '${profile_key}' AS PROFILE_KEY,
-            CASE
-                WHEN REQDTTM IS NULL THEN '00000000000000'
-                ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
-                END AS REQDTTM,
-            PUSH_ID,
-            APP_KEY,
-            APP_SECRET,
-            APP_LINK,
-            ATCH_FILE_SN,
-            APP_LAUNCH
-        FROM ${msg_table}
-        WHERE GROUP_ID = '${group_no}'
-    </select>
-
-    <select id="req_kao_immediate_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        SELECT /* O.dhncorp.findAllBySearchParam */
-            SEQNO,
-            'AT' as TYPE,
-            MSG,
-            MSG as MSG_SMS,
-            CASE
-                WHEN LENGTHB(MSG) &lt;= 90 THEN 'S'
-                ELSE 'L'
-            END AS SMSKIND,
-            CASE
-                WHEN DESTNO LIKE '82%' THEN DESTNO
-                WHEN DESTNO LIKE '010%' THEN '82' || SUBSTR(DESTNO, 2, 15)
-                ELSE '82' || SUBSTR(DESTNO, 2, 15)
-                END AS DESTNO,
-            CALLBACK,
-            BILLID,
-            TITLE,
-            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
-            KAKAO_CODE,
-            '${profile_key}' AS PROFILE_KEY,
             CASE
                 WHEN REQDTTM IS NULL THEN '00000000000000'
                 ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
                 END AS REQDTTM
         FROM ${msg_table}
-        WHERE GROUP_ID = '${group_no}'
+        WHERE TYPE = '${group_no}'
     </select>
 
     <update id="req_message_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         update /* O.dhncorp.updateDateMakeBySeqNO */
             ${msg_table}
         set STATUS = '102'
-        where GROUP_ID = '${group_no}'
+        where TYPE = '${group_no}'
     </update>
 
     <update id="req_message_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
         update /* O.dhncorp.updateSendFailBySearchParam */
             ${msg_table}
         set STATUS = '100',
-            GROUP_ID = NULL
-        where GROUP_ID = '${group_no}'
+            TYPE = '${msg_type}'
+        where TYPE = '${group_no}'
     </update>
 
 </mapper>

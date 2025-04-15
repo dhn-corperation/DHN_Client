@@ -26,7 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Component
 @Slf4j
-public class ImmediateKAORequest implements ApplicationListener<ContextRefreshedEvent> {
+public class ImmediateKTSendRequest implements ApplicationListener<ContextRefreshedEvent> {
     public static boolean isStart = false;
     private boolean isProc = false;
     private SQLParameter param = new SQLParameter();
@@ -55,10 +55,10 @@ public class ImmediateKAORequest implements ApplicationListener<ContextRefreshed
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
         crypto = appContext.getEnvironment().getProperty("dhnclient.crypto");
 
-        param.setMsg_type("K");
+        param.setMsg_type("T");
         param.setPriority("1");
 
-        log.info("Immediate KAO K 초기화 완료");
+        log.info("Immediate KAO T 초기화 완료");
         isStart = true;
 
     }
@@ -74,7 +74,7 @@ public class ImmediateKAORequest implements ApplicationListener<ContextRefreshed
             if(activeThreads < 1){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
                 LocalDateTime now = LocalDateTime.now();
-                String group_no = "K" + now.format(formatter);
+                String group_no = "T" + now.format(formatter);
 
                 if(!group_no.equals(preGroupNo)){
                     try{
@@ -88,7 +88,7 @@ public class ImmediateKAORequest implements ApplicationListener<ContextRefreshed
 
                         }
                     }catch (Exception e){
-                        log.error("Immediate KAO K 메세지 전송 오류(Send) : " + e.toString());
+                        log.error("Immediate KAO T 메세지 전송 오류(Send) : " + e.toString());
                     }
                     preGroupNo = group_no;
                 }
@@ -127,18 +127,18 @@ public class ImmediateKAORequest implements ApplicationListener<ContextRefreshed
                 log.info(res.toString());
                 if (response.getStatusCode() == HttpStatus.OK) {
                     requestService.updateMessageComplete(sendParam);
-                    log.info("Immediate KAO K 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
+                    log.info("Immediate KAO T 메세지 전송 완료(" + response.getStatusCode() + ") : "+ _list.size() + " 건");
                 } else {
-                    log.error("Immediate KAO K 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                    log.error("Immediate KAO T 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
                     requestService.updateMessageInit(sendParam);
                 }
             } catch (Exception e) {
-                log.error("Immediate KAO K 메세지 전송 오류(Response) : " + e.toString());
+                log.error("Immediate KAO T 메세지 전송 오류(Response) : " + e.toString());
                 requestService.updateMessageInit(sendParam);
             }
 
         }catch (Exception e){
-            log.error("Immediate KAO K 메세지 전송 오류(Send) : " + e.toString());
+            log.error("Immediate KAO T 메세지 전송 오류(Send) : " + e.toString());
         }
     }
 }
