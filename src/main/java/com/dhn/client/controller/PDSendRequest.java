@@ -113,7 +113,7 @@ public class PDSendRequest implements ApplicationListener<ContextRefreshedEvent>
             ObjectMapper om = new ObjectMapper();
             om.writeValue(sw, _list);
 
-//            log.info(sw.toString());
+            log.info(sw.toString());
 
             HttpHeaders header = new HttpHeaders();
 

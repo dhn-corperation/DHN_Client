@@ -55,7 +55,7 @@
             MSG,
             MSG as MSG_SMS,
             CASE
-                WHEN TYPE = 'P' THEN
+                WHEN SUBSTR(TYPE,1,1) = 'P' THEN
                     CASE
                         WHEN LENGTHB(MSG) &lt;= 90 THEN 'S'
                         ELSE 'L'
@@ -73,7 +73,7 @@
             TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
             KAKAO_CODE,
             CASE
-                WHEN TYPE = 'P' OR TYPE = 'D' THEN '${profile_key}'
+                WHEN SUBSTR(TYPE,1,1) = 'P' OR SUBSTR(TYPE,1,1) = 'D' THEN '${profile_key}'
                 ELSE ''
             END AS PROFILE_KEY,
             CASE
@@ -97,8 +97,8 @@
             MSG,
             MSG as MSG_SMS,
             CASE
-                WHEN TYPE = 'T' THEN ''
-                WHEN TYPE = 'K' THEN
+                WHEN SUBSTR(TYPE,1,1) = 'T' THEN ''
+                WHEN SUBSTR(TYPE,1,1) = 'K' THEN
                     CASE
                         WHEN LENGTHB(MSG) &lt;= 90 THEN 'S'
                         ELSE 'L'

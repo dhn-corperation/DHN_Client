@@ -35,7 +35,7 @@ public class ImmediatePUSHRequest implements ApplicationListener<ContextRefreshe
     private String crypto = "";
     private String preGroupNo = "";
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     @Autowired
     private RequestService requestService;
@@ -71,7 +71,7 @@ public class ImmediatePUSHRequest implements ApplicationListener<ContextRefreshe
             ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
             int activeCount = poolExecutor.getActiveCount();
 
-            if(activeCount < 2){
+            if(activeCount < 1){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
                 LocalDateTime now = LocalDateTime.now();
                 String group_no = "P" + now.format(formatter);
