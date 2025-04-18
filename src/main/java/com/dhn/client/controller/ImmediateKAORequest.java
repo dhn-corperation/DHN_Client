@@ -43,9 +43,6 @@ public class ImmediateKAORequest implements ApplicationListener<ContextRefreshed
     @Autowired
     private ApplicationContext appContext;
 
-    @Autowired
-    ScheduledAnnotationBeanPostProcessor posts;
-
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
