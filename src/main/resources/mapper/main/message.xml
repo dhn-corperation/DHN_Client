@@ -149,7 +149,8 @@
     <update id="req_message_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         update /* O.dhncorp.updateDateMakeBySeqNO */
             ${msg_table}
-        set STATUS = '102'
+        set STATUS = '102',
+            TYPE = '${msg_type}'
         where TYPE = '${group_no}'
     </update>
 
