@@ -4,7 +4,7 @@
 <mapper namespace="com.dhn.client.message.mapper.SendRequest">
 
     <select id = "req_message_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
-        select /* O.dhncorp.countAllBySearchParam */
+        select /* O.dhncorp.countAllBySearchParamWithType */
             count(1) as cnt
         from ${msg_table}
         where REQDTTM &gt;= sysdate - 14
@@ -15,7 +15,7 @@
     </select>
 
     <update id="update_group_no" parameterType="com.dhn.client.bean.SQLParameter">
-        update /* O.dhncorp.updateGroupBySearchParam */
+        update /* O.dhncorp.updateGroupBySearchParamWithType */
             ${msg_table}
         set TYPE = '${group_no}'
         where REQDTTM &gt;= sysdate - 14
@@ -49,7 +49,7 @@
     </resultMap>
 
     <select id="req_push_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        SELECT /* O.dhncorp.findAllBySearchParam */
+        SELECT /* O.dhncorp.findAllBySearchParamForPush */
             SEQNO,
             'AP' AS TYPE,
             MSG,
@@ -91,7 +91,7 @@
     </select>
 
     <select id="req_kao_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        SELECT /* O.dhncorp.findAllBySearchParam */
+        SELECT /* O.dhncorp.findAllBySearchParamForTalk */
             SEQNO,
             'AT' as TYPE,
             MSG,
@@ -124,7 +124,7 @@
     </select>
 
     <select id="req_msg_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        SELECT /* O.dhncorp.findAllBySearchParam */
+        SELECT /* O.dhncorp.findAllBySearchParamForSMS */
             SEQNO,
             'PH' as TYPE,
             MSG,
@@ -147,7 +147,7 @@
     </select>
 
     <update id="req_message_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
-        update /* O.dhncorp.updateDateMakeBySeqNO */
+        update /* O.dhncorp.updateDateMakeBySeqNOWithType */
             ${msg_table}
         set STATUS = '102',
             TYPE = '${msg_type}'
@@ -155,7 +155,7 @@
     </update>
 
     <update id="req_message_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
-        update /* O.dhncorp.updateSendFailBySearchParam */
+        update /* O.dhncorp.updateSendFailBySearchParamWithType */
             ${msg_table}
         set STATUS = '100',
             TYPE = '${msg_type}'

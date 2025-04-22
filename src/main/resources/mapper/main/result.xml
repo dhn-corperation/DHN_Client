@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dhn.client.result.mapper.SendRequest">
     <update id="log_update" parameterType="com.dhn.client.bean.Msg_Log">
-        update /* O.dhncorp.updateSendResultBySeqNO */
+        update /* O.dhncorp.updateSendResultBySeqNOWithType */
             ${log_table}
             set RSLTDTTM = '${real_send_date}',
                 REPDTTM = SYSDATE,
