@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.mysql.mapper.SendRequest">
+	<select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select count(1) as cnt from ${msg_data} where cur_state = '0' and ifnull(req_date,sysdate()) &lt;= sysdate() and sent_date is null and msg_type = ${msg_type} limit 1
+	</select>
+	<update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_data}
+		   set cur_state = '1'
+		      ,sent_date = str_to_date('${group_no}','%Y%m%d%H%i%S')
+		 where cur_state = '0'
+           and ifnull(req_date,sysdate()) &lt;= sysdate()
+		   and sent_date is null
+		   and msg_type = '${msg_type}'
+		   limit 1000
+	</update>
+
+	<select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select count(1) as cnt from ${msg_data} where cur_state = '0' and ifnull(req_date,sysdate()) &lt;= sysdate() and sent_date is null and msg_type = ${msg_type} and cont_seq is not null limit 1
+	</select>
+	<update id="req_mms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_data}
+		   set cur_state = '1'
+		      ,sent_date = str_to_date('${group_no}','%Y%m%d%H%i%S')
+		 where cur_state = '0'
+           and ifnull(req_date,sysdate()) &lt;= sysdate()
+		   and sent_date is null
+		   and msg_type = '${msg_type}'
+		   and cont_seq is not null  
+		   limit 1000
+	</update>
+
+	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_data} set cur_state = '2'  where cur_state = '1' and sent_date =  str_to_date('${group_no}','%Y%m%d%H%i%S') and msg_type = '${msg_type}'
+	</update>
+
+	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_data} set cur_state = '0', sent_date = null  where cur_state = '1' and sent_date =  str_to_date('${group_no}','%Y%m%d%H%i%S') and msg_type = '${msg_type}'
+	</update>
+	
+	<resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
+		<result column="msg_seq" property="msgid"/>
+		<result column="messagetype" property="messagetype"/>
+		<result column="msg_txt" property="msg"/>
+		<result column="sms_txt" property="msgsms"/>
+		<result column="call_to" property="phn"/>
+		<result column="curr_date" property="regdt"/>
+		<result column="pcom" property="pcom"/>
+		<result column="userdata" property="pinvoice"/>
+		<result column="msgtype" property="smskind"/>
+		<result column="msg_txt_title" property="smslmstit"/>
+		<result column="call_from" property="smssender"/>
+		<result column="crypto" property="crypto"/>
+	</resultMap>
+			
+	<select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+		select msg_seq 
+		      ,sms_txt as msg_txt
+		      ,sms_txt as sms_txt
+		      ,call_to
+		      ,userdata
+		      ,'S' as msgtype
+		      ,'' as msg_txt_title
+		      ,call_from
+		      ,'ph' as messagetype
+		      ,'D' as pcom
+		      ,'N' as crypto
+		      ,date_format(sysdate(), '%Y-%m-%d %H:%i:%S') as curr_date
+		  from ${msg_data} st
+		 where cur_state = '1'
+		   and msg_type = ${msg_type}
+		   and sent_date = str_to_date('${group_no}','%Y%m%d%H%i%S')
+	</select>
+
+			
+	<select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+		select msg_seq 
+		      ,mci.mms_body as msg_txt
+		      ,mci.mms_body as sms_txt
+		      ,call_to
+		      ,userdata
+		      ,'L' as msgtype
+		      ,mci.mms_subject as msg_txt_title
+		      ,call_from
+		      ,'ph' as messagetype
+		      ,'D' as pcom
+		      ,'N' as crypto
+		      ,date_format(sysdate(), '%Y-%m-%d %H:%i:%S') as curr_date
+		  from ${msg_data} md
+		      ,${mms_contents_info} mci
+		 where cur_state = '1'
+		   and msg_type = '${msg_type}'
+		   and md.cont_seq = mci.cont_seq
+		   and sent_date =  str_to_date('${group_no}','%Y%m%d%H%i%S')
+	</select>
+
+	<insert id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+		insert into ${msg_log} select * from ${msg_data} where msg_seq = '${msg_seq}'
+	</insert>
+
+	<insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
+		delete from ${msg_data} where msg_seq = '${msg_seq}'
+	</insert>
+
+	<insert id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
+		update ${msg_log} 
+		   set cur_state = '3'
+		      ,rslt_date =  str_to_date('${rslt_date}','%Y-%m-%d %H:%i:%S')
+		      ,rslt_code = '${rslt_code}'
+		      ,rslt_code2 = '${rslt_code2}'
+		      ,rslt_net = '${rslt_net}' 
+		 where msg_seq = '${msg_seq}'
+	</insert>
+	<update id="create_log_table" parameterType="com.dhn.client.bean.Msg_Log">
+		create table if not exists ${msg_log} like ${msg_data} 
+	</update>
+</mapper>  

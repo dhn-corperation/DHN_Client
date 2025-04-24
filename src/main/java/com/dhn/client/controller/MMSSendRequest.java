@@ -32,15 +32,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
+@Slf4j
+public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
 	private boolean isProc = false;
 	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
-	
-	private static final Logger log = LogManager.getRootLogger();
 	
 	@Autowired
 	private RequestService requestService;
@@ -55,8 +54,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_data( appContext.getEnvironment().getProperty("dhnclient.msg_data") );
 		param.setMms_contents_info( appContext.getEnvironment().getProperty("dhnclient.mms_contents_info") );
 		param.setMsg_log( appContext.getEnvironment().getProperty("dhnclient.msg_log") );
-		param.setMsg_type("4");
-		
+		param.setMsg_type("6");
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -73,7 +71,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			try {
 				
-				int cnt = requestService.selectSMSReqeustCount(param);
+				int cnt = requestService.selectMMSReqeustCount(param);
 				
 				if(cnt > 0) {
 
@@ -83,9 +81,9 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					param.setGroup_no(group_no);
 
-					requestService.updateSMSGroupNo(param);
+					requestService.updateMMSGroupNo(param);
 					
-					List<RequestBean> _list = requestService.selectSMSRequests(param);
+					List<RequestBean> _list = requestService.selectMMSRequests(param);
 					
 					StringWriter sw = new StringWriter();
 					ObjectMapper om = new ObjectMapper();
@@ -105,7 +103,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 						ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 						//log.info(response.getStatusCode() + " / " + response.getBody());
 												
-						if(response.getStatusCode() ==  HttpStatus.OK)
+						if(response.getStatusCode() == HttpStatus.OK)
 						{
 							requestService.updateSMSSendComplete(param);
 							log.info("메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
@@ -126,7 +124,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				log.error("SMS Send Error : " + e.toString());
+				log.error("MMS Send Error : " + e.toString());
 			}
 			
 			isProc = false;

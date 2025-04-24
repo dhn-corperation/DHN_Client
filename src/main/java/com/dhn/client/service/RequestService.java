@@ -1,43 +1,29 @@
 package com.dhn.client.service;
 
+import java.util.HashMap;
 import java.util.List;
 
-import com.dhn.client.bean.*;
+import com.dhn.client.bean.Msg_Log;
+import com.dhn.client.bean.RequestBean;
+import com.dhn.client.bean.SQLParameter;
 
 public interface RequestService {
+	public int selectSMSReqeustCount(SQLParameter param) throws Exception;
+	
+	public void updateSMSGroupNo(SQLParameter param) throws Exception;
 
-	// 알림톡
-	int selectKAORequestCount(SQLParameter param) throws Exception;
+	public void updateSMSSendComplete(SQLParameter param) throws Exception;
 
-	List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception;
+	public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception;
 
-	void updateKAOSendComplete(SQLParameter param) throws Exception;
+	public void updateSMSSendInit(SQLParameter param) throws Exception;
 
-	void updateKAOSendInit(SQLParameter param) throws Exception;
+	public void Inset_msg_log(Msg_Log ml) throws Exception;
 
-	// 문자
-	int selectMSGRequestCount(SQLParameter param) throws Exception;
+	public int selectMMSReqeustCount(SQLParameter param) throws Exception;
+	
+	public void updateMMSGroupNo(SQLParameter param) throws Exception;
 
-	List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception;
-
-	void updateMSGSendComplete(SQLParameter param) throws Exception;
-
-	void updateMSGSendInit(SQLParameter param) throws Exception;
-
-	void update_msg_log(Msg_Log ml) throws Exception;
-
-	// 테이블 생성
-	void logTableCheck(String msg_table, String log_table) throws Exception;
-
-	void tableCheck(SQLParameter param) throws Exception;
-
-    void phnErrUpdateDelete(Msg_Log ml) throws Exception;
-
-    void sourceErrUpdate(Msg_Log ml) throws Exception;
-
-	// 그룹핑
-	void kaoGroupUpdate(SQLParameter param) throws Exception;
-
-	void msgGroupUpdate(SQLParameter param) throws Exception;
+	public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception;
 
 }

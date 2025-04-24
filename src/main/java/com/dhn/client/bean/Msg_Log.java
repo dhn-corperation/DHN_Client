@@ -2,29 +2,46 @@ package com.dhn.client.bean;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Data
 public class Msg_Log {
-	private String msg_table;
-	private String log_table;
-	private String main_table;
-	private String main_log_table;
-	private String msgid;
+	private String userdata;
+	private String msg_seq;
+	private String cur_state;
+	private String sent_date;
+	private String rslt_date;
+	private String req_date;
+	private String rslt_code;
+	private String rslt_code2;
+	private String rslt_net;
+	private String call_to;
+	private String call_from;
+	private String sms_txt;
 	private String msg_type;
-	private String real_send_date;
-	private String response_date;
-	private String result_code;
-	private String result_msg;
-	private String mod_id;
-	private String flag_2nd;
-	private String log_date_table;
-	private String source_err_msg;
+	private String cont_seq;
 
+	private String DBType;
+	private String msg_data;
+	private String mms_contents_info;
+	private String msg_log;
+	private String log_mv_flag;
 	
-	public Msg_Log(String msg_table, String log_table, String main_table, String main_log_table) {
-		this.msg_table = msg_table;
-		this.log_table = log_table;
-		this.main_table = main_table;
-		this.main_log_table = main_log_table;
+	public Msg_Log(String dbtype, String md, String mci, String ml, String lmf) {
+		this.DBType = dbtype;
+		this.msg_data = md;
+		this.mms_contents_info = mci;
+		this.msg_log = ml;
+		this.log_mv_flag = lmf;
+		if(this.log_mv_flag.equals("DEFAULT"))
+		{
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+			LocalDateTime now = LocalDateTime.now();
+			String month_table = now.format(formatter);			
+			this.msg_log = this.msg_log + "_" + month_table;
+		}
 	}
-
+	
+	
 }

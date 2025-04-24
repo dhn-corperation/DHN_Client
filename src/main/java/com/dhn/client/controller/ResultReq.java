@@ -1,5 +1,15 @@
 package com.dhn.client.controller;
 
+
+import java.io.StringWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,148 +22,108 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.bean.Msg_Log;
+import com.dhn.client.bean.RequestBean;
 import com.dhn.client.service.RequestService;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-
 @Component
 @Slf4j
 public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
-	
+
 	public static boolean isStart = false;
 	private boolean isProc = false;
+	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
-	private Map<String, String> _msgCode = new HashMap<>();
-	private Map<String, String> _kaoCode = new HashMap<>();
-	private String msgTable = "";
-	private String logTable = "";
-	private String mainTable = "";
-	private String mainLogTable = "";
-	private String mod_id = "";
-	private String dual;
-	private static String role;
-
-	private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
-
+	private Map<String, String> _rsltCode = new HashMap<String, String>();
+	
 	@Autowired
 	private RequestService requestService;
 	
 	@Autowired
 	private ApplicationContext appContext;
-
-	@Autowired
-	ScheduledAnnotationBeanPostProcessor posts;
-
+	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		
-		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
-		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
-		mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
-		mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
-		dhnServer = appContext.getEnvironment().getProperty("dhnclient.dhn_kakao_server");
-		mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
+		// TODO Auto-generated method stub
+		param.setDBType( appContext.getEnvironment().getProperty("dhnclient.database") );
+		param.setMsg_data( appContext.getEnvironment().getProperty("dhnclient.msg_data") );
+		param.setMms_contents_info( appContext.getEnvironment().getProperty("dhnclient.mms_contents_info") );
+		param.setMsg_log( appContext.getEnvironment().getProperty("dhnclient.msg_log") );
+		param.setLog_mv_flag( appContext.getEnvironment().getProperty("dhnclient.npro_logmakemode") );
+		//param.setSTART_TIME( Integer.parseInt( appContext.getEnvironment().getProperty("dhnclient.start_time") ) );
+		//param.setEND_TIME( Integer.parseInt( appContext.getEnvironment().getProperty("dhnclient.end_time") ) );
+
+		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-		dual = appContext.getEnvironment().getProperty("dhnclient.dual");
-		role = appContext.getEnvironment().getProperty("dhnclient.role");
-
-		_kaoCode.put("0000","0000");
-		_kaoCode.put("3000","2001");
-		_kaoCode.put("1006","3005");
-		_kaoCode.put("1001","3023");
-		_kaoCode.put("1003","3024");
-		_kaoCode.put("3012","3030");
-		_kaoCode.put("3013","3031");
-		_kaoCode.put("3014","3032");
-		_kaoCode.put("3015","3033");
-		_kaoCode.put("3016","3034");
-		_kaoCode.put("1002","3040");
-		_kaoCode.put("1004","3041");
-		_kaoCode.put("1007","3044");
-		_kaoCode.put("1011","3048");
-		_kaoCode.put("3006","3049");
-		_kaoCode.put("3019","3050");
-		_kaoCode.put("3005","3060");
-		_kaoCode.put("1012","3062");
-		_kaoCode.put("1030","3063");
-		_kaoCode.put("9998","9998");
-		_kaoCode.put("9999","9999");
-		_kaoCode.put("3008","1002");
-		_kaoCode.put("3018","E999");
-
-		_msgCode.put("0000","0000");
-		_msgCode.put("7003","2100");
-		_msgCode.put("7050","2101");
-		_msgCode.put("7028","2103");
-		_msgCode.put("7060","2104");
-		_msgCode.put("7087","2106");
-		_msgCode.put("7086","2107");
-		_msgCode.put("7022","232");
-		_msgCode.put("7001","233");
-		_msgCode.put("7095","249");
-		_msgCode.put("7093","250");
-		_msgCode.put("7061","263");
-		_msgCode.put("7055","408");
-		_msgCode.put("7015","101");
-		_msgCode.put("7013","102");
-		_msgCode.put("7014","103");
-		_msgCode.put("7056","108");
-		_msgCode.put("7057","112");
-		_msgCode.put("7084","113");
-		_msgCode.put("7053","114");
-		_msgCode.put("7088","115");
-		_msgCode.put("7051","116");
-		_msgCode.put("7023","201");
-		_msgCode.put("7008","204");
-		_msgCode.put("7009","205");
-		_msgCode.put("7010","206");
-		_msgCode.put("7005","213");
-		_msgCode.put("7076","216");
-		_msgCode.put("7098","39");
-		_msgCode.put("7099","1");
-		_msgCode.put("7078","21");
-		_msgCode.put("7075","94");
-		_msgCode.put("7096","4008");
-		_msgCode.put("7074","4306");
-		_msgCode.put("7021","4307");
-		_msgCode.put("7029","5300");
-		_msgCode.put("7011","8011");
-
-		if(dual != null && dual.equalsIgnoreCase("Y")){
-
-		} else {
-			isStart = true;
-			log.info("Result 초기화 완료");
-		}
+		
+		_rsltCode.put("03","e");
+		_rsltCode.put("05","3");
+		_rsltCode.put("06","0");
+		_rsltCode.put("07","a");
+		_rsltCode.put("08","C");
+		_rsltCode.put("09","B");
+		_rsltCode.put("10","D");
+		_rsltCode.put("11","d");
+		_rsltCode.put("13","k");
+		_rsltCode.put("14","k");
+		_rsltCode.put("15","k");
+		_rsltCode.put("16","k");
+		_rsltCode.put("20","h");
+		_rsltCode.put("21","a");
+		_rsltCode.put("22","c");
+		_rsltCode.put("23","h");
+		_rsltCode.put("28","g");
+		_rsltCode.put("29","b");
+		_rsltCode.put("36","2");
+		_rsltCode.put("37","2");
+		_rsltCode.put("38","n");
+		_rsltCode.put("50","F");
+		_rsltCode.put("51","G");
+		_rsltCode.put("52","H");
+		_rsltCode.put("53","I");
+		_rsltCode.put("54","J");
+		_rsltCode.put("59","d");
+		_rsltCode.put("60","o");
+		_rsltCode.put("61","p");
+		_rsltCode.put("69","d");
+		_rsltCode.put("73","x");
+		_rsltCode.put("74","d");
+		_rsltCode.put("75","1");
+		_rsltCode.put("76","2");
+		_rsltCode.put("77","2");
+		_rsltCode.put("78","x");
+		_rsltCode.put("79","d");
+		_rsltCode.put("90","1");
+		_rsltCode.put("91","z");
+		_rsltCode.put("92","d");
+		_rsltCode.put("93","n");
+		_rsltCode.put("94","n");
+		_rsltCode.put("95","n");
+		_rsltCode.put("96","j");
+		_rsltCode.put("97","7");
+		_rsltCode.put("98","8");
+		_rsltCode.put("99","9"); 
+		
+		isStart = true;
 	}
-
-
-	@Scheduled(fixedDelay = 100)
+	
+	@Scheduled(fixedDelay = 1000)
 	private void SendProcess() {
-		ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
-		int activeThreads = poolExecutor.getActiveCount();
-		if(isStart && !isProc && activeThreads < 10) {
+		if(isStart && !isProc) {
 			isProc = true;
-
+			
 			try {
 				ObjectMapper om = new ObjectMapper();
+				
 				HttpHeaders header = new HttpHeaders();
 				
 				header.setContentType(MediaType.APPLICATION_JSON);
@@ -167,93 +137,42 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 											
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
-
-						String responseBody = response.getBody();
-						JSONObject jsonObject = new JSONObject(responseBody);
-
-						if (jsonObject.has("data")) {
-							JSONObject dataObject = jsonObject.getJSONObject("data");
-
-							if (dataObject.has("detail")) {
-								JSONArray jsonArray = dataObject.getJSONArray("detail");
-
-								if (jsonArray.length() > 0) {
-									executorService.submit(() ->  ResultProc(jsonArray));
+						JSONArray json = new JSONArray(response.getBody().toString());
+						if(json.length()>0) {
+							
+							//log.info(response.getBody().toString());
+							for(int i=0; i<json.length();i++) {
+								JSONObject ent = json.getJSONObject(i);
+								Msg_Log _ml = new Msg_Log(param.getDBType(), param.getMsg_data(), param.getMms_contents_info(), param.getMsg_log(), param.getLog_mv_flag());
+								_ml.setUserdata(ent.getString("p_invoice"));
+								_ml.setMsg_seq(ent.getString("msgid"));
+								_ml.setRslt_date(ent.getString("remark2"));
+								String rscode = "06";
+								if(!ent.getString("code").equals("0000")) {
+									rscode = ent.getString("code").substring(2);
 								}
-							} else {
-								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
+								_ml.setRslt_code(rscode);
+								_ml.setRslt_code2(_rsltCode.get(rscode));
+								_ml.setRslt_net(ent.getString("remark1"));
+								
+								requestService.Inset_msg_log(_ml);
 							}
-						} else {
-							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
+							
+							log.info("결과 수신 완료 : " + json.length() + " 건");
 						}
-
-					} else {
-						log.info("결과 수신 오류 (Http Err) : " + response.getStatusCode());
-
+						
 					}
 				} catch(Exception ex) {
-					log.info("결과 수신 오류 (response Err): " + ex.toString());
-					Thread.sleep(10000);
+					log.info("결과 수신 오류 : " + ex.toString());
 				}
 				
-			}catch (Exception e) {
-				log.info("결과 수신 오류 : " + e.toString());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+			
 			isProc = false;
 		}
 	}
-
-	private void ResultProc(JSONArray json) {
-
-		try {
-			requestService.logTableCheck(msgTable, logTable);
-		} catch (Exception e) {
-			log.error("테이블 확인 및 생성 실패: " + e.getMessage());
-		}
-		log.info("결과 처리 시작 [ {} ] 건", json.length());
-
-		LocalDate now = LocalDate.now();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
-		String currentMonth = now.format(formatter);
-		
-		for(int i=0; i<json.length(); i++) {
-			JSONObject ent = json.getJSONObject(i);
-			
-			Msg_Log _ml = new Msg_Log(msgTable, logTable, mainTable, mainLogTable);
-			_ml.setMod_id(mod_id);
-			_ml.setMsgid(ent.getString("msgid"));
-
-			_ml.setLog_date_table(logTable+"_"+currentMonth);
-
-			String code = "0000";
-
-			if(ent.getString("message_type").equalsIgnoreCase("AT")){
-
-				code = _kaoCode.getOrDefault(ent.getString("code"),"E999");
-				_ml.setReal_send_date(ent.getString("res_dt"));
-				_ml.setResult_msg(ent.getString("message"));
-				_ml.setMsg_type("K1");
-			}else{
-				code = _msgCode.getOrDefault(ent.getString("code"),"8011");
-				_ml.setReal_send_date(ent.getString("remark2"));
-				_ml.setResult_msg(ent.getString("message"));
-			}
-
-			_ml.setResult_code(code);
-
-			try {
-				requestService.update_msg_log(_ml);
-			}catch (Exception e) {
-				log.info("결과 처리 오류 [ " + _ml.getMsgid() + " ] - " + e.toString());
-			}
-		}
-		log.info("결과 처리 완료 [ {} ] 건",json.length());
-		
-	}
-
-	static public void setIsStart(boolean _flag) {
-		log.info(role + " Result Request is  change : " + _flag);
-		isStart = _flag;
-	}
-
 }
+

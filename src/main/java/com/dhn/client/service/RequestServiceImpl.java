@@ -1,108 +1,67 @@
 package com.dhn.client.service;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
-import com.dhn.client.bean.*;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.dhn.client.dao.RequestDAO;
+import com.dhn.client.bean.Msg_Log;
+import com.dhn.client.bean.RequestBean;
+import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.dao.RequestDAO; 
 
 @Service
-@Slf4j
-public class RequestServiceImpl implements RequestService {
+public class RequestServiceImpl implements RequestService{
 
 	@Autowired
-	private RequestDAO requestDAO;
-
-
+	private RequestDAO req;
+	
 	@Override
-	public int selectKAORequestCount(SQLParameter param) throws Exception {
-		return requestDAO.selectKAORequestCount(param);
+	public int selectSMSReqeustCount(SQLParameter param) throws Exception {
+		return req.selectSMSReqeustCount(param);
 	}
 
 	@Override
-	public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
-		return requestDAO.selectKAORequests(param);
+	public void updateSMSGroupNo(SQLParameter param) throws Exception {
+		req.updateSMSGroupNo(param);
+	}
+		
+	@Override
+	public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception {
+		return req.selectSMSRequests(param);
 	}
 
 	@Override
-	public void updateKAOSendComplete(SQLParameter param) throws Exception {
-		requestDAO.updateKAOSendComplete(param);
+	public void updateSMSSendComplete(SQLParameter param) throws Exception {
+		req.updateSMSSendComplete(param);
 	}
 
 	@Override
-	public void updateKAOSendInit(SQLParameter param) throws Exception {
-		requestDAO.updateKAOSendInit(param);
+	public void updateSMSSendInit(SQLParameter param) throws Exception {
+		req.updateSMSSendInit(param);
 	}
 
 	@Override
-	public int selectMSGRequestCount(SQLParameter param) throws Exception {
-		return requestDAO.selectMSGRequestCount(param);
+	public void Inset_msg_log(Msg_Log ml) throws Exception {
+		req.Inset_msg_log(ml);
 	}
 
 	@Override
-	public List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception {
-		return requestDAO.selectMSGRequests(param);
+	public int selectMMSReqeustCount(SQLParameter param) throws Exception {
+		return req.selectMMSReqeustCount(param);
 	}
 
 	@Override
-	public void updateMSGSendComplete(SQLParameter param) throws Exception {
-		requestDAO.updateMSGSendComplete(param);
+	public void updateMMSGroupNo(SQLParameter param) throws Exception {
+		req.updateMMSGroupNo(param);
 	}
 
 	@Override
-	public void updateMSGSendInit(SQLParameter param) throws Exception {
-		requestDAO.updateMSGSendInit(param);
+	public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception {
+		return req.selectMMSRequests(param);
 	}
 
-	@Override
-	public void update_msg_log(Msg_Log ml) throws Exception {
-		requestDAO.update_msg_log(ml);
-	}
 
-	@Override
-	public void logTableCheck(String msg_Table, String log_Table) throws Exception {
-		requestDAO.logTableCheck(msg_Table, log_Table);
-	}
-
-	@Override
-	public void tableCheck(SQLParameter param) throws Exception {
-		int result = requestDAO.tableCheck(param);
-
-		try{
-			if(result == 0){
-				requestDAO.tableCreate(param);
-				log.info("{} 테이블 생성 완료",param.getMsg_table());
-			}else{
-				log.info("{} 테이블이 존재합니다.",param.getMsg_table());
-			}
-		}catch (Exception e){
-			log.error("{} 테이블 생성 중 오류 발생: {}", param.getMsg_table(), e.getMessage());
-			throw e;
-		}
-	}
-
-	@Override
-	public void phnErrUpdateDelete(Msg_Log ml) throws Exception {
-		requestDAO.phnErrUpdateDelete(ml);
-	}
-
-	@Override
-	public void sourceErrUpdate(Msg_Log ml) throws Exception {
-		requestDAO.sourceErrUpdate(ml);
-	}
-
-	@Override
-	public void kaoGroupUpdate(SQLParameter param) throws Exception {
-		requestDAO.kaoGroupUpdate(param);
-	}
-
-	@Override
-	public void msgGroupUpdate(SQLParameter param) throws Exception {
-		requestDAO.msgGroupUpdate(param);
-	}
 
 }
