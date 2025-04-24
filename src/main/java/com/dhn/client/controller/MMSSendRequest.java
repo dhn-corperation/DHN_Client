@@ -61,7 +61,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		dual = appContext.getEnvironment().getProperty("dhnclient.dual","N");
 		role = appContext.getEnvironment().getProperty("dhnclient.role");
 
-		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
 		if(dual.equalsIgnoreCase("Y")){

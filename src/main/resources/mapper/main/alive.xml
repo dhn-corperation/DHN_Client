@@ -3,6 +3,14 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dhn.client.alive.mapper.SendRequest">
 
+    <update id="alive_create_table" parameterType="com.dhn.client.bean.SQLParameter" >
+        CREATE TABLE ${alive_table}
+        (	"ROLE" VARCHAR2(10),
+            "ROLE_TYPE" VARCHAR2(10),
+            "UPDATED_DATE" TIMESTAMP (6)
+        )
+    </update>
+
     <select id="select_alive_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         select count(1) as cnt
         from ${alive_table}
@@ -40,6 +48,14 @@
         set updated_date = sysdate,
             role = '${role}'
         where role_type = '${role_type}'
+    </update>
+
+    <update id="alive_create_table_mysql" parameterType="com.dhn.client.bean.SQLParameter" >
+        CREATE TABLE ${alive_table}
+        (	`ROLE` varchar(100) DEFAULT NULL,
+            `ROLE_TYPE` varchar(100) DEFAULT NULL,
+            `UPDATED_DATE` timestamp NULL
+        )
     </update>
 
     <select id="select_alive_count_mysql" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">

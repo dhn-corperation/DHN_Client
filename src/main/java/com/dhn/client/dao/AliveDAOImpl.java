@@ -14,17 +14,34 @@ public class AliveDAOImpl implements AliveDAO {
 
     @Override
     public int selectAliveCount(SQLParameter param) throws Exception {
-        int cnt;
+        int cnt = 0;
         switch(param.getDBType())
         {
             case "oracle":
-                cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.select_alive_count", param);
+                try {
+                    cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.select_alive_count", param);
+                } catch(Exception ex) {
+                    if(ex.getMessage().contains("ORA-00942"))
+                    {
+                        sqlSession.update("com.dhn.client.alive.mapper.SendRequest.alive_create_table", param);
+                        cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.select_alive_count", param);
+                    }
+                }
                 break;
             case "mysql":
-                cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.select_alive_count_mysql", param);
+                try {
+                    cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.select_alive_count_mysql", param);
+                } catch(Exception ex) {
+                    if(ex.getMessage().contains("doesn't exist"))
+                    {
+                        sqlSession.update("com.dhn.client.alive.mapper.SendRequest.alive_create_table_mysql", param);
+                        cnt = sqlSession.selectOne("com.dhn.client.alive.mapper.SendRequest.select_alive_count_mysql", param);
+                    }
+                }
                 break;
             default:
                 cnt = 0;
+                break;
         }
         return cnt;
     }

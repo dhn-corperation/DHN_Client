@@ -68,7 +68,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		dual = appContext.getEnvironment().getProperty("dhnclient.dual","N");
 		role = appContext.getEnvironment().getProperty("dhnclient.role");
 
-		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		
 		_rsltCode.put("03","e");
@@ -150,7 +150,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 											
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
-						/*
 						JSONArray json = new JSONArray(response.getBody().toString());
 						if(json.length()>0) {
 							
@@ -174,7 +173,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 							
 							log.info("결과 수신 완료 : " + json.length() + " 건");
 						}
-						*/
+
+						/*
 						String responseBody = response.getBody();
 						JSONObject jsonObject = new JSONObject(responseBody);
 
@@ -210,6 +210,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 						} else {
 							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
 						}
+						*/
 					}
 				} catch(Exception ex) {
 					log.info("결과 수신 오류 : " + ex.toString());
