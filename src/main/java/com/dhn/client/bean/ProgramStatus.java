@@ -2,6 +2,7 @@ package com.dhn.client.bean;
 
 import javax.annotation.PostConstruct;
 
+import com.dhn.client.controller.AliveMonitoring;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +30,7 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
     	ResultReq.isStart = false;
     	SMSSendRequest.isStart = false;
     	MMSSendRequest.isStart = false;
+        AliveMonitoring.isStart = false;
     	log.info("프로그램이 종료 처리 중.....");
     	try {
 			Thread.sleep(10000);

@@ -39,6 +39,8 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
+	private static String role = "";
+	private String dual = "N";
 	
 	private static final Logger log = LogManager.getRootLogger();
 	
@@ -56,14 +58,19 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMms_contents_info( appContext.getEnvironment().getProperty("dhnclient.mms_contents_info") );
 		param.setMsg_log( appContext.getEnvironment().getProperty("dhnclient.msg_log") );
 		param.setMsg_type("4");
-		
 
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dual = appContext.getEnvironment().getProperty("dhnclient.dual","N");
+		role = appContext.getEnvironment().getProperty("dhnclient.role");
+
+		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-		
-		log.info("초기화 완료 됨. - " + param.getDBType() );
-		
-		isStart = true;
+
+		if(dual.equalsIgnoreCase("Y")){
+
+		}else{
+			log.info("SMS 초기화 완료 됨. - " + param.getDBType() );
+			isStart = true;
+		}
 	}
 	
 	@Scheduled(fixedDelay = 1000)
@@ -131,6 +138,11 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 			isProc = false;
 		}
+	}
+
+	static public void setIsStart(boolean _flag) {
+		log.info(role + " SMS Process is change : " + _flag);
+		isStart = _flag;
 	}
 }
 

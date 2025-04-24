@@ -11,5 +11,9 @@ public class SQLParameter {
 	private String group_no;
 	private String msg_type;
 	private String log_mv_flag;
+	private String role;
+	private String role_type;
+	private String alive_status;
+	private String alive_table;
 
 }

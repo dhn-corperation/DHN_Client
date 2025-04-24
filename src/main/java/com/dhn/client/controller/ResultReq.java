@@ -44,6 +44,9 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String dhnServer;
 	private String userid;
 	private Map<String, String> _rsltCode = new HashMap<String, String>();
+
+	private static String role = "";
+	private String dual = "N";
 	
 	@Autowired
 	private RequestService requestService;
@@ -62,7 +65,10 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		//param.setSTART_TIME( Integer.parseInt( appContext.getEnvironment().getProperty("dhnclient.start_time") ) );
 		//param.setEND_TIME( Integer.parseInt( appContext.getEnvironment().getProperty("dhnclient.end_time") ) );
 
-		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
+		dual = appContext.getEnvironment().getProperty("dhnclient.dual","N");
+		role = appContext.getEnvironment().getProperty("dhnclient.role");
+
+		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 		
 		_rsltCode.put("03","e");
@@ -114,6 +120,13 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		_rsltCode.put("99","9"); 
 		
 		isStart = true;
+
+		if(dual.equalsIgnoreCase("Y")){
+
+		}else{
+			log.info("RESULT 초기화 완료 됨. - " + param.getDBType() );
+			isStart = true;
+		}
 	}
 	
 	@Scheduled(fixedDelay = 1000)
@@ -137,6 +150,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 											
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
+						/*
 						JSONArray json = new JSONArray(response.getBody().toString());
 						if(json.length()>0) {
 							
@@ -160,7 +174,42 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 							
 							log.info("결과 수신 완료 : " + json.length() + " 건");
 						}
-						
+						*/
+						String responseBody = response.getBody();
+						JSONObject jsonObject = new JSONObject(responseBody);
+
+						if (jsonObject.has("data")) {
+							JSONObject dataObject = jsonObject.getJSONObject("data");
+
+							if (dataObject.has("detail")) {
+								JSONArray json = dataObject.getJSONArray("detail");
+
+								if (json.length() > 0) {
+									for(int i=0; i<json.length();i++) {
+										JSONObject ent = json.getJSONObject(i);
+										Msg_Log _ml = new Msg_Log(param.getDBType(), param.getMsg_data(), param.getMms_contents_info(), param.getMsg_log(), param.getLog_mv_flag());
+										_ml.setUserdata(ent.getString("p_invoice"));
+										_ml.setMsg_seq(ent.getString("msgid"));
+										_ml.setRslt_date(ent.getString("remark2"));
+										String rscode = "06";
+										if(!ent.getString("code").equals("0000")) {
+											rscode = ent.getString("code").substring(2);
+										}
+										_ml.setRslt_code(rscode);
+										_ml.setRslt_code2(_rsltCode.get(rscode));
+										_ml.setRslt_net(ent.getString("remark1"));
+
+										requestService.Inset_msg_log(_ml);
+									}
+
+									log.info("결과 수신 완료 : " + json.length() + " 건");
+								}
+							} else {
+								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
+							}
+						} else {
+							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
+						}
 					}
 				} catch(Exception ex) {
 					log.info("결과 수신 오류 : " + ex.toString());
@@ -173,6 +222,11 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			
 			isProc = false;
 		}
+	}
+
+	static public void setIsStart(boolean _flag) {
+		log.info(role + " Result Request is  change : " + _flag);
+		isStart = _flag;
 	}
 }
 
