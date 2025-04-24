@@ -6,24 +6,32 @@
     <select id = "req_message_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
         select /* O.dhncorp.countAllBySearchParamWithType */
             count(1) as cnt
-        from ${msg_table}
-        where REQDTTM &gt;= sysdate - 14
-          AND NVL(REQDTTM, sysdate) &lt;= sysdate
-          and TYPE = '${msg_type}'
-          and STATUS = '100'
-          and PRIORITY = '${priority}'
+        from (
+            select 1
+            from ${msg_table}
+            where REQDTTM &gt;= sysdate - 14
+            AND NVL(REQDTTM, sysdate) &lt;= sysdate
+            and TYPE = '${msg_type}'
+            and STATUS = '100'
+            and PRIORITY = '${priority}'
+            and rownum = 1
+        )
     </select>
 
     <update id="update_group_no" parameterType="com.dhn.client.bean.SQLParameter">
         update /* O.dhncorp.updateGroupBySearchParamWithType */
             ${msg_table}
         set TYPE = '${group_no}'
-        where REQDTTM &gt;= sysdate - 14
+        where SEQNO IN (
+            select SEQNO
+        from ${msg_table}
+          where REQDTTM &gt;= sysdate - 14
           AND NVL(REQDTTM, sysdate) &lt;= sysdate
           and TYPE = '${msg_type}'
           and STATUS = '100'
           and PRIORITY = '${priority}'
           and ROWNUM &lt;= 500
+            )
     </update>
 
     <resultMap id="RequestTable" type="com.dhn.client.bean.MessageRequestBean">
