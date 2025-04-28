@@ -43,6 +43,7 @@
         <result column="REGDT" property="regdt"/>
         <result column="RESERVEDT" property="reservedt"/>
         <result column="SYSCD" property="syscd"/>
+        <result column="PRIORITY" property="priority"/>
     </resultMap>
 
     <select id="req_msg_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -80,7 +81,11 @@
             CASE
                 WHEN TO_DATE(SNDNG_PRNMNT_YMD, 'YYYYMMDD') &lt; TRUNC(SYSDATE) THEN '0'
                 ELSE '1'
-            END AS DATEFLAG
+            END AS DATEFLAG,
+            CASE
+                WHEN GDBK_TRSM_MTHD_CD = '01' THEN '1'
+                ELSE '2'
+            END AS PRIORITY
         FROM ${msg_table} a
         WHERE GROUP_NO = '${group_no}'
     </select>

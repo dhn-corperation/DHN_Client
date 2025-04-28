@@ -50,4 +50,5 @@ public class KAORequestBean {
 	private String btnpc;
 	private String syscd;
 	private String dateflag;
+	private String priority;
 }

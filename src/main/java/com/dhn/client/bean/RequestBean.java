@@ -20,4 +20,5 @@ public class RequestBean {
 	private String reservedt;
 	private String syscd;
 	private String dateflag;
+	private String priority;
 }

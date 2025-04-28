@@ -58,6 +58,7 @@
 		<result column="BTN_MO" property="btnmo"/>
 		<result column="SYSCD" property="syscd"/>
 		<result column="DATEFLAG" property="dateflag"/>
+		<result column="PRIORITY" property="priority"/>
 	</resultMap>
 
 	<select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -97,7 +98,11 @@
 			CASE
 				WHEN TO_DATE(SNDNG_PRNMNT_YMD, 'YYYYMMDD') &lt; TRUNC(SYSDATE) THEN '0'
 				ELSE '1'
-			END AS DATEFLAG
+			END AS DATEFLAG,
+			CASE
+				WHEN GDBK_TRSM_MTHD_CD = '01' THEN '1'
+				ELSE '2'
+			END AS PRIORITY
 		FROM ${msg_table} a
 		WHERE GROUP_NO = '${group_no}'
 	</select>
