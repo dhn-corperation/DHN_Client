@@ -172,23 +172,23 @@ public class ResultOTPReq implements ApplicationListener<ContextRefreshedEvent> 
                                     executorService.submit(() ->  ResultProc(jsonArray));
                                 }
                             } else {
-                                log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
+                                log.error("OTP 결과 수신 오류 : 결과 배열(detail)이 없습니다.");
                             }
                         } else {
-                            log.error("결과 수신 오류 : (data) 필드가 없습니다.");
+                            log.error("OTP 결과 수신 오류 : (data) 필드가 없습니다.");
                         }
 
                     } else {
-                        log.info("결과 수신 오류 (Http Err) : " + response.getStatusCode());
+                        log.info("OTP 결과 수신 오류 (Http Err) : " + response.getStatusCode());
 
                     }
                 } catch(Exception ex) {
-                    log.info("결과 수신 오류 (response Err): " + ex.toString());
+                    log.info("OTP 결과 수신 오류 (response Err): " + ex.toString());
                     Thread.sleep(10000);
                 }
 
             }catch (Exception e) {
-                log.info("결과 수신 오류 : " + e.toString());
+                log.info("OTP 결과 수신 오류 : " + e.toString());
             }
             isProc = false;
         }
@@ -201,7 +201,7 @@ public class ResultOTPReq implements ApplicationListener<ContextRefreshedEvent> 
         } catch (Exception e) {
             log.error("테이블 확인 및 생성 실패: " + e.getMessage());
         }
-        log.info("결과 처리 시작 [ {} ] 건", json.length());
+        log.info("OTP 결과 처리 시작 [ {} ] 건", json.length());
 
         LocalDate now = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
