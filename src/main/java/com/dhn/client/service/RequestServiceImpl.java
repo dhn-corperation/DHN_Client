@@ -39,6 +39,16 @@ public class RequestServiceImpl implements RequestService {
 	}
 
 	@Override
+	public int selectRealKAORequestCount(SQLParameter param) throws Exception {
+		return requestDAO.selectRealKAORequestCount(param);
+	}
+
+	@Override
+	public List<KAORequestBean> selectRealKAORequests(SQLParameter param) throws Exception {
+		return requestDAO.selectRealKAORequests(param);
+	}
+
+	@Override
 	public int selectMSGRequestCount(SQLParameter param) throws Exception {
 		return requestDAO.selectMSGRequestCount(param);
 	}
@@ -56,6 +66,16 @@ public class RequestServiceImpl implements RequestService {
 	@Override
 	public void updateMSGSendInit(SQLParameter param) throws Exception {
 		requestDAO.updateMSGSendInit(param);
+	}
+
+	@Override
+	public int selectRealMSGRequestCount(SQLParameter param) throws Exception {
+		return requestDAO.selectRealMSGRequestCount(param);
+	}
+
+	@Override
+	public List<RequestBean> selectRealMSGRequests(SQLParameter param) throws Exception {
+		return requestDAO.selectRealMSGRequests(param);
 	}
 
 	@Override
@@ -103,6 +123,16 @@ public class RequestServiceImpl implements RequestService {
 	@Override
 	public void msgGroupUpdate(SQLParameter param) throws Exception {
 		requestDAO.msgGroupUpdate(param);
+	}
+
+	@Override
+	public void kaoRealGroupUpdate(SQLParameter param) throws Exception {
+		requestDAO.kaoRealGroupUpdate(param);
+	}
+
+	@Override
+	public void msgRealGroupUpdate(SQLParameter param) throws Exception {
+		requestDAO.msgRealGroupUpdate(param);
 	}
 
 }

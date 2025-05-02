@@ -21,12 +21,11 @@ public class SQLParameter {
 	private String tmp_use;
 	private String group_no;
 	private String msg_type;
+	private String send_type;
 	private String fibp_profile_key;
 	private String insure_profile_key;
 	private String nps_profile_key;
-	private String tmplid;
 	private String msgid;
-	private String tmplstatus;
 	private String rej_memo;
 	private String role;
 	private String role_type;
@@ -36,11 +35,4 @@ public class SQLParameter {
 	private String flag_msg_type;
 	private String sourceErrMsg;
 	private String sourceErrMsgid;
-	private String comment_id;
-	private String comment_content;
-	private String comment_userName;
-	private String comment_createdAt;
-	private String comment_status;
-
-
 }

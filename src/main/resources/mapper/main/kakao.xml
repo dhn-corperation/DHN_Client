@@ -8,6 +8,7 @@
 		FROM ${msg_table}
 		WHERE SNDNG_TYPE_CD = '${msg_type}'
 		  AND MSG_STTS_CD = '00'
+		  AND (MOBL_REG_TYPE_CD != '01' or GDBK_TRSM_MTHD_CD != '01')
 		  AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
 			OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
 	</select>
@@ -23,10 +24,42 @@
 			FROM ${msg_table}
 			WHERE SNDNG_TYPE_CD = '${msg_type}'
 			  AND MSG_STTS_CD = '00'
+			  AND (MOBL_REG_TYPE_CD != '01' or GDBK_TRSM_MTHD_CD != '01')
 			  AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
 				OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
-				) ORDER BY GDBK_TRSM_MTHD_CD, MOBL_REG_TYPE_CD , SNDNG_PRNMNT_YMD, GDBK_SNDNG_PRNMNT_TM
+				) ORDER BY MOBL_REG_TYPE_CD, GDBK_TRSM_MTHD_CD , SNDNG_PRNMNT_YMD, GDBK_SNDNG_PRNMNT_TM
 			FETCH FIRST 500 ROWS ONLY
+		)
+	</update>
+
+	<select id = "req_real_kao_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+		SELECT count(MSG_MST_NO) AS cnt
+		FROM ${msg_table}
+		WHERE SNDNG_TYPE_CD = '${msg_type}'
+		  AND MSG_STTS_CD = '00'
+		  AND MOBL_REG_TYPE_CD = '01'
+		  AND GDBK_TRSM_MTHD_CD = '01'
+		  AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+			OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS')))
+	</select>
+
+	<update id="kao_real_group_update" parameterType="com.dhn.client.bean.SQLParameter">
+		UPDATE ${msg_table}
+		SET MSG_STTS_CD = '01',
+			GROUP_NO = '${group_no}',
+			MDFCN_DT = SYSTIMESTAMP,
+			MDFR_ID = #{mod_id}
+		WHERE ROWID IN (
+			SELECT ROWID
+			FROM ${msg_table}
+			WHERE SNDNG_TYPE_CD = '${msg_type}'
+			  AND MSG_STTS_CD = '00'
+			  AND MOBL_REG_TYPE_CD = '01'
+		  	  AND GDBK_TRSM_MTHD_CD = '01'
+			  AND (SNDNG_PRNMNT_YMD &lt; TO_CHAR(SYSDATE, 'YYYYMMDD')
+				OR (SNDNG_PRNMNT_YMD = TO_CHAR(SYSDATE, 'YYYYMMDD') AND GDBK_SNDNG_PRNMNT_TM &lt;= TO_CHAR(SYSDATE, 'HH24MISS'))
+				) ORDER BY MOBL_REG_TYPE_CD , SNDNG_PRNMNT_YMD, GDBK_SNDNG_PRNMNT_TM
+				FETCH FIRST 500 ROWS ONLY
 		)
 	</update>
 
@@ -59,6 +92,7 @@
 		<result column="SYSCD" property="syscd"/>
 		<result column="DATEFLAG" property="dateflag"/>
 		<result column="PRIORITY" property="priority"/>
+		<result column="REMARK5" property="remark5"/>
 	</resultMap>
 
 	<select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -103,6 +137,53 @@
 				WHEN GDBK_TRSM_MTHD_CD = '01' THEN '1'
 				ELSE '2'
 			END AS PRIORITY
+		FROM ${msg_table} a
+		WHERE GROUP_NO = '${group_no}'
+	</select>
+
+	<select id="req_real_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+		SELECT
+			MSG_MST_NO AS MSGID,
+			'AO' AS MSGTYPE,
+			MSG_CN AS MSG,
+			CASE
+				WHEN SUBSTR(TRIM(RCVR_TELNO), 1, 4) IN ('0010','0070')
+					THEN SUBSTR(TRIM(RCVR_TELNO), 2)
+				WHEN SUBSTR(TRIM(RCVR_TELNO), 1, 4) IN ('0011','0019','0016','0017','0018')
+					THEN SUBSTR(TRIM(RCVR_TELNO), 2, 3) || DECODE(SUBSTR(TRIM(RCVR_TELNO), 5, 1), '0', SUBSTR(TRIM(RCVR_TELNO), 6), SUBSTR(TRIM(RCVR_TELNO), 5))
+				WHEN SUBSTR(TRIM(RCVR_TELNO), 1, 3) IN ('011','019','016','017','018')
+					THEN SUBSTR(TRIM(RCVR_TELNO), 1, 3) || DECODE(SUBSTR(TRIM(RCVR_TELNO), 4, 1), '0', SUBSTR(TRIM(RCVR_TELNO), 5), SUBSTR(TRIM(RCVR_TELNO), 4))
+				ELSE TRIM(RCVR_TELNO)
+				END AS PHN,
+			NVL(TRIM(SNDPTY_TELNO),'1355') AS SENDER,
+			MOBL_BROF_CD AS PINVOICE,
+			TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
+			MSG_TMPLT_CD AS TMPLID,
+			CASE
+				WHEN GDBK_TRSM_MTHD_CD = '01' THEN '00000000000000'
+				WHEN GDBK_TRSM_MTHD_CD = '02' THEN SNDNG_PRNMNT_YMD || GDBK_SNDNG_PRNMNT_TM
+				ELSE '00000000000000'
+				END AS RESERVEDT,
+			CASE
+				WHEN MOBL_SYS_CD = '4INSURE' THEN '${insure_profile_key}'
+				WHEN MOBL_SYS_CD = 'FIBP' THEN '${fibp_profile_key}'
+				ELSE '${nps_profile_key}'
+				END AS PROFILEKEY,
+			SPAM_YN AS ADFLAG,
+			BTN_KIND_NM AS BTN_TYPE,
+			BTN_NM AS BTN_NAME,
+			URL_PC_IOS_CN AS BTN_PC,
+			URL_MOBL_ANDR_CN as BTN_MO,
+			(SELECT MOBL_SYS_CD FROM MSB_LINK_SYS_E b WHERE b.MOBL_SYS_CD = a.MOBL_SYS_CD) AS SYSCD,
+			CASE
+				WHEN TO_DATE(SNDNG_PRNMNT_YMD, 'YYYYMMDD') &lt; TRUNC(SYSDATE) THEN '0'
+				ELSE '1'
+				END AS DATEFLAG,
+			CASE
+				WHEN GDBK_TRSM_MTHD_CD = '01' THEN '1'
+				ELSE '2'
+				END AS PRIORITY,
+		    'OTP' AS REMARK5
 		FROM ${msg_table} a
 		WHERE GROUP_NO = '${group_no}'
 	</select>

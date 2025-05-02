@@ -78,24 +78,54 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                 AliveData aliveData = aliveService.selectAliveData(param);
 
                 if(aliveData.getRole().equalsIgnoreCase(role)){
-                    if(kakao_use != null && kakao_use.equalsIgnoreCase("Y") && !KAOSendRequest.isStart) {
-                        KAOSendRequest.setIsStart(true);
+                    if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
+                        if(!KAOSendRequest.isStart) {
+                            KAOSendRequest.setIsStart(true);
+                        }
+
+                        if(!KAORealTimeSendRequest.isStart) {
+                            KAORealTimeSendRequest.setIsStart(true);
+                        }
                     }
 
-                    if(sms_use != null && sms_use.equalsIgnoreCase("Y") && !SMSSendRequest.isStart) {
-                        SMSSendRequest.setIsStart(true);
+                    if(sms_use != null && sms_use.equalsIgnoreCase("Y")) {
+                        if(!SMSSendRequest.isStart) {
+                            SMSSendRequest.setIsStart(true);
+                        }
+
+                        if(!SMSRealTimeSendRequest.isStart) {
+                            SMSRealTimeSendRequest.setIsStart(true);
+                        }
                     }
 
-                    if(lms_use != null && lms_use.equalsIgnoreCase("Y") && !LMSSendRequest.isStart) {
-                        LMSSendRequest.setIsStart(true);
+                    if(lms_use != null && lms_use.equalsIgnoreCase("Y")) {
+                        if(!LMSSendRequest.isStart) {
+                            LMSSendRequest.setIsStart(true);
+                        }
+
+                        if(!LMSRealTimeSendRequest.isStart) {
+                            LMSRealTimeSendRequest.setIsStart(true);
+                        }
                     }
 
-                    if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !SLMSSendRequest.isStart) {
-                        SLMSSendRequest.setIsStart(true);
+                    if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
+                        if(!SLMSSendRequest.isStart) {
+                            SLMSSendRequest.setIsStart(true);
+                        }
+
+                        if(!SLMSRealTimeSendRequest.isStart) {
+                            SLMSRealTimeSendRequest.setIsStart(true);
+                        }
                     }
 
-                    if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !MMSendRequest.isStart) {
-                        MMSendRequest.setIsStart(true);
+                    if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
+                        if(!MMSendRequest.isStart) {
+                            MMSendRequest.setIsStart(true);
+                        }
+
+                        if(!MMRealTimeSendRequest.isStart) {
+                            MMRealTimeSendRequest.setIsStart(true);
+                        }
                     }
 
                     if(!LogTableCheck.isStart){
@@ -110,24 +140,54 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
 
                 }else{
                     if(aliveData.getFlag().equalsIgnoreCase("Y")){
-                        if(kakao_use != null && kakao_use.equalsIgnoreCase("Y") && !KAOSendRequest.isStart) {
-                            KAOSendRequest.setIsStart(true);
+                        if(kakao_use != null && kakao_use.equalsIgnoreCase("Y")) {
+                            if(!KAOSendRequest.isStart) {
+                                KAOSendRequest.setIsStart(true);
+                            }
+
+                            if(!KAORealTimeSendRequest.isStart) {
+                                KAORealTimeSendRequest.setIsStart(true);
+                            }
                         }
 
-                        if(sms_use != null && sms_use.equalsIgnoreCase("Y") && !SMSSendRequest.isStart) {
-                            SMSSendRequest.setIsStart(true);
+                        if(sms_use != null && sms_use.equalsIgnoreCase("Y")) {
+                            if(!SMSSendRequest.isStart) {
+                                SMSSendRequest.setIsStart(true);
+                            }
+
+                            if(!SMSRealTimeSendRequest.isStart) {
+                                SMSRealTimeSendRequest.setIsStart(true);
+                            }
                         }
 
-                        if(lms_use != null && lms_use.equalsIgnoreCase("Y") && !LMSSendRequest.isStart) {
-                            LMSSendRequest.setIsStart(true);
+                        if(lms_use != null && lms_use.equalsIgnoreCase("Y")) {
+                            if(!LMSSendRequest.isStart) {
+                                LMSSendRequest.setIsStart(true);
+                            }
+
+                            if(!LMSRealTimeSendRequest.isStart) {
+                                LMSRealTimeSendRequest.setIsStart(true);
+                            }
                         }
 
-                        if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !SLMSSendRequest.isStart) {
-                            SLMSSendRequest.setIsStart(true);
+                        if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
+                            if(!SLMSSendRequest.isStart) {
+                                SLMSSendRequest.setIsStart(true);
+                            }
+
+                            if(!SLMSRealTimeSendRequest.isStart) {
+                                SLMSRealTimeSendRequest.setIsStart(true);
+                            }
                         }
 
-                        if (slms_use != null && slms_use.equalsIgnoreCase("Y") && !MMSendRequest.isStart) {
-                            MMSendRequest.setIsStart(true);
+                        if (slms_use != null && slms_use.equalsIgnoreCase("Y")) {
+                            if(!MMSendRequest.isStart) {
+                                MMSendRequest.setIsStart(true);
+                            }
+
+                            if(!MMRealTimeSendRequest.isStart) {
+                                MMRealTimeSendRequest.setIsStart(true);
+                            }
                         }
 
                         if(!LogTableCheck.isStart){
@@ -144,20 +204,40 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                             KAOSendRequest.setIsStart(false);
                         }
 
+                        if(KAORealTimeSendRequest.isStart){
+                            KAORealTimeSendRequest.setIsStart(false);
+                        }
+
                         if(SMSSendRequest.isStart) {
                             SMSSendRequest.setIsStart(false);
+                        }
+
+                        if(SMSRealTimeSendRequest.isStart){
+                            SMSRealTimeSendRequest.setIsStart(false);
                         }
 
                         if(LMSSendRequest.isStart) {
                             LMSSendRequest.setIsStart(false);
                         }
 
+                        if(LMSRealTimeSendRequest.isStart){
+                            LMSRealTimeSendRequest.setIsStart(false);
+                        }
+
                         if (SLMSSendRequest.isStart) {
+                            SLMSSendRequest.setIsStart(false);
+                        }
+
+                        if(SLMSSendRequest.isStart){
                             SLMSSendRequest.setIsStart(false);
                         }
 
                         if (MMSendRequest.isStart){
                             MMSendRequest.setIsStart(false);
+                        }
+
+                        if(MMRealTimeSendRequest.isStart){
+                            MMRealTimeSendRequest.setIsStart(false);
                         }
 
                         if(LogTableCheck.isStart) {

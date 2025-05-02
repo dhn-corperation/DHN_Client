@@ -44,6 +44,18 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
+	public int selectRealKAORequestCount(SQLParameter param) throws Exception {
+		int cnt = 0;
+		cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.req_real_kao_count",param);
+		return cnt;
+	}
+
+	@Override
+	public List<KAORequestBean> selectRealKAORequests(SQLParameter param) throws Exception {
+		return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.req_real_kao_select", param);
+	}
+
+	@Override
 	public int selectMSGRequestCount(SQLParameter param) throws Exception {
 		int cnt = 0;
 		cnt = sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_msg_count",param);
@@ -72,6 +84,18 @@ public class RequestImpl implements RequestDAO{
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_update",ml);
 		sqlSession.update("com.dhn.client.result.mapper.SendRequest.dhn_log_insert",ml);
 		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.dhn_log_delete",ml);
+	}
+
+	@Override
+	public int selectRealMSGRequestCount(SQLParameter param) throws Exception {
+		int cnt = 0;
+		cnt = sqlSession.selectOne("com.dhn.client.msg.mapper.SendRequest.req_real_msg_count",param);
+		return cnt;
+	}
+
+	@Override
+	public List<RequestBean> selectRealMSGRequests(SQLParameter param) throws Exception {
+		return sqlSession.selectList("com.dhn.client.msg.mapper.SendRequest.req_real_msg_select", param);
 	}
 
 	@Override
@@ -149,6 +173,16 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void msgGroupUpdate(SQLParameter param) throws Exception {
 		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msg_group_update",param);
+	}
+
+	@Override
+	public void kaoRealGroupUpdate(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kao_real_group_update",param);
+	}
+
+	@Override
+	public void msgRealGroupUpdate(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.msg.mapper.SendRequest.msg_real_group_update",param);
 	}
 
 }

@@ -14,6 +14,10 @@ public interface RequestDAO {
 
 	void updateKAOSendInit(SQLParameter param) throws Exception;
 
+	int selectRealKAORequestCount(SQLParameter param) throws Exception;
+
+	List<KAORequestBean> selectRealKAORequests(SQLParameter param) throws Exception;
+
     int selectMSGRequestCount(SQLParameter param) throws Exception;
 
 	List<RequestBean> selectMSGRequests(SQLParameter param) throws Exception;
@@ -23,6 +27,10 @@ public interface RequestDAO {
 	void updateMSGSendInit(SQLParameter param) throws Exception;
 
 	void update_msg_log(Msg_Log ml) throws Exception;
+
+	int selectRealMSGRequestCount(SQLParameter param) throws Exception;
+
+	List<RequestBean> selectRealMSGRequests(SQLParameter param) throws Exception;
 
     void logTableCheck(String msgTable, String logTable) throws Exception;
 
@@ -38,4 +46,7 @@ public interface RequestDAO {
 
 	void msgGroupUpdate(SQLParameter param) throws Exception;
 
+	void kaoRealGroupUpdate(SQLParameter param) throws Exception;
+
+	void msgRealGroupUpdate(SQLParameter param) throws Exception;
 }

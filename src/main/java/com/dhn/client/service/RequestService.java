@@ -15,6 +15,10 @@ public interface RequestService {
 
 	void updateKAOSendInit(SQLParameter param) throws Exception;
 
+	int selectRealKAORequestCount(SQLParameter param) throws Exception;
+
+	List<KAORequestBean> selectRealKAORequests(SQLParameter param) throws Exception;
+
 	// 문자
 	int selectMSGRequestCount(SQLParameter param) throws Exception;
 
@@ -24,6 +28,11 @@ public interface RequestService {
 
 	void updateMSGSendInit(SQLParameter param) throws Exception;
 
+	int selectRealMSGRequestCount(SQLParameter param) throws Exception;
+
+	List<RequestBean> selectRealMSGRequests(SQLParameter param) throws Exception;
+
+	// 결과 처리
 	void update_msg_log(Msg_Log ml) throws Exception;
 
 	// 테이블 생성
@@ -39,5 +48,9 @@ public interface RequestService {
 	void kaoGroupUpdate(SQLParameter param) throws Exception;
 
 	void msgGroupUpdate(SQLParameter param) throws Exception;
+
+	void kaoRealGroupUpdate(SQLParameter param) throws Exception;
+
+	void msgRealGroupUpdate(SQLParameter param) throws Exception;
 
 }
