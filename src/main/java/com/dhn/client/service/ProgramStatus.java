@@ -35,6 +35,7 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
         MMRealTimeSendRequest.isStart = false;
         LogTableCheck.isStart = false;
         ResultReq.isStart = false;
+        ResultOTPReq.isStart = false;
         AliveMonitoring.isStart = false;
 
         log.info("프로그램 종료 처리 중.....");

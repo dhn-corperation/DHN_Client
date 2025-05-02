@@ -136,6 +136,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                         ResultReq.setIsStart(true);
                     }
 
+                    if(!ResultOTPReq.isStart){
+                        ResultOTPReq.setIsStart(true);
+                    }
+
                     aliveService.aliveUpdateDate(param);
 
                 }else{
@@ -198,6 +202,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                             ResultReq.setIsStart(true);
                         }
 
+                        if(!ResultOTPReq.isStart){
+                            ResultOTPReq.setIsStart(true);
+                        }
+
                         aliveService.aliveUpdateAgent(param);
                     } else {
                         if(KAOSendRequest.isStart) {
@@ -246,6 +254,10 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
 
                         if(ResultReq.isStart) {
                             ResultReq.setIsStart(false);
+                        }
+
+                        if(ResultOTPReq.isStart){
+                            ResultOTPReq.setIsStart(false);
                         }
                     }
                 }
