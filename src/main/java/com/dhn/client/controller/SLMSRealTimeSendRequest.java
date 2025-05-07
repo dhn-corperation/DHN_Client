@@ -47,6 +47,7 @@ public class SLMSRealTimeSendRequest implements ApplicationListener<ContextRefre
     private String mainTable = "";
     private String mainLogTable = "";
     private String mod_id = "";
+    private String test_flag = "N";
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
@@ -78,6 +79,7 @@ public class SLMSRealTimeSendRequest implements ApplicationListener<ContextRefre
         mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
         mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
         mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
+        test_flag = appContext.getEnvironment().getProperty("dhnclient.test_flag","N");
 
         if (param.getSmslms_use() != null && param.getSmslms_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -181,8 +183,11 @@ public class SLMSRealTimeSendRequest implements ApplicationListener<ContextRefre
                     requestBean.setSmskind("L");
                 }
 
-                msg_list.add(requestBean.getMsgid());
+                if(test_flag.equalsIgnoreCase("Y")){
+                    requestBean.setMessagetype("TT");
+                }
 
+                msg_list.add(requestBean.getMsgid());
                 sendList.add(requestBean);
             }
 

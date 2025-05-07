@@ -56,6 +56,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String mainTable = "";
 	private String mainLogTable = "";
 	private String mod_id = "";
+	private String test_flag = "N";
 
 	private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
@@ -90,6 +91,8 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 		mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
 		mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
 		mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
+		test_flag = appContext.getEnvironment().getProperty("dhnclient.test_flag","N");
+
 
 		if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
 			if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -256,6 +259,10 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 					_ml.setSource_err_msg(e.getMessage());
 					requestService.sourceErrUpdate(_ml);
 					log.error("KAO 데이터 제조 오류 발생 : " + e.getMessage());
+				}
+
+				if(test_flag.equalsIgnoreCase("Y")){
+					kaoRequestBean.setMessagetype("TT");
 				}
 
 				msg_list.add(kaoRequestBean.getMsgid());

@@ -47,6 +47,7 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
     private String mainTable = "";
     private String mainLogTable = "";
     private String mod_id = "";
+    private String test_flag = "N";
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
@@ -78,6 +79,7 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
         mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
         mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
         mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
+        test_flag = appContext.getEnvironment().getProperty("dhnclient.test_flag","N");
 
         if (param.getSmslms_use() != null && param.getSmslms_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -182,8 +184,11 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
                     requestBean.setSmskind("L");
                 }
 
-                msg_list.add(requestBean.getMsgid());
+                if(test_flag.equalsIgnoreCase("Y")){
+                    requestBean.setMessagetype("TT");
+                }
 
+                msg_list.add(requestBean.getMsgid());
                 sendList.add(requestBean);
             }
 
@@ -277,7 +282,7 @@ public class SLMSSendRequest implements ApplicationListener<ContextRefreshedEven
                 }
             }
         }catch (Exception e){
-            log.error("MM 메세지 전송 오류(Send) : " + e.toString());
+            log.error("SMS/LMS 메세지 전송 오류(Send) : " + e.toString());
         }
     }
 

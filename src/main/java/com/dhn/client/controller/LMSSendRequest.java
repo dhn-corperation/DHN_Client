@@ -47,6 +47,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String mainTable = "";
     private String mainLogTable = "";
     private String mod_id = "";
+    private String test_flag = "N";
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
@@ -78,6 +79,7 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
         mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
         mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
         mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
+        test_flag = appContext.getEnvironment().getProperty("dhnclient.test_flag","N");
 
         if (param.getLms_use() != null && param.getLms_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -178,8 +180,11 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                     continue;
                 }
 
-                msg_list.add(bean.getMsgid());
+                if(test_flag.equalsIgnoreCase("Y")){
+                    bean.setMessagetype("TT");
+                }
 
+                msg_list.add(bean.getMsgid());
                 sendList.add(bean);
             }
 

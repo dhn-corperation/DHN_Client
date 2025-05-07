@@ -49,6 +49,7 @@ public class KAORealTimeSendRequest implements ApplicationListener<ContextRefres
     private String mainTable = "";
     private String mainLogTable = "";
     private String mod_id = "";
+    private String test_flag = "N";
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
@@ -83,6 +84,7 @@ public class KAORealTimeSendRequest implements ApplicationListener<ContextRefres
         mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
         mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
         mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
+        test_flag = appContext.getEnvironment().getProperty("dhnclient.test_flag","N");
 
         if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -249,6 +251,10 @@ public class KAORealTimeSendRequest implements ApplicationListener<ContextRefres
                     _ml.setSource_err_msg(e.getMessage());
                     requestService.sourceErrUpdate(_ml);
                     log.error("Real Time KAO 데이터 제조 오류 발생 : " + e.getMessage());
+                }
+
+                if(test_flag.equalsIgnoreCase("Y")){
+                    kaoRequestBean.setMessagetype("TT");
                 }
 
                 msg_list.add(kaoRequestBean.getMsgid());

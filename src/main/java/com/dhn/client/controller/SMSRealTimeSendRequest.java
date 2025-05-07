@@ -47,6 +47,7 @@ public class SMSRealTimeSendRequest implements ApplicationListener<ContextRefres
     private String mainTable = "";
     private String mainLogTable = "";
     private String mod_id = "";
+    private String test_flag = "N";
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
@@ -79,6 +80,7 @@ public class SMSRealTimeSendRequest implements ApplicationListener<ContextRefres
         mainTable = appContext.getEnvironment().getProperty("dhnclient.main_table");
         mainLogTable = appContext.getEnvironment().getProperty("dhnclient.main_log_table");
         mod_id = appContext.getEnvironment().getProperty("dhnclient.mod_id");
+        test_flag = appContext.getEnvironment().getProperty("dhnclient.test_flag","N");
 
         if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
             if(dual != null && dual.equalsIgnoreCase("Y")){
@@ -178,9 +180,11 @@ public class SMSRealTimeSendRequest implements ApplicationListener<ContextRefres
                     continue;
                 }
 
+                if(test_flag.equalsIgnoreCase("Y")){
+                    bean.setMessagetype("TT");
+                }
 
                 msg_list.add(bean.getMsgid());
-
                 sendList.add(bean);
             }
 
