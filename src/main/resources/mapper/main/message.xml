@@ -11,9 +11,9 @@
             from ${msg_table}
             where REQDTTM &gt;= sysdate - 14
             AND NVL(REQDTTM, sysdate) &lt;= sysdate
-            and TYPE = '${msg_type}'
+            and TYPE = #{msg_type}
             and STATUS = '100'
-            and PRIORITY = '${priority}'
+            and PRIORITY = #{priority}
             and rownum = 1
         )
     </select>
@@ -21,15 +21,15 @@
     <update id="update_group_no" parameterType="com.dhn.client.bean.SQLParameter">
         update /* O.dhncorp.updateGroupBySearchParamWithType */
             ${msg_table}
-        set TYPE = '${group_no}'
+        set TYPE = #{group_no}
         where SEQNO IN (
             select SEQNO
         from ${msg_table}
           where REQDTTM &gt;= sysdate - 14
           AND NVL(REQDTTM, sysdate) &lt;= sysdate
-          and TYPE = '${msg_type}'
+          and TYPE = #{msg_type}
           and STATUS = '100'
-          and PRIORITY = '${priority}'
+          and PRIORITY = #{priority}
           and ROWNUM &lt;= 500
             )
     </update>
@@ -57,7 +57,7 @@
     </resultMap>
 
     <select id="req_push_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        SELECT /* O.dhncorp.findAllBySearchParamForPush */
+        SELECT /*+ INDEX(TS_SMS_2020 IDX_TS_SMS_2020_TEMP_2025_07) */ /* O.dhncorp.findAllBySearchParamForPush_T0507 */
             SEQNO,
             'AP' AS TYPE,
             MSG,
@@ -81,7 +81,7 @@
             TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
             KAKAO_CODE,
             CASE
-                WHEN SUBSTR(TYPE,1,1) = 'P' OR SUBSTR(TYPE,1,1) = 'D' THEN '${profile_key}'
+                WHEN SUBSTR(TYPE,1,1) = 'P' OR SUBSTR(TYPE,1,1) = 'D' THEN #{profile_key}
                 ELSE ''
             END AS PROFILE_KEY,
             CASE
@@ -95,11 +95,11 @@
             ATCH_FILE_SN,
             APP_LAUNCH
         FROM ${msg_table}
-        WHERE TYPE = '${group_no}'
+        WHERE TYPE = #{group_no}
     </select>
 
     <select id="req_kao_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        SELECT /* O.dhncorp.findAllBySearchParamForTalk */
+        SELECT /*+ INDEX(TS_SMS_2020 IDX_TS_SMS_2020_TEMP_2025_07) */ /* O.dhncorp.findAllBySearchParamForTalk_T0507 */
             SEQNO,
             'AT' as TYPE,
             MSG,
@@ -122,17 +122,17 @@
             TITLE,
             TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS REGDT,
             KAKAO_CODE,
-            '${profile_key}' AS PROFILE_KEY,
+            #{profile_key} AS PROFILE_KEY,
             CASE
                 WHEN REQDTTM IS NULL THEN '00000000000000'
                 ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
             END AS REQDTTM
         FROM ${msg_table}
-        WHERE TYPE = '${group_no}'
+        WHERE TYPE = #{group_no}
     </select>
 
     <select id="req_msg_message_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        SELECT /* O.dhncorp.findAllBySearchParamForSMS */
+        SELECT /*+ INDEX(TS_SMS_2020 IDX_TS_SMS_2020_TEMP_2025_07) */ /* O.dhncorp.findAllBySearchParamForSMS_T0507 */
             SEQNO,
             'PH' as TYPE,
             MSG,
@@ -151,23 +151,23 @@
                 ELSE  TO_CHAR(REQDTTM, 'YYYYMMDDHH24MISS')
                 END AS REQDTTM
         FROM ${msg_table}
-        WHERE TYPE = '${group_no}'
+        WHERE TYPE = #{group_no}
     </select>
 
     <update id="req_message_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
-        update /* O.dhncorp.updateDateMakeBySeqNOWithType */
+        update /*+ INDEX(TS_SMS_2020 IDX_TS_SMS_2020_TEMP_2025_07) */ /* O.dhncorp.updateDateMakeBySeqNOWithType_T0507 */
             ${msg_table}
         set STATUS = '102',
-            TYPE = '${msg_type}'
-        where TYPE = '${group_no}'
+            TYPE = #{msg_type}
+        WHERE TYPE = #{group_no}
     </update>
 
     <update id="req_message_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
-        update /* O.dhncorp.updateSendFailBySearchParamWithType */
+        update /*+ INDEX(TS_SMS_2020 IDX_TS_SMS_2020_TEMP_2025_07) */ /* O.dhncorp.updateSendFailBySearchParamWithType_T0507 */
             ${msg_table}
         set STATUS = '100',
-            TYPE = '${msg_type}'
-        where TYPE = '${group_no}'
+            TYPE = #{msg_type}
+        WHERE TYPE = #{group_no}
     </update>
 
 </mapper>

@@ -5,13 +5,13 @@
     <update id="log_update" parameterType="com.dhn.client.bean.Msg_Log">
         update /* O.dhncorp.updateSendResultBySeqNOWithType */
             ${log_table}
-            set RSLTDTTM = '${real_send_date}',
+            set RSLTDTTM = #{real_send_date},
                 REPDTTM = SYSDATE,
                 STATUS = '103',
-                TELCODE = '${tel_code}',
-                TYPE_FINAL = '${send_type}',
-                RESULT = '${code}'
-        where SEQNO = '${msgid}'
+                TELCODE = #{tel_code},
+                TYPE_FINAL = #{send_type},
+                RESULT = #{code}
+        where SEQNO = #{msgid}
     </update>
 
 </mapper>
