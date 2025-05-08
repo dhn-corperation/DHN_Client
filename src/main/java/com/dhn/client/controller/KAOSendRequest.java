@@ -203,7 +203,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 
 
-					if(kaoRequestBean.getBtnname() != null){
+					if(kaoRequestBean.getBtnname() != null && !kaoRequestBean.getBtnname().trim().isEmpty()){
 
 						String[] btnname = kaoRequestBean.getBtnname().split("\\|",-1);
 						String[] btntype = kaoRequestBean.getBtntype() != null && !kaoRequestBean.getBtntype().isEmpty() ? kaoRequestBean.getBtntype().split("\\|",-1) : new String[btnname.length];
