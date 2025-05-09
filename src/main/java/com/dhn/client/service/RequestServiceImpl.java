@@ -1,5 +1,6 @@
 package com.dhn.client.service;
 
+import com.dhn.client.bean.*;
 import com.dhn.client.dao.RequestDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

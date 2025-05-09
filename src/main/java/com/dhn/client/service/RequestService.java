@@ -1,5 +1,7 @@
 package com.dhn.client.service;
 
+import com.dhn.client.bean.*;
+
 import java.util.List;
 
 public interface RequestService {
