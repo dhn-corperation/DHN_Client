@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.alive.mapper.postgresql.SendRequest">
+	<select id="alive_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select count(1) as cnt
+		  from alive_monitoring	 
+	</select>
+	<insert id="alive_insert" parameterType="com.dhn.client.bean.SQLParameter">
+		insert into alive_monitoring(role, updated_date, status) values('${role}', now()::timestamp, 'MS')
+	</insert>
+	<insert id="alive_update" parameterType="com.dhn.client.bean.SQLParameter">
+		update alive_monitoring
+		   set role = '${role}'
+		      ,updated_date =  now()::timestamp
+		      ,status = '${alive_status}'
+	</insert>
+	<select id="alive_last_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select count(1) as cnt
+		  from alive_monitoring
+		 where updated_date::timestamp &gt;= (now() + '-15 second')
+		  and upper(role) = 'MASTER'
+	</select>
+	
+	<select id="alive_status" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.AliveStatusBean">
+		select role, coalesce(status, 'MS') as status
+		  from alive_monitoring 
+	</select>	
+
+	<insert id="alive_alarm_insert" parameterType="com.dhn.client.bean.SQLParameter">
+		insert into std_msg_send
+		  (cmp_msg_id 
+		  ,msg_group_id 
+		  ,cmp_usr_id 
+		  ,msg_gb
+		  ,wrt_dttm 
+		  ,snd_dttm 
+		  ,rcv_phn_id 
+		  ,snd_phn_id
+		  ,callback 
+		  ,subject 
+		  ,snd_msg 
+		  ,sms_st 
+		   ) 
+		select
+		   'SL' || to_char(now(), 'YYYYMMDDHH24MISS') || aal.idx 
+		  ,'0'
+		  ,'SMS01'
+		  ,'A'
+		  ,to_char(now(), 'YYYYMMDDHH24MISS')
+		  ,to_char(now(), 'YYYYMMDDHH24MISS')
+		  ,aal.receiver 
+		  ,aal.sender 
+		  ,aal.sender 
+		  ,''
+		  ,aal.msg 
+		  ,'0'
+		from alive_alarm_list aal 
+		where aal.use_flag  = 'Y'
+	</insert>
+</mapper>  

@@ -1,155 +1,165 @@
 package com.dhn.client.controller;
 
+
+import com.dhn.client.bean.RequestBean;
+import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.service.RequestService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-
-import com.dhn.client.bean.RequestBean;
-import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.RequestService;
-import com.dhn.client.service.SMSService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.extern.slf4j.Slf4j;
-
 @Component
-@Slf4j
 public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
-	private boolean isProc = false;
+	public static boolean isProc = false;
 	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
-	private String crypto = "";
-
+	private String dual;
+	private static String role;
+	
+	private static final Logger log = LogManager.getRootLogger();
+	
 	@Autowired
 	private RequestService reqService;
-
-	@Autowired
-	private SMSService smsService;
-
+	
 	@Autowired
 	private ApplicationContext appContext;
-
+	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-		param.setMsg_type("S");
+		// TODO Auto-generated method stub
+		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table") );
+		param.setKakao( appContext.getEnvironment().getProperty("dhnclient.kakao") );
+		String otp =  appContext.getEnvironment().getProperty("dhnclient.use_otp");
+		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
+		dual =  appContext.getEnvironment().getProperty("dhnclient.dual");
+		role = appContext.getEnvironment().getProperty("dhnclient.role");
+
+		param.setMsg_type("A");
+		
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-
-		HttpHeaders cheader = new HttpHeaders();
-
-		cheader.setContentType(MediaType.APPLICATION_JSON);
-		cheader.set("userid", userid);
-
-		RestTemplate crt = new RestTemplate();
-		HttpEntity<String> centity = new HttpEntity<String>(cheader);
-
-		try {
-			ResponseEntity<String> cresponse = crt.exchange( dhnServer + "get_crypto",HttpMethod.GET, centity, String.class );
-
-			if(cresponse.getStatusCode()==HttpStatus.OK) {
-				crypto = cresponse.getBody()!=null? cresponse.getBody().toString():"";
-				log.info("SMS 초기화 완료");
-				isStart = true;
-			}else {
-				log.info("암호화 컬럼 가져오기 오류 ");
-			}
-
-		}catch (HttpClientErrorException e) {
-			log.error("crypto 가져오기 오류 : " + e.getStatusCode() + ", " + e.toString());
-		}catch (RestClientException e) {
-			log.error("기타 오류 : " + dhnServer + ", " + e.toString());
+		
+		//log.info("초기화 완료 됨. - " + param.getKakao() );
+		
+		String send_msg_limit =  appContext.getEnvironment().getProperty("dhnclient.send_msg_limit");
+		if(send_msg_limit != null) {
+			param.setSend_msg_limit(send_msg_limit);
+		} else {
+			param.setSend_msg_limit("1000");
 		}
+				
+		if(otp != null && otp.toUpperCase().equals("Y"))
+		{
+			param.setOtpFlag(true);
+		} else {
+			param.setOtpFlag(false);
+		}
+		
+		if(dual != null && dual.toUpperCase().equals("Y")) {
+			//if(role != null && role.toUpperCase().equals("MASTER") ) {
+			//	isStart = true;
+			//}
+		} else {
+			isStart = true;	
+		}
+		
+		
 	}
-
+	
 	@Scheduled(fixedDelay = 100)
 	private void SendProcess() {
 		if(isStart && !isProc) {
 			isProc = true;
-
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+			
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 			LocalDateTime now = LocalDateTime.now();
-			String group_no = "S" + now.format(formatter);
-
-			if(!group_no.equals(preGroupNo)) {
+			String group_no = now.format(formatter);
+			
+			if(!group_no.equals(preGroupNo))
+			{
+			
 				try {
+					
 					int cnt = reqService.selectSMSReqeustCount(param);
-
+					//log.info("SMS Count : " + cnt);
 					if(cnt > 0) {
+	
+					
 						param.setGroup_no(group_no);
-
+						
 						reqService.updateSMSGroupNo(param);
-
+						
 						List<RequestBean> _list = reqService.selectSMSRequests(param);
-
-						for (RequestBean requestBean : _list) {
-							requestBean = smsService.encryption(requestBean,crypto);
-						}
-
+						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
 						om.writeValue(sw, _list);
-
+						
+						//log.info(sw.toString());
+						
 						HttpHeaders header = new HttpHeaders();
-
+						
 						header.setContentType(MediaType.APPLICATION_JSON);
 						header.set("userid", userid);
-
+						
 						RestTemplate rt = new RestTemplate();
 						HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-
+						
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-
+							//log.info(response.getStatusCode() + " / " + response.getBody());
+													
 							if(response.getStatusCode() ==  HttpStatus.OK)
 							{
 								reqService.updateSMSSendComplete(param);
-								log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+								//log.info("메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+								_list.forEach(msg -> log.info("[ " + msg.getMsgid() + " ] 건 SMS 송신 완료"));
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("SMS 메세지 전송오류 : " + res.get("message"));
+								log.info("메세지 전송오류 : " + res.get("message"));
 								reqService.updateSMSSendInit(param);
 							}
-						}catch (Exception e) {
-							log.info("SMS 메세지 전송 오류 : " + e.toString());
-
+						} catch(Exception ex) {
+							log.info("메세지 전송 오류 : " + ex.toString());
+							
 							reqService.updateSMSSendInit(param);
 						}
-
 					}
-
-				}catch (Exception e) {
+					
+					
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
 					log.error("SMS Send Error : " + e.toString());
 				}
 				preGroupNo = group_no;
 			}
 			isProc = false;
-
 		}
 	}
-
-
+	
+	static public void setIsStart(boolean _flag) {
+		log.info(role + " SMS Sender Request is  change : " + _flag);
+		isStart = _flag;
+	}
 }
+

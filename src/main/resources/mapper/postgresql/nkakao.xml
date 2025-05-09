@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.dhn.client.nkakao.mapper.SendRequest">
+<mapper namespace="com.dhn.client.nkakao.mapper.postgresql.SendRequest">
 	<select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
 		select count(1) as cnt
 		  from ${msg_table}
 		 where sms_st = '0'
 		   and reg_snd_dttm is null
            and msg_gb = '${msg_type}'
-           and nvl(useotp,'N') = 'N'
-		   and rownum = 1		 
+           and COALESCE(useotp,'N') = 'N'
+		    limit 1
 	</select>
 	<update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
@@ -20,8 +20,8 @@
 		                   where sms_st = '0'
 		                     and reg_snd_dttm is null
 		                     and msg_gb = '${msg_type}'
-							 and nvl(useotp,'N') = 'N'
-		                     and rownum &lt;= ${send_msg_limit})
+							 and COALESCE(useotp,'N') = 'N'
+		                      limit ${send_msg_limit})
 	</update>
 
 	<select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
@@ -30,9 +30,9 @@
 		 where sms_st = '0'
 		   and reg_snd_dttm is null
            and msg_gb = '${msg_type}'
-           and nvl(useotp,'N') = 'N'
+           and COALESCE(useotp,'N') = 'N'
 		   and content_group_id = '0'
-		   and rownum = 1
+		    limit 1 
 	</select>
 	<update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
@@ -43,9 +43,9 @@
 		                   where sms_st = '0'
 		                     and reg_snd_dttm is null
 		                     and msg_gb = '${msg_type}'
-                             and nvl(useotp,'N') = 'N'
+                             and COALESCE(useotp,'N') = 'N'
 							 and content_group_id = '0'
-		                     and rownum &lt;= ${send_msg_limit})
+		                      limit ${send_msg_limit})
 	</update>
 
 	<select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
@@ -69,7 +69,7 @@
 							   and msg_gb = '${msg_type}'
 							   and nvl(useotp,'N') = 'N'
 							   and content_group_id != '0'
-							   and rownum &lt;= ${send_msg_limit})
+		  and rownum &lt;= ${send_msg_limit})
 	</update>
 
 	<select id="req_otp_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
@@ -77,8 +77,8 @@
 		  from ${msg_table}
 		 where sms_st = '0'
 		   and reg_snd_dttm is null
-           and nvl(useotp,'N') = 'Y'
-		   and rownum = 1		 
+           and COALESCE(useotp,'N') = 'Y'
+		    limit 1	 
 	</select>
 
 	<update id="req_otp_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -89,12 +89,12 @@
 		                    from ${msg_table} r
 		                   where sms_st = '0'
 		                     and reg_snd_dttm is null
-							 and nvl(useotp,'N') = 'Y'
-		                     and rownum &lt;= ${send_msg_limit})
+							 and COALESCE(useotp,'N') = 'Y'
+		                      limit ${send_msg_limit})
 	</update>
 
 	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
-		update ${msg_table} set sms_st = 'Y', cmp_snd_dttm = to_char(sysdate, 'yyyymmddhh24miss') where sms_st = '9' and reg_snd_dttm = '${group_no}' and msg_gb = '${msg_type}'
+		update ${msg_table} set sms_st = 'Y', cmp_snd_dttm = to_char(now(), 'yyyymmddhh24miss') where sms_st = '9' and reg_snd_dttm = '${group_no}' and msg_gb = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -102,11 +102,11 @@
 	</update>
 
 	<update id="req_otp_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
-		update ${msg_table} set sms_st = 'Y', cmp_snd_dttm = to_char(sysdate, 'yyyymmddhh24miss')   where sms_st = '9' and reg_snd_dttm = '${group_no}' and nvl(useotp,'N') = 'Y'
+		update ${msg_table} set sms_st = 'Y', cmp_snd_dttm = to_char(now(), 'yyyymmddhh24miss')   where sms_st = '9' and reg_snd_dttm = '${group_no}' and COALESCE(useotp,'N') = 'Y'
 	</update>
 
 	<update id="req_otp_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
-		update ${msg_table} set sms_st = '0', reg_snd_dttm = null  where sms_st = '9' and reg_snd_dttm = '${group_no}' and nvl(useotp,'N') = 'Y'
+		update ${msg_table} set sms_st = '0', reg_snd_dttm = null  where sms_st = '9' and reg_snd_dttm = '${group_no}' and COALESCE(useotp,'N') = 'Y'
 	</update>
 	
 	<resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
@@ -132,13 +132,13 @@
 		      ,snd_msg as msg_txt
 		      ,snd_msg as sms_txt
 		      ,rcv_phn_id as call_to
-		      ,nvl(callback, snd_phn_id) as call_from
+		      ,COALESCE(callback, snd_phn_id) as call_from
 		      ,'S' as msgtype
 		      ,subject as msg_txt_title
 		      ,'D' as pcom
 		      ,'N' as crypto
-		      ,to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') as curr_date
-		      ,nvl(snd_dttm, '00000000000000') as snd_dttm
+		      ,to_char(now(), 'yyyy-mm-dd hh24:mi:ss') as curr_date
+		      ,COALESCE(snd_dttm, '00000000000000') as snd_dttm
 		  from ${msg_table} 
 		 where sms_st = '9'
 		   and msg_gb = '${msg_type}'
@@ -151,13 +151,13 @@
 		      ,snd_msg as msg_txt
 		      ,snd_msg as sms_txt
 		      ,rcv_phn_id as call_to
-		      ,nvl(callback, snd_phn_id) as call_from
+		      ,COALESCE(callback, snd_phn_id) as call_from
 		      ,'L' as msgtype
 		      ,subject as msg_txt_title
 		      ,'D' as pcom
 		      ,'N' as crypto
-		      ,to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') as curr_date
-		      ,nvl(snd_dttm, '00000000000000') as snd_dttm
+		      ,to_char(now(), 'yyyy-mm-dd hh24:mi:ss') as curr_date
+		      ,COALESCE(snd_dttm, '00000000000000') as snd_dttm
 		  from ${msg_table} 
 		 where sms_st = '9'
 		   and msg_gb = '${msg_type}'
@@ -186,9 +186,9 @@
 		  and reg_snd_dttm = '${group_no}'
 	</select>
 
-	<select id="req_img_select" parameterType = "com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.ImageBean">
+	<select id="req_img_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
 		select
-		    file_path as file1
+			file_path as file1
 		from ${img_table}
 		where content_group_id = '${mms_key}'
 	</select>
@@ -199,7 +199,7 @@
 		      ,snd_msg as msg_txt
 		      ,snd_msg as sms_txt
 		      ,rcv_phn_id as call_to
-		      ,nvl(callback, snd_phn_id) as call_from
+		      ,COALESCE(callback, snd_phn_id) as call_from
 		      ,(case when msg_gb = 'M' then 
 		            'L'
 		        else 
@@ -208,11 +208,11 @@
 		      ,subject as msg_txt_title
 		      ,'D' as pcom
 		      ,'N' as crypto
-		      ,to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') as curr_date
-		      ,nvl(snd_dttm, '00000000000000') as snd_dttm
+		      ,to_char(now(), 'yyyy-mm-dd hh24:mi:ss') as curr_date
+		      ,COALESCE(snd_dttm, '00000000000000') as snd_dttm
 		  from ${msg_table} 
 		 where sms_st = '9'
-		   and nvl(useotp,'N') = 'Y'
+		   and COALESCE(useotp,'N') = 'Y'
 		   and reg_snd_dttm = '${group_no}'		   
 	</select>
 
@@ -222,14 +222,14 @@
 		      ,rslt_val = '${rslt_val}' 
 		      ,cmp_rcv_dttm = '${cmp_rcv_dttm}'
 		      ,rcv_mno_cd = '${rcv_mno_cd}' 
-		      ,reg_rcv_dttm = to_char(sysdate, 'yyyymmddhh24miss')
+		      ,reg_rcv_dttm = to_char(now(), 'yyyymmddhh24miss')
 		 where cmp_msg_id = '${cmp_msg_id}'
 	</insert>
 
 	<select id="req_table_backup_1" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
 		select count(1) as cnt
 		  from ${bktable}
-		 where rownum = 1		 
+		 limit 1		 
 	</select>
 	
 	<insert id="req_table_backup_2" parameterType="com.dhn.client.bean.SQLParameter">
@@ -256,6 +256,7 @@
 		update ${bktable} 
 		   set rcv_phn_id = '***********'
 		 where snd_dttm &lt;= '${snd_dttm}'
-	</update>	
+	</update>
+	
 
 </mapper>  

@@ -1,7 +1,6 @@
 package com.dhn.client.controller;
 
 
-import com.dhn.client.bean.ImageBean;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
@@ -14,12 +13,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,44 +24,42 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
+public class OTPSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
-	public static boolean isProc = false;
+	private boolean isProc = false;
 	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
-	private String basepath;
 	private String preGroupNo = "";
 	private String dual;
 	private static String role;
-		
+	
 	private static final Logger log = LogManager.getRootLogger();
 	
 	@Autowired
-	private RequestService reqService1;
+	private RequestService reqService;
 	
 	@Autowired
 	private ApplicationContext appContext;
+	
+	@Autowired
+	ScheduledAnnotationBeanPostProcessor posts;
 	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		// TODO Auto-generated method stub
 		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table") );
-		param.setImg_table( appContext.getEnvironment().getProperty("dhnclient.img_table") );
-		param.setKakao( appContext.getEnvironment().getProperty("dhnclient.kakao") );
-		basepath = appContext.getEnvironment().getProperty("dhnclient.file_base_path")==null?"":appContext.getEnvironment().getProperty("dhnclient.file_base_path");
 		String otp =  appContext.getEnvironment().getProperty("dhnclient.use_otp");
 		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database"));
 		dual =  appContext.getEnvironment().getProperty("dhnclient.dual");
 		role = appContext.getEnvironment().getProperty("dhnclient.role");
-
-		param.setMsg_type("M");
+		param.setMsg_type("O");
 		
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-
+		
 		String send_msg_limit =  appContext.getEnvironment().getProperty("dhnclient.send_msg_limit");
 		if(send_msg_limit != null) {
 			param.setSend_msg_limit(send_msg_limit);
@@ -72,13 +67,12 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			param.setSend_msg_limit("1000");
 		}
 		
-		//log.info("초기화 완료 됨. - " + param.getKakao() );
 		if(otp != null && otp.toUpperCase().equals("Y"))
 		{
-			param.setOtpFlag(true);
+			//isStart = true;
 		} else {
-			param.setOtpFlag(false);
-		}		
+			posts.postProcessBeforeDestruction(this, null);
+		}
 		
 		if(dual != null && dual.toUpperCase().equals("Y")) {
 			/*if(role != null && role.toUpperCase().equals("MASTER") ) {
@@ -88,7 +82,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		} else {
 			isStart = true;	
 		}
-		
 	}
 	
 	@Scheduled(fixedDelay = 100)
@@ -104,73 +97,15 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			{
 				try {
 					
-					int cnt = reqService1.selectMMSReqeustCount(param);
-					
+					int cnt = reqService.selectOTPReqeustCount(param);
+					//log.info("OTP Count : " + cnt);
 					if(cnt > 0) {
 	
 						param.setGroup_no(group_no);
 						
-						reqService1.updateMMSGroupNo(param);
+						reqService.updateOTPGroupNo(param);
 						
-						List<RequestBean> _list = reqService1.selectMMSRequests(param);
-
-						for (RequestBean requestBean : _list) {
-
-							param.setMms_key(requestBean.getContentid());
-
-							List<ImageBean> imgList = reqService1.selectMMSImage(param);
-
-							for (ImageBean mmsImageBean : imgList) {
-
-								// 헤더 설정
-								HttpHeaders headers = new HttpHeaders();
-								headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-								headers.set("userid", userid);
-
-								// MultiValueMap을 사용해 파일 데이터 전송 준비
-								MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-								body.add("userid", userid);
-
-								if (mmsImageBean.getFile1() != null && mmsImageBean.getFile1().length() > 0) {
-									File file = new File(basepath + mmsImageBean.getFile1());
-									body.add("image1", new org.springframework.core.io.FileSystemResource(file));
-								}
-//								if (mmsImageBean.getFile2() != null && mmsImageBean.getFile2().length() > 0) {
-//									File file = new File(basepath + mmsImageBean.getFile2());
-//									body.add("image2", new org.springframework.core.io.FileSystemResource(file));
-//								}
-//								if (mmsImageBean.getFile3() != null && mmsImageBean.getFile3().length() > 0) {
-//									File file = new File(basepath + mmsImageBean.getFile3());
-//									body.add("image3", new org.springframework.core.io.FileSystemResource(file));
-//								}
-
-								// HttpEntity 생성
-								HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-								RestTemplate restTemplate = new RestTemplate();
-
-								try{
-									ResponseEntity<String> response = restTemplate.exchange(dhnServer + "mms/image", HttpMethod.POST, requestEntity, String.class);
-
-									if (response.getStatusCode() == HttpStatus.OK) {
-										String responseBody = response.getBody();
-										ObjectMapper mapper = new ObjectMapper();
-										Map<String, String> res = mapper.readValue(responseBody, Map.class);
-
-										if (res.get("image group") != null && res.get("image group").length() > 0) {
-											requestBean.setPinvoice(res.get("image group"));
-											log.info("MMS 이미지 등록 완료 : " + res.toString());
-										} else {
-											log.info("MMS 이미지 등록 실패 : " + res.toString());
-										}
-									} else {
-										log.info("MMS 이미지 등록 실패 : " + response.getBody());
-									}
-								}catch (Exception e){
-									log.error("MMS Image Key 등록 오류 : ", e.getMessage());
-								}
-							}
-						}
+						List<RequestBean> _list = reqService.selectOTPRequests(param);
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
@@ -190,20 +125,20 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 							//log.info(response.getStatusCode() + " / " + response.getBody());
 													
-							if(response.getStatusCode() == HttpStatus.OK)
+							if(response.getStatusCode() ==  HttpStatus.OK)
 							{
-								reqService1.updateSMSSendComplete(param);
+								reqService.updateOTPSendComplete(param);
 								//log.info("메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-								_list.forEach(msg -> log.info("[ " + msg.getMsgid() + " ] 건 MMS 송신 완료"));
+								_list.forEach(msg -> log.info("[ " + msg.getMsgid() + " ] 건 OTP 송신 완료"));
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
 								log.info("메세지 전송오류 : " + res.get("message"));
-								reqService1.updateSMSSendInit(param);
+								reqService.updateOTPSendInit(param);
 							}
 						} catch(Exception ex) {
 							log.info("메세지 전송 오류 : " + ex.toString());
 							
-							reqService1.updateSMSSendInit(param);
+							reqService.updateOTPSendInit(param);
 						}
 						
 					}
@@ -212,10 +147,11 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
-					log.error("MMS Send Error : " + e.toString());
+					log.error("SMS Send Error : " + e.toString());
 				}
 				preGroupNo = group_no;
 			}
+			
 			isProc = false;
 		}
 	}
@@ -223,6 +159,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	static public void setIsStart(boolean _flag) {
 		log.info(role + " MMS Sender Request is  change : " + _flag);
 		isStart = _flag;
-	}
+	}	
 }
 

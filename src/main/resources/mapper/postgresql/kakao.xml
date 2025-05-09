@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.dhn.client.kakao.mapper.SendRequest">
+<mapper namespace="com.dhn.client.kakao.mapper.postgresql.SendRequest">
 	<select id="req_kao_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
 		select count(1) as cnt
 		  from ${msg_table}
 		 where sms_st = '0'
 		   and reg_snd_dttm is null
            and msg_gb = '${msg_type}'
-		   and rownum = 1		 
+		    limit 1		 
 	</select>
 	<update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
@@ -19,11 +19,11 @@
 		                   where sms_st = '0'
 		                     and reg_snd_dttm is null
 		                     and msg_gb = '${msg_type}'
-		                     and rownum &lt;= ${send_msg_limit})
+		                      limit ${send_msg_limit})
 	</update>
  
 	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
-		update ${msg_table} set sms_st = 'Y', cmp_snd_dttm = to_char(sysdate, 'yyyymmddhh24miss')  where sms_st = '9' and reg_snd_dttm = '${group_no}' and msg_gb = '${msg_type}'
+		update ${msg_table} set sms_st = 'Y', cmp_snd_dttm = to_char(now(), 'yyyymmddhh24miss')  where sms_st = '9' and reg_snd_dttm = '${group_no}' and msg_gb = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -65,13 +65,13 @@
 		        else 
 		            '82' || substr(rcv_phn_id, 2, 15)  
 		        end)  as call_to
-		      ,nvl(callback, snd_phn_id) as call_from
+		      ,COALESCE(callback, snd_phn_id) as call_from
 		      ,resend_gb as msgtype
 		      ,subject as msg_txt_title
 		      ,'D' as pcom
 		      ,'N' as crypto
-		      ,to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') as curr_date
-		      ,nvl(snd_dttm, '00000000000000') as snd_dttm
+		      ,to_char(now(), 'yyyy-mm-dd hh24:mi:ss') as curr_date
+		      ,COALESCE(snd_dttm, '00000000000000') as snd_dttm
 		      ,btn_1 
 		      ,btn_2 
 		      ,btn_3 
@@ -91,28 +91,29 @@
 		      ,rslt_val = '${rslt_val}' 
 		      ,cmp_rcv_dttm = '${cmp_rcv_dttm}'
 		      ,rcv_mno_cd = '${rcv_mno_cd}' 
-		      ,reg_rcv_dttm = to_char(sysdate, 'yyyymmddhh24miss')
+		      ,reg_rcv_dttm = to_char(now(), 'yyyymmddhh24miss')
 		      ,kmsg_rslt = '${kmsg_rslt}'
 		 where cmp_msg_id = '${cmp_msg_id}'
 	</insert>
-	
+
 	<select id="alive_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
 		select count(1) as cnt
 		  from alive_monitoring	 
 	</select>
 	<insert id="alive_insert" parameterType="com.dhn.client.bean.SQLParameter">
-		insert into alive_monitoring(role, updated_date, status) values('${role}', sysdate, 'MS')
+		insert into alive_monitoring(role, updated_date, status) values('${role}', now()::timestamp, 'MS')
 	</insert>
 	<insert id="alive_update" parameterType="com.dhn.client.bean.SQLParameter">
 		update alive_monitoring
 		   set role = '${role}'
-		      ,updated_date = sysdate
+		      ,updated_date =  now()::timestamp
 		      ,status = '${alive_status}'
 	</insert>
 	<select id="alive_last_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
 		select count(1) as cnt
 		  from alive_monitoring
-		 where updated_date &gt;= SYSDATE-(15/24/60/60)
-	</select>	
+		 where updated_date::timestamp > (now() + '-15 second')
+		  and upper(role) = 'MASTER'
+	</select>
  
 </mapper>  
