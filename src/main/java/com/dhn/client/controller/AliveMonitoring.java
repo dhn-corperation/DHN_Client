@@ -236,8 +236,8 @@ public class AliveMonitoring implements ApplicationListener<ContextRefreshedEven
                             SLMSSendRequest.setIsStart(false);
                         }
 
-                        if(SLMSSendRequest.isStart){
-                            SLMSSendRequest.setIsStart(false);
+                        if(SLMSRealTimeSendRequest.isStart){
+                            SLMSRealTimeSendRequest.setIsStart(false);
                         }
 
                         if (MMSendRequest.isStart){
