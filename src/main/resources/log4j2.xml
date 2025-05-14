@@ -15,15 +15,8 @@
             <PatternLayout pattern="${layoutPattern}"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
-<!--                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>-->
-<!--                <SizeBasedTriggeringPolicy size="1KB"/>-->
             </Policies>
-            <DefaultRolloverStrategy max="30" fileIndex="min">
-                <Delete basePath="logs" maxDepth="1">
-                    <IfFileName glob="DHN_Client_*.log.gz"/>
-                    <IfAccumulatedFileCount exceeds="30"/>
-                </Delete>
-            </DefaultRolloverStrategy>
+            <DefaultRolloverStrategy max="30" fileIndex="min"/>
         </RollingFile>
     </Appenders>
     <!--    실제 Logger-->
