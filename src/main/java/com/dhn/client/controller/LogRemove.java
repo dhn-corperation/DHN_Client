@@ -58,6 +58,7 @@ public class LogRemove implements ApplicationListener<ContextRefreshedEvent>{
 			{
 				isStart = true;
 			} else {
+				log.info("LogRemove 작동 안함.");
 				posts.postProcessBeforeDestruction(this, null);
 			}
 		} else {
