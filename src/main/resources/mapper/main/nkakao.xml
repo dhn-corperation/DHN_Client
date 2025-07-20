@@ -9,21 +9,21 @@
 		where MSG_SNDG_STTS_CD = '0'
 		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is NULL
 	</select>
 
 	<update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
 		set MSG_SNDG_STTS_CD = '1',
-			GRP_NO = #{group_no}
+			GRP_NO = '${group_no}'
 		where DATA_ID in (
 			select DATA_ID
 			from ${msg_table}
 			where MSG_SNDG_STTS_CD = '0'
 			  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is null
 			fetch first 1000 rows only
 			)
@@ -35,21 +35,21 @@
 		where MSG_SNDG_STTS_CD = '0'
 		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is NULL
 	</select>
 
 	<update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
 		set MSG_SNDG_STTS_CD = '1',
-			GRP_NO = #{group_no}
+			GRP_NO = '${group_no}'
 		where DATA_ID in (
 			select DATA_ID
 			from ${msg_table}
 			where MSG_SNDG_STTS_CD = '0'
 			  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is null
 			fetch first 1000 rows only
 			)
@@ -61,7 +61,7 @@
 		where MSG_SNDG_STTS_CD = '0'
 		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is NULL
 		  and MMS_IMG_KEY is not null
 	</select>
@@ -69,14 +69,14 @@
 	<update id="req_mms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
 		set MSG_SNDG_STTS_CD = '1',
-			GRP_NO = #{group_no}
+			GRP_NO = '${group_no}'
 		where DATA_ID in (
 			select DATA_ID
 			from ${msg_table}
 			where MSG_SNDG_STTS_CD = '0'
 			  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is null
 		  and MMS_IMG_KEY is not null
 			fetch first 1000 rows only
@@ -91,7 +91,7 @@
 		where MSG_SNDG_STTS_CD = '0'
 		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and GRP_NO is null
 		  and CHTR_ATCH_FILE_PATH is not null
 		group by CHTR_ATCH_FILE_PATH, CHTR_ATCH_FILE_PATH_2, CHTR_ATCH_FILE_PATH_3
@@ -99,10 +99,10 @@
 
 	<update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
-		set MMS_IMG_KEY = #{mms_key}
+		set MMS_IMG_KEY = '${mms_key}'
 		where MSG_SNDG_STTS_CD = '0'
 		  and GRP_NO is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and NVL(CHTR_ATCH_FILE_PATH,'X') = '${file1}'
 		  and NVL(CHTR_ATCH_FILE_PATH_2,'X') = '${file2}'
@@ -143,8 +143,8 @@
 			NVL(TO_CHAR(RSRT_DDTI, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm
 		from ${msg_table}
 		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = #{group_no}
-		  and MSG_DCD = #{msg_type}
+		  and GRP_NO = '${group_no}'
+		  and MSG_DCD = '${msg_type}'
 	</select>
 
 	<select id="req_lms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -162,8 +162,8 @@
 			NVL(TO_CHAR(RSRT_DDTI, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm
 		from ${msg_table}
 		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = #{group_no}
-		  and MSG_DCD = #{msg_type}
+		  and GRP_NO = '${group_no}'
+		  and MSG_DCD = '${msg_type}'
 	</select>
 
 	<select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -182,8 +182,8 @@
 			MMS_IMG_KEY as mms_img_key
 		from ${msg_table}
 		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = #{group_no}
-		  and MSG_DCD = #{msg_type}
+		  and GRP_NO = '${group_no}'
+		  and MSG_DCD = '${msg_type}'
 		  and MMS_IMG_KEY is not null
 	</select>
 
@@ -193,8 +193,8 @@
 			SNDG_DDTI = SYSDATE
 		where
 			MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = #{group_no}
-		  and MSG_DCD = #{msg_type}
+		  and GRP_NO = '${group_no}'
+		  and MSG_DCD = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -205,26 +205,25 @@
 			SNDG_DDTI = NULL
 		where
 			MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = #{group_no}
-		  and MSG_DCD = #{msg_type}
+		  and GRP_NO = '${group_no}'
+		  and MSG_DCD = '${msg_type}'
 	</update>
 
 	<update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = #{status},
-			MSG_ERR_CD = #{msg_err_code},
-			SNDG_CPEE_DDTI = TO_TIMESTAMP(#{sndg_cpee_dt}, 'YYYY-MM-DD HH24:MI:SS'),
-			AGAN_CTDO_TYPE = #{agan_sms_type},
-			CMCT_CMPN_NM = #{agan_tel_info}
-		where DATA_ID = #{msgid}
+		set MSG_SNDG_STTS_CD = '${status}',
+			MSG_ERR_CD = '${msg_err_code}',
+			SNDG_CPEE_DDTI = TO_TIMESTAMP('${sndg_cpee_dt'}, 'YYYY-MM-DD HH24:MI:SS'),
+			AGAN_CTDO_TYPE = '${agan_sms_type}'
+		where DATA_ID = '${msgid}'
 	</update>
 
 	<insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
-		insert into ${log_table} select * from ${msg_table} where DATA_ID = #{msgid}
+		insert into ${log_table} select * from ${msg_table} where DATA_ID = '${msgid}'
 	</insert>
 
 	<delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
-		delete from ${msg_table} where DATA_ID = #{msgid}
+		delete from ${msg_table} where DATA_ID = '${msgid}'
 	</delete>
 
 </mapper>  

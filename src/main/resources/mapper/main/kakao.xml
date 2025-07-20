@@ -9,7 +9,7 @@
 		where MSG_SNDG_STTS_CD = '0'
 		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and BIZ_MSG_DCD = 'AT'
 		  and GRP_NO is null
 	</select>
@@ -17,14 +17,14 @@
 	<update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
 		set MSG_SNDG_STTS_CD = '1',
-			GRP_NO = #{group_no}
+			GRP_NO = '${group_no}'
 		where DATA_ID in (
 			select DATA_ID
 			from ${msg_table}
 			where MSG_SNDG_STTS_CD = '0'
 			  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = #{msg_type}
+		  and MSG_DCD = '${msg_type}'
 		  and BIZ_MSG_DCD = 'AT'
 		  and GRP_NO is null
 			fetch first 1000 rows only
@@ -83,8 +83,8 @@
 			NVL(TO_CHAR(RSRT_DDTI, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm
 		from ${msg_table}
 		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = #{group_no}
-		  and MSG_DCD = #{msg_type}
+		  and GRP_NO = '${group_no}'
+		  and MSG_DCD = '${msg_type}'
 	</select>
 
 	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -92,8 +92,8 @@
 		set MSG_SNDG_STTS_CD = '5',
 			SNDG_DDTI = SYSDATE
 		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = #{group_no}
-		  and MSG_DCD = #{msg_type}
+		  and GRP_NO = '${group_no}'
+		  and MSG_DCD = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -102,27 +102,27 @@
 			GRP_NO = NULL,
 			SNDG_DDTI = NULL
 		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = #{group_no}
-		  and MSG_DCD = #{msg_type}
+		  and GRP_NO = '${group_no}'
+		  and MSG_DCD = '${msg_type}'
 	</update>
 
 	<update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = #{status},
-			MSG_ERR_CD = #{msg_err_code},
-			AGAN_TEL_INFO_CD = #{agan_tel_info},
-			SNDG_CPEE_DDTI = TO_TIMESTAMP(#{sndg_cpee_dt}, 'YYYY-MM-DD HH24:MI:SS'),
-			AGAN_CTDO_TYPE = #{agan_sms_type},
-			AGAN_SNDG_RSLT_CD = #{agan_code}
-		where DATA_ID = #{msgid}
+		set MSG_SNDG_STTS_CD = '${status}',
+			MSG_ERR_CD = '${msg_err_code}',
+			AGAN_TEL_INFO_CD = '${agan_tel_info}',
+			SNDG_CPEE_DDTI = TO_TIMESTAMP('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
+			AGAN_CTDO_TYPE = '${agan_sms_type}',
+			AGAN_SNDG_RSLT_CD = '${agan_code}'
+		where DATA_ID = '${msgid}'
 	</update>
 
 	<insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
-		insert into ${log_table} select * from ${msg_table} where DATA_ID = #{msgid}
+		insert into ${log_table} select * from ${msg_table} where DATA_ID = '${msgid}'
 	</insert>
 
 	<delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
-		delete from ${msg_table} where DATA_ID = #{msgid}
+		delete from ${msg_table} where DATA_ID = '${msgid}'
 	</delete>
 
 </mapper>  
