@@ -1,5 +1,7 @@
 package com.dhn.client.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -219,19 +221,19 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					_ml.setMsg_err_code(_kaoCode.getOrDefault(ent.getString("s_code"),"7300")); // 알림톡 실패 코드
 
 					if(!ent.getString("code").equals("0000")) {
-						rscode = _rsltCode.get(ent.getString("code").substring(2));
+						rscode = _rsltCode.getOrDefault(ent.getString("code").substring(2),"d");
 					}else {
 						rscode = _rsltCode.get("06");
 					}
 					_ml.setAgan_sms_type(ent.getString("sms_kind")); // 재발송된 문자 타입
 
-					if(ent.getString("remark1").equalsIgnoreCase("SKT")) {// 재발송된 문자 통신사값
+					if(ent.getString("remark1").equalsIgnoreCase("SKT") || ent.getString("remark1").equals("011")) {// 재발송된 문자 통신사값
 						_ml.setAgan_tel_info("1");
-					}else if(ent.getString("remark1").equalsIgnoreCase("KTF")) {
+					}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")) {
 						_ml.setAgan_tel_info("2");
-					}else if(ent.getString("remark1").equalsIgnoreCase("LGT")) {
+					}else if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")) {
 						_ml.setAgan_tel_info("3");
-					}else if(ent.getString("remark1").equalsIgnoreCase("ETC")) {
+					}else{
 						_ml.setAgan_tel_info("4");
 					}
 
@@ -240,12 +242,22 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					}else {
 						_ml.setStatus("4");
 					}
-					_ml.setSndg_cpee_dt(ent.getString("remark2")); // 단말기 수신 시각
+
+					String remark2 = ent.getString("remark2");
+					String sndg_cpee_dt;
+
+					if (remark2 == null || remark2.trim().isEmpty()) {
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+						sndg_cpee_dt = LocalDateTime.now().format(formatter);
+					} else {
+						sndg_cpee_dt = remark2;
+					}
+					_ml.setSndg_cpee_dt(sndg_cpee_dt); // 단말기 수신 시각
 
 				}else { // 일반 문자
 
 					if(!ent.getString("code").equals("0000")) {
-						_ml.setMsg_err_code(_rsltCode.get(ent.getString("code").substring(2))); // 문자 코드
+						_ml.setMsg_err_code(_rsltCode.getOrDefault(ent.getString("code").substring(2),"d")); // 문자 코드
 					}else {
 						_ml.setMsg_err_code(_rsltCode.get("06")); // 문자 코드
 					}
@@ -255,7 +267,27 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					}else {
 						_ml.setStatus("4");
 					}
-					_ml.setSndg_cpee_dt(ent.getString("remark2")); // 단말기 수신 시각
+
+					if(ent.getString("remark1").equalsIgnoreCase("SKT") || ent.getString("remark1").equals("011")) {// 재발송된 문자 통신사값
+						_ml.setAgan_tel_info("1");
+					}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")) {
+						_ml.setAgan_tel_info("2");
+					}else if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")) {
+						_ml.setAgan_tel_info("3");
+					}else{
+						_ml.setAgan_tel_info("4");
+					}
+
+					String remark2 = ent.getString("remark2");
+					String sndg_cpee_dt;
+
+					if (remark2 == null || remark2.trim().isEmpty()) {
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+						sndg_cpee_dt = LocalDateTime.now().format(formatter);
+					} else {
+						sndg_cpee_dt = remark2;
+					}
+					_ml.setSndg_cpee_dt(sndg_cpee_dt); // 단말기 수신 시각
 				}
 			}
 

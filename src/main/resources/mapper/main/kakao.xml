@@ -7,9 +7,9 @@
 		select count(1) as cnt
 		from ${msg_table}
 		where MSG_SNDG_STTS_CD = '0'
-		  and COALESCE(RSRT_DDTI,CURRENT TIMESTAMP) &lt;= CURRENT TIMESTAMP
+		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_DCD = #{msg_type}
 		  and BIZ_MSG_DCD = 'AT'
 		  and GRP_NO is null
 	</select>
@@ -17,14 +17,14 @@
 	<update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
 		set MSG_SNDG_STTS_CD = '1',
-			GRP_NO = '${group_no}'
+			GRP_NO = #{group_no}
 		where DATA_ID in (
 			select DATA_ID
 			from ${msg_table}
 			where MSG_SNDG_STTS_CD = '0'
-			  and COALESCE(RSRT_DDTI,CURRENT TIMESTAMP) &lt;= CURRENT TIMESTAMP
+			  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
 		  and SNDG_DDTI is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_DCD = #{msg_type}
 		  and BIZ_MSG_DCD = 'AT'
 		  and GRP_NO is null
 			fetch first 1000 rows only
@@ -71,29 +71,29 @@
 			CHTR_MSG_TITL as msg_txt_title,
 			'D' as pcom,
 			CASE
-				WHEN CHARACTER_LENGTH(CHTR_MSG_CNTS) > 90 THEN 'L'
+				WHEN LENGTH(CHTR_MSG_CNTS) > 90 THEN 'L'
 				ELSE 'S'
 				END AS smskind,
-			TO_CHAR(current timestamp, 'yyyy-mm-dd hh24:mi:ss') as curr_date,
+			TO_CHAR(SYSDATE, 'yyyy-mm-dd hh24:mi:ss') as curr_date,
 			BUTN_INFO as btn_1,
 			TMPL_CD_CNTS as template_cd,
 			(case when trim(SEND_PR_PROF) = '46248771607c8deab1d586c6167a1bb6c709d00d' then
 					  '86ba1bf964556aeafb55d9c70126b102bafd1821'
 				  else trim(SEND_PR_PROF) end) as profile_key,
-			COALESCE(TO_CHAR(RSRT_DDTI, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm
+			NVL(TO_CHAR(RSRT_DDTI, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm
 		from ${msg_table}
 		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and GRP_NO = #{group_no}
+		  and MSG_DCD = #{msg_type}
 	</select>
 
 	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
 		set MSG_SNDG_STTS_CD = '5',
-			SNDG_DDTI = CURRENT TIMESTAMP
+			SNDG_DDTI = SYSDATE
 		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and GRP_NO = #{group_no}
+		  and MSG_DCD = #{msg_type}
 	</update>
 
 	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -102,27 +102,27 @@
 			GRP_NO = NULL,
 			SNDG_DDTI = NULL
 		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and GRP_NO = #{group_no}
+		  and MSG_DCD = #{msg_type}
 	</update>
 
 	<update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = '${status}',
-			MSG_ERR_CD = '${msg_err_code}',
-			AGAN_TEL_INFO_CD = '${agan_tel_info}',
-			SNDG_CPEE_DDTI = TIMESTAMP('${sndg_cpee_dt}'),
-			AGAN_CTDO_TYPE = '${agan_sms_type}',
-			AGAN_SNDG_RSLT_CD = '${agan_code}'
-		where DATA_ID = '${msgid}'
+		set MSG_SNDG_STTS_CD = #{status},
+			MSG_ERR_CD = #{msg_err_code},
+			AGAN_TEL_INFO_CD = #{agan_tel_info},
+			SNDG_CPEE_DDTI = TO_TIMESTAMP(#{sndg_cpee_dt}, 'YYYY-MM-DD HH24:MI:SS'),
+			AGAN_CTDO_TYPE = #{agan_sms_type},
+			AGAN_SNDG_RSLT_CD = #{agan_code}
+		where DATA_ID = #{msgid}
 	</update>
 
 	<insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
-		insert into ${log_table} select * from ${msg_table} where DATA_ID = '${msgid}'
+		insert into ${log_table} select * from ${msg_table} where DATA_ID = #{msgid}
 	</insert>
 
 	<delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
-		delete from ${msg_table} where DATA_ID = '${msgid}'
+		delete from ${msg_table} where DATA_ID = #{msgid}
 	</delete>
 
 </mapper>  

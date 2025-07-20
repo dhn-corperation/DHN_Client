@@ -1,0 +1,40 @@
+package com.dhn.client.service;
+
+import com.dhn.client.controller.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.stereotype.Service;
+
+@Service
+@Slf4j
+public class ProgramStatus implements CommandLineRunner, ApplicationListener<ContextClosedEvent>, DisposableBean {
+
+    @Override
+    public void run(String... args) throws Exception {
+        log.info("프로그램이 정상적으로 실행 되었습니다.");
+    }
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        ResultReq.isStart = false;
+        SMSSendRequest.isStart = false;
+        MMSSendRequest.isStart = false;
+        LMSSendRequest.isStart = false;
+        KAOSendRequest.isStart = false;
+        log.info("프로그램이 종료 처리 중.....");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        log.info("프로그램이 정상적으로 종료 되었습니다.");
+    }
+
+}
