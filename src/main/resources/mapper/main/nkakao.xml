@@ -135,7 +135,7 @@
 			trim(TRNS_PR_TEL) as call_from,
 			'' as msg_txt_title,
 			CASE
-				WHEN CHARACTER_LENGTH(CHTR_MSG_CNTS) > 90 THEN 'L'
+				WHEN LENGTHB(CHTR_MSG_CNTS) > 90 THEN 'L'
 				ELSE 'S'
 				END AS smskind,
 			'D' as pcom,
@@ -213,7 +213,7 @@
 		update ${msg_table}
 		set MSG_SNDG_STTS_CD = '${status}',
 			MSG_ERR_CD = '${msg_err_code}',
-			SNDG_CPEE_DDTI = TO_TIMESTAMP('${sndg_cpee_dt'}, 'YYYY-MM-DD HH24:MI:SS'),
+			SNDG_CPEE_DDTI = TO_TIMESTAMP('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
 			AGAN_CTDO_TYPE = '${agan_sms_type}'
 		where DATA_ID = '${msgid}'
 	</update>
