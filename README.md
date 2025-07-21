@@ -4,3 +4,6 @@
 
 ## Java version
 - 1.8
+
+## Issue
+- DB duplication
