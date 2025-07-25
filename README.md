@@ -7,3 +7,5 @@
 
 ## Issue
 - DB duplication
+- Main DB Dead -> StandBy DB Connection
+- Main DB Recovery -> StandBy DB Close/Main DB Connection
