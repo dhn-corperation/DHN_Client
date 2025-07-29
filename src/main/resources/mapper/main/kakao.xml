@@ -200,6 +200,7 @@
 	<update id="req_sent_complete2" parameterType="com.dhn.client.bean.SQLParameter">
 		update ${main_table}
 		set MSG_STTS_CD = '02',
+			ISND_PRCS_DT = SYSTIMESTAMP,
 			MDFCN_DT = SYSTIMESTAMP,
 			MDFR_ID = #{mod_id}
 		where MSG_MST_NO IN (${strmsgid})
