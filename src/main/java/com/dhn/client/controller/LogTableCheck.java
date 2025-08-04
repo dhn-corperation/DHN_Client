@@ -57,7 +57,7 @@ public class LogTableCheck implements ApplicationListener<ContextRefreshedEvent>
             log.info("Log Table Create kakao_use 활성화 → 30초 대기 완료 후 실행");
         }
 
-        log.info("로그 테이블 로그테이블 재확인 및 생성");
+        log.info("로그테이블 재확인 및 생성");
 
         if(isStart && !isProc){
             isProc = true;
