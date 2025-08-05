@@ -35,7 +35,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
 public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
@@ -45,15 +44,14 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String userid;
 	private Map<String, String> _rsltCode = new HashMap<String, String>();
 
-	private static String role = "";
-	private String dual = "N";
-	
+	private static final Logger log = LogManager.getRootLogger();
+
 	@Autowired
-	private RequestService requestService;
-	
+	private RequestService reqService;
+
 	@Autowired
 	private ApplicationContext appContext;
-	
+
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		// TODO Auto-generated method stub
@@ -65,12 +63,9 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		//param.setSTART_TIME( Integer.parseInt( appContext.getEnvironment().getProperty("dhnclient.start_time") ) );
 		//param.setEND_TIME( Integer.parseInt( appContext.getEnvironment().getProperty("dhnclient.end_time") ) );
 
-		dual = appContext.getEnvironment().getProperty("dhnclient.dual","N");
-		role = appContext.getEnvironment().getProperty("dhnclient.role");
-
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-		
+
 		_rsltCode.put("03","e");
 		_rsltCode.put("05","3");
 		_rsltCode.put("06","0");
@@ -117,42 +112,35 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		_rsltCode.put("96","j");
 		_rsltCode.put("97","7");
 		_rsltCode.put("98","8");
-		_rsltCode.put("99","9"); 
-		
+		_rsltCode.put("99","9");
+
 		isStart = true;
-
-		if(dual.equalsIgnoreCase("Y")){
-
-		}else{
-			log.info("RESULT 초기화 완료 됨. - " + param.getDBType() );
-			isStart = true;
-		}
 	}
-	
+
 	@Scheduled(fixedDelay = 1000)
 	private void SendProcess() {
 		if(isStart && !isProc) {
 			isProc = true;
-			
+
 			try {
 				ObjectMapper om = new ObjectMapper();
-				
+
 				HttpHeaders header = new HttpHeaders();
-				
+
 				header.setContentType(MediaType.APPLICATION_JSON);
 				header.set("userid", userid);
-				
+
 				RestTemplate rt = new RestTemplate();
 				HttpEntity<String> entity = new HttpEntity<String>(null, header);
-				
+
 				try {
 					ResponseEntity<String> response = rt.postForEntity(dhnServer + "result", entity, String.class);
-											
+
 					if(response.getStatusCode() ==  HttpStatus.OK)
 					{
 						JSONArray json = new JSONArray(response.getBody().toString());
 						if(json.length()>0) {
-							
+
 							//log.info(response.getBody().toString());
 							for(int i=0; i<json.length();i++) {
 								JSONObject ent = json.getJSONObject(i);
@@ -167,67 +155,25 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 								_ml.setRslt_code(rscode);
 								_ml.setRslt_code2(_rsltCode.get(rscode));
 								_ml.setRslt_net(ent.getString("remark1"));
-								
-								requestService.Inset_msg_log(_ml);
+
+								reqService.Inset_msg_log(_ml);
 							}
-							
+
 							log.info("결과 수신 완료 : " + json.length() + " 건");
 						}
 
-						/*
-						String responseBody = response.getBody();
-						JSONObject jsonObject = new JSONObject(responseBody);
-
-						if (jsonObject.has("data")) {
-							JSONObject dataObject = jsonObject.getJSONObject("data");
-
-							if (dataObject.has("detail")) {
-								JSONArray json = dataObject.getJSONArray("detail");
-
-								if (json.length() > 0) {
-									for(int i=0; i<json.length();i++) {
-										JSONObject ent = json.getJSONObject(i);
-										Msg_Log _ml = new Msg_Log(param.getDBType(), param.getMsg_data(), param.getMms_contents_info(), param.getMsg_log(), param.getLog_mv_flag());
-										_ml.setUserdata(ent.getString("p_invoice"));
-										_ml.setMsg_seq(ent.getString("msgid"));
-										_ml.setRslt_date(ent.getString("remark2"));
-										String rscode = "06";
-										if(!ent.getString("code").equals("0000")) {
-											rscode = ent.getString("code").substring(2);
-										}
-										_ml.setRslt_code(rscode);
-										_ml.setRslt_code2(_rsltCode.get(rscode));
-										_ml.setRslt_net(ent.getString("remark1"));
-
-										requestService.Inset_msg_log(_ml);
-									}
-
-									log.info("결과 수신 완료 : " + json.length() + " 건");
-								}
-							} else {
-								log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
-							}
-						} else {
-							log.error("결과 수신 오류 : (data) 필드가 없습니다.");
-						}
-						*/
 					}
 				} catch(Exception ex) {
 					log.info("결과 수신 오류 : " + ex.toString());
 				}
-				
+
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 			isProc = false;
 		}
-	}
-
-	static public void setIsStart(boolean _flag) {
-		log.info(role + " Result Request is  change : " + _flag);
-		isStart = _flag;
 	}
 }
 

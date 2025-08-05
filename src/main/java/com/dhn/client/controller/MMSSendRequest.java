@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
 public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
@@ -40,15 +39,15 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
-	private static String role = "";
-	private String dual = "N";
-	
+
+	private static final Logger log = LogManager.getRootLogger();
+
 	@Autowired
-	private RequestService requestService;
-	
+	private RequestService reqService1;
+
 	@Autowired
 	private ApplicationContext appContext;
-	
+
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		// TODO Auto-generated method stub
@@ -58,29 +57,23 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_log( appContext.getEnvironment().getProperty("dhnclient.msg_log") );
 		param.setMsg_type("6");
 
-		dual = appContext.getEnvironment().getProperty("dhnclient.dual","N");
-		role = appContext.getEnvironment().getProperty("dhnclient.role");
-
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-		if(dual.equalsIgnoreCase("Y")){
+		log.info("초기화 완료 됨. - " + param.getDBType() );
 
-		}else{
-			log.info("MMS 초기화 완료 됨. - " + param.getDBType() );
-			isStart = true;
-		}
+		isStart = true;
 	}
-	
+
 	@Scheduled(fixedDelay = 1000)
 	private void SendProcess() {
 		if(isStart && !isProc) {
 			isProc = true;
-			
+
 			try {
-				
-				int cnt = requestService.selectMMSReqeustCount(param);
-				
+
+				int cnt = reqService1.selectMMSReqeustCount(param);
+
 				if(cnt > 0) {
 
 					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -89,59 +82,54 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					param.setGroup_no(group_no);
 
-					requestService.updateMMSGroupNo(param);
-					
-					List<RequestBean> _list = requestService.selectMMSRequests(param);
-					
+					reqService1.updateMMSGroupNo(param);
+
+					List<RequestBean> _list = reqService1.selectMMSRequests(param);
+
 					StringWriter sw = new StringWriter();
 					ObjectMapper om = new ObjectMapper();
 					om.writeValue(sw, _list);
-					
+
 					//log.info(sw.toString());
-					
+
 					HttpHeaders header = new HttpHeaders();
-					
+
 					header.setContentType(MediaType.APPLICATION_JSON);
 					header.set("userid", userid);
-					
+
 					RestTemplate rt = new RestTemplate();
 					HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
-					
+
 					try {
 						ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 						//log.info(response.getStatusCode() + " / " + response.getBody());
-												
+
 						if(response.getStatusCode() == HttpStatus.OK)
 						{
-							requestService.updateSMSSendComplete(param);
+							reqService1.updateSMSSendComplete(param);
 							log.info("메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 						} else {
 							Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
 							log.info("메세지 전송오류 : " + res.get("message"));
-							requestService.updateSMSSendInit(param);
+							reqService1.updateSMSSendInit(param);
 						}
 					} catch(Exception ex) {
 						log.info("메세지 전송 오류 : " + ex.toString());
 
-						requestService.updateSMSSendInit(param);
+						reqService1.updateSMSSendInit(param);
 					}
-					
+
 				}
-				
-				
+
+
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				log.error("MMS Send Error : " + e.toString());
 			}
-			
+
 			isProc = false;
 		}
-	}
-
-	static public void setIsStart(boolean _flag) {
-		log.info(role + " MMS Process is change : " + _flag);
-		isStart = _flag;
 	}
 }
 
