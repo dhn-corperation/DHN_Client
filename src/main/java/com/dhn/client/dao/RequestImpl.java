@@ -118,6 +118,7 @@ public class RequestImpl implements RequestDAO{
 		int result_last = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
 		if(result_last == 0){
 			sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+			sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogPrimaryKey", map);
 			log.info("{} 테이블 생성",map.get("logTable"));
 		}
 
@@ -125,6 +126,7 @@ public class RequestImpl implements RequestDAO{
 		int result_current = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
 		if(result_current == 0){
 			sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+			sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogPrimaryKey", map);
 			log.info("{} 테이블 생성",map.get("logTable"));
 
 		}
@@ -133,6 +135,7 @@ public class RequestImpl implements RequestDAO{
 		int result_next = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
 		if(result_next == 0){
 			sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+			sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogPrimaryKey", map);
 			log.info("{} 테이블 생성",map.get("logTable"));
 
 		}

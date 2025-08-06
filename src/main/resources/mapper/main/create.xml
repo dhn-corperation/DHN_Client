@@ -13,6 +13,10 @@
         SELECT * FROM "${msgTable}" WHERE 1=0
     </update>
 
+    <update id="createLogPrimaryKey" parameterType="com.dhn.client.bean.SQLParameter">
+        ALTER TABLE "${logTable}" ADD CONSTRAINT "${logTable}_PK" PRIMARY KEY("MSG_MST_NO")
+    </update>
+
     <select id="tableCheck" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
         SELECT COUNT(1)
         FROM USER_TABLES
