@@ -1,4 +1,4 @@
-# 자바 DHN_CLIENT 한국부동산 (reb)
+# 자바 DHN_CLIENT 한국부동산 (reb) - DB Dupl, FailOver + FailBack
 ## Service
 - oracle
 
