@@ -1,6 +1,7 @@
 package com.dhn.client.controller;
 
 import com.dhn.client.bean.MMSImageBean;
+import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
@@ -35,6 +36,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String userid;
 	private String basepath;
 	private String preGroupNo = "";
+	private String logTable = "";
 	
 	@Autowired
 	private RequestService requestService;
@@ -47,6 +49,8 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setImg_table( appContext.getEnvironment().getProperty("dhnclient.img_table"));
 		param.setMsg_type("M");
+
+		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
@@ -108,7 +112,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							}
 						} catch(Exception ex) {
 							log.info("MMS 메세지 전송 오류 : " + ex.toString());
-							
 							requestService.updateSMSSendInit(param);
 						}
 
@@ -173,10 +176,30 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							if(response.code() == 200) {
 								ObjectMapper mapper = new ObjectMapper();
 								Map<String, String> res = mapper.readValue(response.body().string(), Map.class);
-								//log.info("MMS Image Key : " + res.get("image group"));
-								if(res.get("image group") != null && res.get("image group").length() > 0) {
+//								log.info("MMS Image Key : " + res.get("image group"));
+//								log.info("MMS Image Key : " + res.get("image_group"));
+//								if(res.get("image group") != null && res.get("image group").length() > 0) {
+//									param.setMms_key(res.get("image group"));
+//									requestService.updateMMSImageGroup(param);
+//								}
+
+								if(res.get("image group") != null && !res.get("image group").isEmpty()) {
 									param.setMms_key(res.get("image group"));
 									requestService.updateMMSImageGroup(param);
+								} else if (res.get("image_group") != null && !res.get("image_group").isEmpty()){
+									param.setMms_key(res.get("image_group"));
+									requestService.updateMMSImageGroup(param);
+								}else{
+									Msg_Log msg_log = new Msg_Log();
+									msg_log.setMsg_table(param.getMsg_table());
+									msg_log.setLog_table(logTable);
+									msg_log.setMsgid(mmsImageBean.getMsgid());
+									msg_log.setResult("78");
+									msg_log.setStatus("3");
+									String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+									msg_log.setResult_time(now);
+									requestService.Insert_msg_log(msg_log);
+									log.info("MMS Image Key 등록 오류 (image_group or image group 없음)");
 								}
 							}
 							response.close();

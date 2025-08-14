@@ -116,7 +116,7 @@
         <result column="call_to" property="phn"/>
         <result column="call_from" property="smssender"/>
         <result column="pcom" property="pcom"/>
-        <result column="mms_image_key" property="pinvoice"/>
+        <result column="mms_image_key" property="mmsimageid"/>
         <result column="smskind" property="smskind"/>
         <result column="msg_txt_title" property="smslmstit"/>
         <result column="crypto" property="crypto"/>
