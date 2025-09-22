@@ -62,6 +62,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.msg_table") );
+		param.setLog_table( appContext.getEnvironment().getProperty("dhnclient.log_table") );
 		param.setMsg_type("M");
 
 
@@ -179,25 +180,29 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 				if(imgList.size() > 0) {
 					for (MMSImageBean mmsImageBean : imgList) {
-						param.setFile1("X");
-						param.setFile2("X");
-						param.setFile3("X");
+						SQLParameter mmsparam = new SQLParameter();
+						mmsparam.setFile1("X");
+						mmsparam.setFile2("X");
+						mmsparam.setFile3("X");
+						mmsparam.setMsg_table(param.getMsg_table());
+						mmsparam.setMsg_type("M");
+						mmsparam.setMsgid(mmsImageBean.getMsgid());
 
 						MultipartBody.Builder builder = new MultipartBody.Builder();
 						builder.addFormDataPart("userid", userid);
 						if(mmsImageBean.getFile1() != null && mmsImageBean.getFile1().length() > 0) {
 							File file = new File(basepath + mmsImageBean.getFile1());
-							param.setFile1(mmsImageBean.getFile1());
+							mmsparam.setFile1(mmsImageBean.getFile1());
 							builder.addFormDataPart("image1", mmsImageBean.getFile1(), RequestBody.create(MultipartBody.FORM,file));
 						}
 						if(mmsImageBean.getFile2() != null && mmsImageBean.getFile2().length() > 0) {
 							File file = new File(basepath + mmsImageBean.getFile2());
-							param.setFile2(mmsImageBean.getFile2());
+							mmsparam.setFile2(mmsImageBean.getFile2());
 							builder.addFormDataPart("image2", mmsImageBean.getFile2(), RequestBody.create(MultipartBody.FORM, file));
 						}
 						if(mmsImageBean.getFile3() != null && mmsImageBean.getFile3().length() > 0) {
 							File file = new File(basepath + mmsImageBean.getFile3());
-							param.setFile3(mmsImageBean.getFile3());
+							mmsparam.setFile3(mmsImageBean.getFile3());
 							builder.addFormDataPart("image3", mmsImageBean.getFile3(), RequestBody.create(MultipartBody.FORM, file));
 						}
 
@@ -227,10 +232,12 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 								if (mmsKey != null) {
 									log.info("MMS Image Key : {}", mmsKey);
-									param.setMms_key(mmsKey);
-									reqService.updateMMSImageGroup(param);
+									mmsparam.setMms_key(mmsKey);
+									reqService.updateMMSImageGroup(mmsparam);
 								}else{
 									log.info("MMS Image Key 등록 오류 NULL");
+									mmsparam.setLog_table(param.getLog_table());
+									reqService.updateMMSImageFail(mmsparam);
 								}
 							}
 							response.close();

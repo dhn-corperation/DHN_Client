@@ -139,4 +139,11 @@ public class RequestImpl implements RequestDAO{
 		}
 	}
 
+	@Override
+	public void updateMMSImageFail(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.mms_fail_insert1", param);
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.mms_fail_insert2", param);
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.mms_fail_insert3", param);
+	}
+
 }

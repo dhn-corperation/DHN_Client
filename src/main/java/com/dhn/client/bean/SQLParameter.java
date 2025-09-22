@@ -20,6 +20,7 @@ public class SQLParameter {
 	private String file2;
 	private String file3;
 	private String mms_key;
+	private String msgid;
 
 	public void setDist_proc_option(String dist_proc_option) {
 		if(dist_proc_option != null && dist_proc_option.length() > 0) {

@@ -48,4 +48,5 @@ public interface RequestService {
 
 	public void Insert_msg_log(Msg_Log _ml) throws Exception;
 
+    public void updateMMSImageFail(SQLParameter param) throws Exception;
 }

@@ -113,4 +113,9 @@ public class RequestServiceImpl implements RequestService {
 		req.Insert_msg_log(_ml);
 	}
 
+	@Override
+	public void updateMMSImageFail(SQLParameter param) throws Exception {
+		req.updateMMSImageFail(param);
+	}
+
 }

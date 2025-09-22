@@ -6,25 +6,25 @@
 	<select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
 		select count(1) as cnt
 		from ${msg_table}
-		where MSG_SNDG_STTS_CD = '0'
-		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
-		  and SNDG_DDTI is null
+		where MSG_SNDNG_STTS_CD = '0'
+		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and SNDNG_DT is null
 		  and MSG_DCD = '${msg_type}'
-		  and GRP_NO is NULL
+		  and GROUP_NO is NULL
 	</select>
 
 	<update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = '1',
-			GRP_NO = '${group_no}'
-		where DATA_ID in (
-			select DATA_ID
+		set MSG_SNDNG_STTS_CD = '1',
+			GROUP_NO = '${group_no}'
+		where DAT_ID in (
+			select DAT_ID
 			from ${msg_table}
-			where MSG_SNDG_STTS_CD = '0'
-			  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
-		  and SNDG_DDTI is null
+			where MSG_SNDNG_STTS_CD = '0'
+			  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and SNDNG_DT is null
 		  and MSG_DCD = '${msg_type}'
-		  and GRP_NO is null
+		  and GROUP_NO is null
 			fetch first 1000 rows only
 			)
 	</update>
@@ -32,25 +32,25 @@
 	<select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
 		select count(1) as cnt
 		from ${msg_table}
-		where MSG_SNDG_STTS_CD = '0'
-		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
-		  and SNDG_DDTI is null
+		where MSG_SNDNG_STTS_CD = '0'
+		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and SNDNG_DT is null
 		  and MSG_DCD = '${msg_type}'
-		  and GRP_NO is NULL
+		  and GROUP_NO is NULL
 	</select>
 
 	<update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = '1',
-			GRP_NO = '${group_no}'
-		where DATA_ID in (
-			select DATA_ID
+		set MSG_SNDNG_STTS_CD = '1',
+			GROUP_NO = '${group_no}'
+		where DAT_ID in (
+			select DAT_ID
 			from ${msg_table}
-			where MSG_SNDG_STTS_CD = '0'
-			  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
-		  and SNDG_DDTI is null
+			where MSG_SNDNG_STTS_CD = '0'
+			  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and SNDNG_DT is null
 		  and MSG_DCD = '${msg_type}'
-		  and GRP_NO is null
+		  and GROUP_NO is null
 			fetch first 1000 rows only
 			)
 	</update>
@@ -58,55 +58,56 @@
 	<select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
 		select count(1) as cnt
 		from ${msg_table}
-		where MSG_SNDG_STTS_CD = '0'
-		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
-		  and SNDG_DDTI is null
+		where MSG_SNDNG_STTS_CD = '0'
+		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and SNDNG_DT is null
 		  and MSG_DCD = '${msg_type}'
-		  and GRP_NO is NULL
-		  and MMS_IMG_KEY is not null
+		  and GROUP_NO is NULL
+		  and MMS_IMG_NO is not null
 	</select>
 
 	<update id="req_mms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = '1',
-			GRP_NO = '${group_no}'
-		where DATA_ID in (
-			select DATA_ID
+		set MSG_SNDNG_STTS_CD = '1',
+			GROUP_NO = '${group_no}'
+		where DAT_ID in (
+			select DAT_ID
 			from ${msg_table}
-			where MSG_SNDG_STTS_CD = '0'
-			  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
-		  and SNDG_DDTI is null
+			where MSG_SNDNG_STTS_CD = '0'
+			  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and SNDNG_DT is null
 		  and MSG_DCD = '${msg_type}'
-		  and GRP_NO is null
-		  and MMS_IMG_KEY is not null
+		  and GROUP_NO is null
+		  and MMS_IMG_NO is not null
 			fetch first 1000 rows only
 			)
 	</update>
 
 	<select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
-		select CHTR_ATCH_FILE_PATH as file1
-			 ,CHTR_ATCH_FILE_PATH_2 as file2
-			 ,CHTR_ATCH_FILE_PATH_3 as file3
+		select LTR_ATCH_FILE_PATH_ADDR as file1
+			 ,LTR_ATCH_FILE_PATH_ADDR_2 as file2
+			 ,LTR_ATCH_FILE_PATH_ADDR_3 as file3
+			,trim(DAT_ID) as msgid
 		from ${msg_table}
-		where MSG_SNDG_STTS_CD = '0'
-		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
-		  and SNDG_DDTI is null
+		where MSG_SNDNG_STTS_CD = '0'
+		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and SNDNG_DT is null
 		  and MSG_DCD = '${msg_type}'
-		  and GRP_NO is null
-		  and CHTR_ATCH_FILE_PATH is not null
-		group by CHTR_ATCH_FILE_PATH, CHTR_ATCH_FILE_PATH_2, CHTR_ATCH_FILE_PATH_3
+		  and GROUP_NO is null
+		  and LTR_ATCH_FILE_PATH_ADDR is not null
+		group by LTR_ATCH_FILE_PATH_ADDR, LTR_ATCH_FILE_PATH_ADDR_2, LTR_ATCH_FILE_PATH_ADDR_3
 	</select>
 
 	<update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
-		set MMS_IMG_KEY = '${mms_key}'
-		where MSG_SNDG_STTS_CD = '0'
-		  and GRP_NO is null
+		set MMS_IMG_NO = '${mms_key}'
+		where MSG_SNDNG_STTS_CD = '0'
+		  and GROUP_NO is null
 		  and MSG_DCD = '${msg_type}'
-		  and NVL(RSRT_DDTI,SYSDATE) &lt;= SYSDATE
-		  and NVL(CHTR_ATCH_FILE_PATH,'X') = '${file1}'
-		  and NVL(CHTR_ATCH_FILE_PATH_2,'X') = '${file2}'
-		  and NVL(CHTR_ATCH_FILE_PATH_3,'X') = '${file3}'
+		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR,'X') = '${file1}'
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR_2,'X') = '${file2}'
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR_3,'X') = '${file3}'
 	</update>
 
 	<resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
@@ -127,103 +128,120 @@
 
 	<select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
 		select
-			trim(DATA_ID) as DATA_ID,
+			trim(DAT_ID) as DATA_ID,
 			'PH' as message_type,
-			CHTR_MSG_CNTS as msg_txt,
-			CHTR_MSG_CNTS as sms_txt,
-			trim(RCPT_TEL) as call_to,
-			trim(TRNS_PR_TEL) as call_from,
+			LTR_MSG_CN as msg_txt,
+			LTR_MSG_CN as sms_txt,
+			trim(RCVR_TELNO) as call_to,
+			trim(TRNSPS_TELNO) as call_from,
 			'' as msg_txt_title,
 			CASE
-				WHEN LENGTHB(CHTR_MSG_CNTS) > 90 THEN 'L'
+				WHEN LENGTHB(LTR_MSG_CN) > 90 THEN 'L'
 				ELSE 'S'
 				END AS smskind,
 			'D' as pcom,
 			TO_CHAR(SYSDATE, 'yyyy-mm-dd hh24:mi:ss') as curr_date,
-			NVL(TO_CHAR(RSRT_DDTI, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm
+			NVL(TO_CHAR(RSVT_DT, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm
 		from ${msg_table}
-		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = '${group_no}'
+		where MSG_SNDNG_STTS_CD = '1'
+		  and GROUP_NO = '${group_no}'
 		  and MSG_DCD = '${msg_type}'
 	</select>
 
 	<select id="req_lms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
 		select
-			trim(DATA_ID) as DATA_ID,
+			trim(DAT_ID) as DATA_ID,
 			'PH' as message_type,
-			CHTR_MSG_CNTS as msg_txt,
-			CHTR_MSG_CNTS as sms_txt,
-			trim(RCPT_TEL) as call_to,
-			trim(TRNS_PR_TEL) as call_from,
-			CHTR_MSG_TITL as msg_txt_title,
+			LTR_MSG_CN as msg_txt,
+			LTR_MSG_CN as sms_txt,
+			trim(RCVR_TELNO) as call_to,
+			trim(TRNSPS_TELNO) as call_from,
+			LTR_MSG_TTL_NM as msg_txt_title,
 			'L' as smskind,
 			'D' as pcom,
 			TO_CHAR(SYSDATE, 'yyyy-mm-dd hh24:mi:ss') as curr_date,
-			NVL(TO_CHAR(RSRT_DDTI, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm
+			NVL(TO_CHAR(RSVT_DT, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm
 		from ${msg_table}
-		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = '${group_no}'
+		where MSG_SNDNG_STTS_CD = '1'
+		  and GROUP_NO = '${group_no}'
 		  and MSG_DCD = '${msg_type}'
 	</select>
 
 	<select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
 		select
-			trim(DATA_ID) as DATA_ID,
+			trim(DAT_ID) as DATA_ID,
 			'PH' as message_type,
-			CHTR_MSG_CNTS as msg_txt,
-			CHTR_MSG_CNTS as sms_txt,
-			trim(RCPT_TEL) as call_to,
-			trim(TRNS_PR_TEL) as call_from,
-			CHTR_MSG_TITL as msg_txt_title,
+			LTR_MSG_CN as msg_txt,
+			LTR_MSG_CN as sms_txt,
+			trim(RCVR_TELNO) as call_to,
+			trim(TRNSPS_TELNO) as call_from,
+			LTR_MSG_TTL_NM as msg_txt_title,
 			'M' as smskind,
 			'D' as pcom,
 			TO_CHAR(SYSDATE, 'yyyy-mm-dd hh24:mi:ss') as curr_date,
-			NVL(TO_CHAR(RSRT_DDTI, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm,
-			MMS_IMG_KEY as mms_img_key
+			NVL(TO_CHAR(RSVT_DT, 'yyyymmddhh24miss'), '00000000000000') as snd_dttm,
+			MMS_IMG_NO as mms_img_key
 		from ${msg_table}
-		where MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = '${group_no}'
+		where MSG_SNDNG_STTS_CD = '1'
+		  and GROUP_NO = '${group_no}'
 		  and MSG_DCD = '${msg_type}'
-		  and MMS_IMG_KEY is not null
+		  and MMS_IMG_NO is not null
 	</select>
 
 	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = '5',
-			SNDG_DDTI = SYSDATE
+		set MSG_SNDNG_STTS_CD = '5',
+			SNDNG_DT = SYSDATE
 		where
-			MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = '${group_no}'
+			MSG_SNDNG_STTS_CD = '1'
+		  and GROUP_NO = '${group_no}'
 		  and MSG_DCD = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
 
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = '0',
-			GRP_NO = NULL,
-			SNDG_DDTI = NULL
+		set MSG_SNDNG_STTS_CD = '0',
+			GROUP_NO = NULL,
+			SNDNG_DT = NULL
 		where
-			MSG_SNDG_STTS_CD = '1'
-		  and GRP_NO = '${group_no}'
+			MSG_SNDNG_STTS_CD = '1'
+		  and GROUP_NO = '${group_no}'
 		  and MSG_DCD = '${msg_type}'
 	</update>
 
 	<update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
 		update ${msg_table}
-		set MSG_SNDG_STTS_CD = '${status}',
-			MSG_ERR_CD = '${msg_err_code}',
-			SNDG_CPEE_DDTI = TO_TIMESTAMP('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
-			AGAN_CTDO_TYPE = '${agan_sms_type}'
-		where DATA_ID = '${msgid}'
+		set MSG_SNDNG_STTS_CD = '${status}',
+			MSG_SNDNG_ERR_CD = '${msg_err_code}',
+			SNDNG_CMPTN_DT = TO_TIMESTAMP('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
+			RSND_MSG_DCD = '${agan_sms_type}'
+		where DAT_ID = '${msgid}'
 	</update>
 
 	<insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
-		insert into ${log_table} select * from ${msg_table} where DATA_ID = '${msgid}'
+		insert into ${log_table} select * from ${msg_table} where DAT_ID = '${msgid}'
 	</insert>
 
 	<delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
-		delete from ${msg_table} where DATA_ID = '${msgid}'
+		delete from ${msg_table} where DAT_ID = '${msgid}'
+	</delete>
+
+	<update id="mms_fail_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+		update ${msg_table}
+		set MSG_SNDNG_STTS_CD = '4',
+			MSG_SNDNG_ERR_CD = 'x',
+			SNDNG_CMPTN_DT = SYSDATE,
+			RSND_MSG_DCD = '4'
+		where DAT_ID = '${msgid}'
+	</update>
+
+	<insert id="mms_fail_insert2" parameterType="com.dhn.client.bean.Msg_Log">
+		insert into ${log_table} select * from ${msg_table} where DAT_ID = '${msgid}'
+	</insert>
+
+	<delete id="mms_fail_insert3" parameterType="com.dhn.client.bean.Msg_Log">
+		delete from ${msg_table} where DAT_ID = '${msgid}'
 	</delete>
 
 </mapper>  
