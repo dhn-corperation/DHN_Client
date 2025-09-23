@@ -1,10 +1,6 @@
-# 자바 DHN_CLIENT Sample
+# 자바 DHN_CLIENT 국시원
 ## Service
-- oracle
-- mysql
-- postgresql
 - mssql
-- DB2
 
 ## Java version
 - 1.8

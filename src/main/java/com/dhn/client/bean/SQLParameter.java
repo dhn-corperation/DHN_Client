@@ -1,38 +1,18 @@
 package com.dhn.client.bean;
 
-import lombok.Data;
-
-@Data
 public class SQLParameter {
 	private String msg_table;
-	private String log_table;
-	private String kakao_use;
-	private String sms_use;
-	private String lms_use;
-	private String mms_use;
-	private String dbtype;
+	private String kakao;
 	private String group_no;
 	private String msg_type;
 	private String log_mv_flag;
 	private String bktable;
 	private String kakaobtn;
 	private String newagent;
-	private String dist_proc_option;
-	private String dist_value;
-	private String att_file_path;
-	private String file1;
-	private String file2;
-	private String file3;
-	private String mms_key;
-
-	public void setDist_proc_option(String dist_proc_option) {
-		if(dist_proc_option != null && dist_proc_option.length() > 0) {
-			this.dist_proc_option = dist_proc_option;
-		} else {
-			this.dist_proc_option = "N";
-		}
+	
+	public String getNewagent() {
+		return newagent;
 	}
-
 	public void setNewagent(String newagent) {
 		if(newagent != null && newagent.length() > 0) {
 			this.newagent = newagent;
@@ -40,13 +20,54 @@ public class SQLParameter {
 			this.newagent = "N";
 		}		 
 	}
-
+	public String getMsg_table() {
+		return msg_table;
+	}
+	public void setMsg_table(String msg_table) {
+		this.msg_table = msg_table;
+	}
+	public String getKakao() {
+		return kakao;
+	}
+	public void setKakao(String kakao) {
+		this.kakao = kakao;
+	}
+	public String getGroup_no() {
+		return group_no;
+	}
+	public void setGroup_no(String group_no) {
+		this.group_no = group_no;
+	}
+	public String getMsg_type() {
+		return msg_type;
+	}
+	public void setMsg_type(String msg_type) {
+		this.msg_type = msg_type;
+	}
+	public String getLog_mv_flag() {
+		return log_mv_flag;
+	}
+	public void setLog_mv_flag(String log_mv_flag) {
+		this.log_mv_flag = log_mv_flag;
+	}
+	public String getBktable() {
+		return bktable;
+	}
+	public void setBktable(String bktable) {
+		this.bktable = bktable;
+	}
+	public String getKakaobtn() {
+		return kakaobtn;
+	}
 	public void setKakaobtn(String kakaobtn) {
 		if(kakaobtn != null && kakaobtn.length() > 0) {
 			this.kakaobtn = kakaobtn.toUpperCase();
 		} else {
 			this.kakaobtn = "N";
 		}
-	}	
+	}
+	
+ 
+	
 
 }

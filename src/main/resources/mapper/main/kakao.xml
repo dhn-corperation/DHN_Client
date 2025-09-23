@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.kakao.mapper.SendRequest">
+	<select id="req_kao_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select top 1 count(1) as cnt
+		  from ${msg_table}
+		 where STATUS = '0'
+		   and isnull(REQUEST_TIME, getdate()) &lt;= getdate()
+		   and UMID is null
+		   and MSG_TYPE in ( '6' ) 
+	</select>
+	<update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table}
+		   set STATUS = '9'
+		      ,UMID = '${group_no}'
+		 where CMID in (select top 1000 r.CMID
+		                    from ${msg_table} r
+		                   where STATUS = '0'
+		   					 and isnull(REQUEST_TIME, getdate()) &lt;= getdate()
+		   					 and UMID is null
+		   					 and MSG_TYPE in ( '6' ) )
+	</update>
+ 
+	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table} set status = '1', send_time = getdate()  where status = '9' and UMID = '${group_no}' and MSG_TYPE in ( '6')
+	</update>
+
+	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table} set status = '0', UMID = null, send_time = null where status = '9' and UMID = '${group_no}' and MSG_TYPE in ( '6')	
+	</update>
+	
+	<resultMap id="RequestTable" type="com.dhn.client.bean.KAORequestBean">
+		<result column="msg_seq" property="msgid"/>
+		<result column="messagetype" property="messagetype"/>
+		<result column="msg_txt" property="msg"/>
+		<result column="sms_txt" property="msgsms"/>
+		<result column="call_to" property="phn"/>
+		<result column="call_from" property="smssender"/>
+		<result column="pcom" property="pcom"/>
+		<result column="userdata" property="pinvoice"/>
+		<result column="smskind" property="smskind"/>
+		<result column="msg_txt_title" property="smslmstit"/>
+		<result column="crypto" property="crypto"/>
+		<result column="curr_date" property="regdt"/>
+		<result column="btn_1" property="button1"/>
+		<result column="btn_2" property="button2"/>
+		<result column="btn_3" property="button3"/>
+		<result column="btn_4" property="button4"/>
+		<result column="btn_5" property="button5"/>
+		<result column="template_cd" property="tmplid"/>
+		<result column="profile_key" property="profile"/> 
+		<result column="snd_dttm" property="reservedt"/>
+	</resultMap>
+			
+	<select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+		select CMID as msg_seq
+		      ,'AT' as messagetype
+		      ,MSG_BODY as msg_txt
+		      ,RE_BODY as sms_txt
+		      ,concat('82', replace(SUBSTRING(DEST_PHONE, 2, 15),'-','')) as call_to
+		      ,SEND_PHONE as call_from
+	          ,(case when RE_TYPE is null then
+	                   null
+	                 when RE_TYPE = 'SMS' then
+	                   'S'
+	                 when RE_TYPE = 'MMS' then 
+	                   'L' 
+	                 when RE_TYPE = 'LMS' then 
+	                   'L' 
+	            end) as smskind
+		      ,SUBJECT as msg_txt_title
+		      ,'D' as pcom
+		      ,CINFO as userdata
+		      ,'N' as crypto
+		      ,format(GETDATE(), 'yyyy-MM-dd HH:mm:ss') as curr_date
+		      ,BUTTON1 as btn_1
+		      ,null as btn_2 
+		      ,null as btn_3 
+		      ,null as btn_4 
+		      ,null as btn_5 
+		      ,TEMPLATE_CODE as template_cd
+		      ,(case when SENDER_KEY = 'dea7b987570b486753ad25dc339934b6617f4b55' then 
+		                    '422516f374c0960c1e25f30ac7182a84db0669e4'
+		             else 
+		                SENDER_KEY
+		        end)   as profile_key		
+		      ,(case when REQUEST_TIME is not null then 
+		                format(REQUEST_TIME,'yyyyMMddHHmmss')
+		             else 
+		                '00000000000000'
+		        end ) as snd_dttm   
+		  from ${msg_table} 
+		 where STATUS = '9'
+		   and UMID =  '${group_no}'  
+		   and MSG_TYPE in ( '6' )
+	</select>
+
+	<insert id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+		update ${msg_table} 
+		   set STATUS = '${sms_st}'
+		      ,CALL_STATUS = '${rslt_val}' 
+		      ,REPORT_TIME = convert(DATETIME, '${cmp_rcv_dttm}')
+		      ,TEL_INFO = '${rcv_mno_cd}' 
+		 where CMID = '${cmid}'
+	</insert>
+
+	<insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
+		insert into ${log_table} select * from ${msg_table} where CMID = '${cmid}'
+	</insert>	
+
+	<insert id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
+		delete from ${msg_table} where CMID = '${cmid}'
+	</insert>
+	
+	<insert id="create_log_table" parameterType="com.dhn.client.bean.Msg_Log">
+		select * into ${log_table} from ${msg_table} where 1 = 2
+	</insert>
+	
+	
+</mapper>  

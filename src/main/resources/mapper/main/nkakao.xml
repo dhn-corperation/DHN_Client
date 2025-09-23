@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.nkakao.mapper.SendRequest">
+	<select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select top 1 count(1) as cnt
+		  from ${msg_table}
+		 where STATUS = '0'
+		   and isnull(REQUEST_TIME, getdate()) &lt;= getdate()
+		   and UMID is null
+		   and MSG_TYPE in ( '0' ) 
+	</select>
+	<update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table}
+		   set STATUS = '9'
+		      ,UMID = '${group_no}'
+		 where CMID in (select top 1000 r.CMID
+		                    from ${msg_table} r
+		                   where STATUS = '0'
+		   					 and isnull(REQUEST_TIME, getdate()) &lt;= getdate()
+		   					 and UMID is null
+		   					 and MSG_TYPE in ( '0' ))
+	</update>
+
+	<select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+		select top 1 count(1) as cnt
+		  from ${msg_table}
+		 where STATUS = '0'
+		   and isnull(REQUEST_TIME, getdate()) &lt;= getdate()
+		   and UMID is null
+		   and MSG_TYPE in ( '5' )
+	</select>
+	<update id="req_mms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table}
+		   set STATUS = '9'
+		      ,UMID = '${group_no}'
+		 where CMID in (select top 1000 r.CMID
+		                    from ${msg_table} r
+		                   where STATUS = '0'
+		   					 and isnull(REQUEST_TIME, getdate()) &lt;= getdate()
+		   					 and UMID is null
+		   					 and MSG_TYPE in ( '5' ))
+	</update>
+ 
+	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table} set status = '1', send_time = getdate()  where status = '9' and UMID = '${group_no}' and MSG_TYPE in ('${msg_type}')
+	</update>
+
+	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+		update ${msg_table} set status = '0', UMID = null, send_time = null where status = '9' and UMID = '${group_no}' and MSG_TYPE in ('${msg_type}')		
+	</update>
+	
+	<resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
+		<result column="msg_seq" property="msgid"/>
+		<result column="messagetype" property="messagetype"/>
+		<result column="msg_txt" property="msg"/>
+		<result column="sms_txt" property="msgsms"/>
+		<result column="call_to" property="phn"/>
+		<result column="call_from" property="smssender"/>
+		<result column="pcom" property="pcom"/>
+		<result column="userdata" property="pinvoice"/>
+		<result column="msgtype" property="smskind"/>
+		<result column="msg_txt_title" property="smslmstit"/>
+		<result column="crypto" property="crypto"/>
+		<result column="curr_date" property="regdt"/>
+		<result column="snd_dttm" property="reservedt"/>
+	</resultMap>
+			
+	<select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+		select CMID as msg_seq
+		      ,'ph' as messagetype
+		      ,MSG_BODY as msg_txt
+		      ,MSG_BODY as sms_txt
+		      ,DEST_PHONE as call_to
+		      ,SEND_PHONE as call_from
+		      ,'S' as msgtype
+		      ,null as msg_txt_title
+		      ,'D' as pcom
+		      ,CINFO as userdata
+		      ,'N' as crypto
+		      ,format(GETDATE(), 'yyyy-MM-dd HH:mm:ss') as curr_date
+		      ,(case when REQUEST_TIME is not null then 
+		                format(REQUEST_TIME,'yyyyMMddHHmmss')
+		             else 
+		                '00000000000000'
+		        end ) as snd_dttm   
+		  from ${msg_table} 
+		 where STATUS = '9'
+		   and UMID =  '${group_no}'  
+		   and MSG_TYPE in ( '${msg_type}' )
+	</select>
+			
+	<select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+		select CMID as msg_seq
+		      ,'ph' as messagetype
+		      ,MSG_BODY as msg_txt
+		      ,MSG_BODY as sms_txt
+		      ,DEST_PHONE as call_to
+		      ,SEND_PHONE as call_from
+		      ,'L' as msgtype
+		      ,SUBJECT as msg_txt_title
+		      ,'D' as pcom
+		      ,CINFO as userdata
+		      ,'N' as crypto
+		      ,format(GETDATE(), 'yyyy-MM-dd HH:mm:ss') as curr_date
+		      ,(case when REQUEST_TIME is not null then 
+		                format(REQUEST_TIME,'yyyyMMddHHmmss')
+		             else 
+		                '00000000000000'
+		        end ) as snd_dttm   
+		  from ${msg_table} 
+		 where STATUS = '9'
+		   and UMID =  '${group_no}'  
+		   and MSG_TYPE in ( '${msg_type}' )
+	</select>
+ 	
+				
+</mapper>  
