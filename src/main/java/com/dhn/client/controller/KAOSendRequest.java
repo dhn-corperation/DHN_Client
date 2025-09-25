@@ -113,13 +113,6 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 					if(cnt > 0) {
 
-						HttpHeaders cheader = new HttpHeaders();
-
-						cheader.setContentType(MediaType.APPLICATION_JSON);
-						cheader.set("userid", userid);
-
-						RestTemplate crt = new RestTemplate();
-						HttpEntity<String> centity = new HttpEntity<String>(cheader);
 						param.setGroup_no(group_no);
 
 						reqService.updateKAOGroupNo(param);
