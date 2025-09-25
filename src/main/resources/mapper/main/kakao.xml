@@ -75,8 +75,8 @@
 		      ,'N' as crypto
 		      ,format(GETDATE(), 'yyyy-MM-dd HH:mm:ss') as curr_date
 		      ,BUTTON1 as btn_1
-		      ,null as btn_2 
-		      ,null as btn_3 
+		      ,BUTTON2 as btn_2
+		      ,BUTTON3 as btn_3
 		      ,null as btn_4 
 		      ,null as btn_5 
 		      ,TEMPLATE_CODE as template_cd
