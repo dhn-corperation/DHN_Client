@@ -132,8 +132,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			}
 			
 			_ml.setRslt_val(ent.getString("code"));
-			
-			_ml.setCmp_rcv_dttm(ent.getString("remark2"));
+
+			if(ent.getString("message_type").equalsIgnoreCase("AT")){
+				_ml.setCmp_rcv_dttm(ent.getString("res_dt"));
+			}else{
+				_ml.setCmp_rcv_dttm(ent.getString("remark2"));
+			}
 			
 			_ml.setRcv_mno_cd(ent.getString("remark1")); 
 			
