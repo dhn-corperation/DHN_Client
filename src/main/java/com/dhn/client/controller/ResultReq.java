@@ -135,11 +135,19 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 			if(ent.getString("message_type").equalsIgnoreCase("AT")){
 				_ml.setCmp_rcv_dttm(ent.getString("res_dt"));
+				_ml.setRcv_mno_cd("KKO");
 			}else{
 				_ml.setCmp_rcv_dttm(ent.getString("remark2"));
+				if(ent.getString("remark1").equalsIgnoreCase("LGT") || ent.getString("remark1").equals("019")){
+					_ml.setRcv_mno_cd("LGT");
+				}else if(ent.getString("remark1").equalsIgnoreCase("SKT") || ent.getString("remark1").equals("011")){
+					_ml.setRcv_mno_cd("SKT");
+				}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")){
+					_ml.setRcv_mno_cd("KTF");
+				}else{
+					_ml.setRcv_mno_cd("ETC");
+				}
 			}
-			
-			_ml.setRcv_mno_cd(ent.getString("remark1")); 
 			
 			try {
 				reqService.Insert_msg_log(_ml);
