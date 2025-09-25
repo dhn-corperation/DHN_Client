@@ -85,9 +85,8 @@
 
 	<select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
 		select LTR_ATCH_FILE_PATH_ADDR as file1
-			 ,LTR_ATCH_FILE_PATH_ADDR_2 as file2
-			 ,LTR_ATCH_FILE_PATH_ADDR_3 as file3
-			,trim(DAT_ID) as msgid
+			 ,LTR_ATCH_FILE_PATH_ADDR2 as file2
+			 ,LTR_ATCH_FILE_PATH_ADDR3 as file3
 		from ${msg_table}
 		where MSG_SNDNG_STTS_CD = '0'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
@@ -95,7 +94,7 @@
 		  and MSG_DCD = '${msg_type}'
 		  and GROUP_NO is null
 		  and LTR_ATCH_FILE_PATH_ADDR is not null
-		group by LTR_ATCH_FILE_PATH_ADDR, LTR_ATCH_FILE_PATH_ADDR_2, LTR_ATCH_FILE_PATH_ADDR_3
+		group by LTR_ATCH_FILE_PATH_ADDR, LTR_ATCH_FILE_PATH_ADDR2, LTR_ATCH_FILE_PATH_ADDR3
 	</select>
 
 	<update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -106,8 +105,8 @@
 		  and MSG_DCD = '${msg_type}'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and NVL(LTR_ATCH_FILE_PATH_ADDR,'X') = '${file1}'
-		  and NVL(LTR_ATCH_FILE_PATH_ADDR_2,'X') = '${file2}'
-		  and NVL(LTR_ATCH_FILE_PATH_ADDR_3,'X') = '${file3}'
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR2,'X') = '${file2}'
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR3,'X') = '${file3}'
 	</update>
 
 	<resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
@@ -215,7 +214,8 @@
 		set MSG_SNDNG_STTS_CD = '${status}',
 			MSG_SNDNG_ERR_CD = '${msg_err_code}',
 			SNDNG_CMPTN_DT = TO_TIMESTAMP('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
-			RSND_MSG_DCD = '${agan_sms_type}'
+			RSND_MSG_DCD = '${agan_sms_type}',
+			MSG_SNDNG_TLCMCO_CD = '${agan_tel_info}'
 		where DAT_ID = '${msgid}'
 	</update>
 
@@ -232,16 +232,39 @@
 		set MSG_SNDNG_STTS_CD = '4',
 			MSG_SNDNG_ERR_CD = 'x',
 			SNDNG_CMPTN_DT = SYSDATE,
-			RSND_MSG_DCD = '4'
-		where DAT_ID = '${msgid}'
+			SNDNG_DT = SYSDATE,
+			RSND_MSG_DCD = '4',
+			MSG_SNDNG_TLCMCO_CD = '4'
+		where MSG_SNDNG_STTS_CD = '0'
+		  and GROUP_NO is null
+		  and MSG_DCD = '${msg_type}'
+		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR,'X') = '${file1}'
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR2,'X') = '${file2}'
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR3,'X') = '${file3}'
 	</update>
 
 	<insert id="mms_fail_insert2" parameterType="com.dhn.client.bean.Msg_Log">
-		insert into ${log_table} select * from ${msg_table} where DAT_ID = '${msgid}'
+		insert into ${log_table}
+		select * from ${msg_table}
+		 where MSG_SNDNG_STTS_CD = '4'
+		   and GROUP_NO is null
+		   and MSG_DCD = '${msg_type}'
+		   and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		   and NVL(LTR_ATCH_FILE_PATH_ADDR,'X') = '${file1}'
+		   and NVL(LTR_ATCH_FILE_PATH_ADDR2,'X') = '${file2}'
+		   and NVL(LTR_ATCH_FILE_PATH_ADDR3,'X') = '${file3}'
 	</insert>
 
 	<delete id="mms_fail_insert3" parameterType="com.dhn.client.bean.Msg_Log">
-		delete from ${msg_table} where DAT_ID = '${msgid}'
+		delete from ${msg_table}
+	    where MSG_SNDNG_STTS_CD = '4'
+		  and GROUP_NO is null
+		  and MSG_DCD = '${msg_type}'
+		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR,'X') = '${file1}'
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR2,'X') = '${file2}'
+		  and NVL(LTR_ATCH_FILE_PATH_ADDR3,'X') = '${file3}'
 	</delete>
 
 </mapper>  

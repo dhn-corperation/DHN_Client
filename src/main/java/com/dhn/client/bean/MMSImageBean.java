@@ -7,6 +7,4 @@ public class MMSImageBean {
 	private String file1;
 	private String file2;
 	private String file3;
-	private String msgid;
-	
 }
