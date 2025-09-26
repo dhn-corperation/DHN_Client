@@ -145,7 +145,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				}else if(ent.getString("remark1").equalsIgnoreCase("KTF") || ent.getString("remark1").equalsIgnoreCase("KT") || ent.getString("remark1").equals("016")){
 					_ml.setRcv_mno_cd("KTF");
 				}else{
-					_ml.setRcv_mno_cd("ETC");
+					_ml.setRcv_mno_cd(ent.getString("remark1"));
 				}
 			}
 			
