@@ -141,6 +141,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 						try {
 							ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+							log.info(response.getStatusCode() + " / " + response.getBody());
 
 							if (response.getStatusCode() == HttpStatus.OK) {
 								reqService.updateKAOSendComplete(param);
