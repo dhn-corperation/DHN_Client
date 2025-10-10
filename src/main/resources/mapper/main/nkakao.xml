@@ -9,7 +9,7 @@
 		where MSG_SNDNG_STTS_CD = '0'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and SNDNG_DT is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and GROUP_NO is NULL
 	</select>
 
@@ -23,7 +23,7 @@
 			where MSG_SNDNG_STTS_CD = '0'
 			  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and SNDNG_DT is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and GROUP_NO is null
 			fetch first 1000 rows only
 			)
@@ -35,7 +35,7 @@
 		where MSG_SNDNG_STTS_CD = '0'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and SNDNG_DT is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and GROUP_NO is NULL
 	</select>
 
@@ -49,7 +49,7 @@
 			where MSG_SNDNG_STTS_CD = '0'
 			  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and SNDNG_DT is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and GROUP_NO is null
 			fetch first 1000 rows only
 			)
@@ -61,7 +61,7 @@
 		where MSG_SNDNG_STTS_CD = '0'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and SNDNG_DT is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and GROUP_NO is NULL
 		  and MMS_IMG_NO is not null
 	</select>
@@ -76,7 +76,7 @@
 			where MSG_SNDNG_STTS_CD = '0'
 			  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and SNDNG_DT is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and GROUP_NO is null
 		  and MMS_IMG_NO is not null
 			fetch first 1000 rows only
@@ -91,7 +91,7 @@
 		where MSG_SNDNG_STTS_CD = '0'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and SNDNG_DT is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and GROUP_NO is null
 		  and LTR_ATCH_FILE_PATH_ADDR is not null
 		group by LTR_ATCH_FILE_PATH_ADDR, LTR_ATCH_FILE_PATH_ADDR2, LTR_ATCH_FILE_PATH_ADDR3
@@ -102,7 +102,7 @@
 		set MMS_IMG_NO = '${mms_key}'
 		where MSG_SNDNG_STTS_CD = '0'
 		  and GROUP_NO is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and NVL(LTR_ATCH_FILE_PATH_ADDR,'X') = '${file1}'
 		  and NVL(LTR_ATCH_FILE_PATH_ADDR2,'X') = '${file2}'
@@ -144,7 +144,7 @@
 		from ${msg_table}
 		where MSG_SNDNG_STTS_CD = '1'
 		  and GROUP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 	</select>
 
 	<select id="req_lms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -163,7 +163,7 @@
 		from ${msg_table}
 		where MSG_SNDNG_STTS_CD = '1'
 		  and GROUP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 	</select>
 
 	<select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
@@ -183,7 +183,7 @@
 		from ${msg_table}
 		where MSG_SNDNG_STTS_CD = '1'
 		  and GROUP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and MMS_IMG_NO is not null
 	</select>
 
@@ -194,7 +194,7 @@
 		where
 			MSG_SNDNG_STTS_CD = '1'
 		  and GROUP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -206,7 +206,7 @@
 		where
 			MSG_SNDNG_STTS_CD = '1'
 		  and GROUP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 	</update>
 
 	<update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
@@ -214,7 +214,7 @@
 		set MSG_SNDNG_STTS_CD = '${status}',
 			MSG_SNDNG_ERR_CD = '${msg_err_code}',
 			SNDNG_CMPTN_DT = TO_TIMESTAMP('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
-			RSND_MSG_DCD = '${agan_sms_type}',
+			RSND_MSG_SE_CD = '${agan_sms_type}',
 			MSG_SNDNG_TLCMCO_CD = '${agan_tel_info}'
 		where DAT_ID = '${msgid}'
 	</update>
@@ -233,11 +233,11 @@
 			MSG_SNDNG_ERR_CD = 'x',
 			SNDNG_CMPTN_DT = SYSDATE,
 			SNDNG_DT = SYSDATE,
-			RSND_MSG_DCD = '4',
+			RSND_MSG_SE_CD = '4',
 			MSG_SNDNG_TLCMCO_CD = '4'
 		where MSG_SNDNG_STTS_CD = '0'
 		  and GROUP_NO is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and NVL(LTR_ATCH_FILE_PATH_ADDR,'X') = '${file1}'
 		  and NVL(LTR_ATCH_FILE_PATH_ADDR2,'X') = '${file2}'
@@ -249,7 +249,7 @@
 		select * from ${msg_table}
 		 where MSG_SNDNG_STTS_CD = '4'
 		   and GROUP_NO is null
-		   and MSG_DCD = '${msg_type}'
+		   and MSG_SE_CD = '${msg_type}'
 		   and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		   and NVL(LTR_ATCH_FILE_PATH_ADDR,'X') = '${file1}'
 		   and NVL(LTR_ATCH_FILE_PATH_ADDR2,'X') = '${file2}'
@@ -260,7 +260,7 @@
 		delete from ${msg_table}
 	    where MSG_SNDNG_STTS_CD = '4'
 		  and GROUP_NO is null
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and NVL(LTR_ATCH_FILE_PATH_ADDR,'X') = '${file1}'
 		  and NVL(LTR_ATCH_FILE_PATH_ADDR2,'X') = '${file2}'

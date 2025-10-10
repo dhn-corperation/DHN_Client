@@ -9,8 +9,8 @@
 		where MSG_SNDNG_STTS_CD = '0'
 		  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and SNDNG_DT is null
-		  and MSG_DCD = '${msg_type}'
-		  and BIZ_MSG_DCD = 'AT'
+		  and MSG_SE_CD = '${msg_type}'
+		  and BIZ_MSG_SE_CD = 'AT'
 		  and GROUP_NO is null
 	</select>
 
@@ -24,8 +24,8 @@
 			where MSG_SNDNG_STTS_CD = '0'
 			  and NVL(RSVT_DT,SYSDATE) &lt;= SYSDATE
 		  and SNDNG_DT is null
-		  and MSG_DCD = '${msg_type}'
-		  and BIZ_MSG_DCD = 'AT'
+		  and MSG_SE_CD = '${msg_type}'
+		  and BIZ_MSG_SE_CD = 'AT'
 		  and GROUP_NO is null
 			fetch first 1000 rows only
 			)
@@ -57,8 +57,8 @@
 		select
 			trim(DAT_ID) as DATA_ID,
 			trim(case
-					 when BIZ_MSG_DCD is null or BIZ_MSG_DCD = '' then 'PH'
-					 else BIZ_MSG_DCD
+					 when BIZ_MSG_SE_CD is null or BIZ_MSG_SE_CD = '' then 'PH'
+					 else BIZ_MSG_SE_CD
 				end) as message_type,
 			LTR_MSG_CN as msg_txt,
 			LTR_MSG_CN as sms_txt,
@@ -84,7 +84,7 @@
 		from ${msg_table}
 		where MSG_SNDNG_STTS_CD = '1'
 		  and GROUP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 	</select>
 
 	<update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -93,7 +93,7 @@
 			SNDNG_DT = SYSDATE
 		where MSG_SNDNG_STTS_CD = '1'
 		  and GROUP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 	</update>
 
 	<update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
@@ -103,7 +103,7 @@
 			SNDNG_DT = NULL
 		where MSG_SNDNG_STTS_CD = '1'
 		  and GROUP_NO = '${group_no}'
-		  and MSG_DCD = '${msg_type}'
+		  and MSG_SE_CD = '${msg_type}'
 	</update>
 
 	<update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
@@ -112,7 +112,7 @@
 			MSG_SNDNG_ERR_CD = '${msg_err_code}',
 			RSND_MSG_SNDNG_TLCMCO_CD = '${agan_tel_info}',
 			SNDNG_CMPTN_DT = TO_TIMESTAMP('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
-			RSND_MSG_DCD = '${agan_sms_type}',
+			RSND_MSG_SE_CD = '${agan_sms_type}',
 			RSND_LTR_TRSM_RSLT_CD = '${agan_code}'
 		where DAT_ID = '${msgid}'
 	</update>
