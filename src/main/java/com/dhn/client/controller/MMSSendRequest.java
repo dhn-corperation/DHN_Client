@@ -264,7 +264,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 							}
 							response.close();
 						} catch (Exception e) {
-							log.info("MMS Image Key 등록 오류 : ", e.toString());
+							log.info("MMS Image Key 등록 오류 : {}", e.toString());
 						}
 
 					}
