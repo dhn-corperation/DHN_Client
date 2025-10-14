@@ -183,12 +183,12 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 						procCnt--;
 					}
 				} catch(Exception ex) {
-					log.info("결과 수신 오류 : " + ex.toString());
+					log.info("결과 수신 오류 : {}",ex.toString());
 					procCnt--;
 				}
 
 			}catch (Exception e) {
-				log.info("결과 수신 오류 : " + e.toString());
+				log.info("결과 수신 오류 : {}",e.toString());
 				procCnt--;
 			}
 			isProc = false;
