@@ -12,3 +12,6 @@
 - config 설정 암호화 사용 했나?
 - MMS_IMAGE 리턴값 image_group or image group
 - DB 컬럼 CHAR 타입 남는부분 공백처리되므로 #{} -> ${} 처리
+- 로그파일 별도 저장위치 변경 (주택도시보증공사 요청)
+- - /logs/DHNClient/로그파일
+- - /app/DHNClient/에이전트파일
