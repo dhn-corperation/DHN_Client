@@ -2,7 +2,8 @@
 <Configuration status="INFO">
  <!--    해당 설정파일에서 사용하는 프로퍼티-->
     <Properties>
-        <Property name="logNm">DHN_Client</Property>
+        <Property name="logNm">DHN_KHUGIM</Property>
+<!--        <Property name="logNm">DHN_KHUGMS</Property>-->
         <Property name="serviceNm">DHNClient</Property>
         <Property name="logRoot">/logs</Property>
         <Property name="layoutPattern">%style{%d{yyyy/MM/dd HH:mm:ss,SSS}}{cyan} %highlight{[%-5p]}{FATAL=bg_red, ERROR=red, INFO=yellow, DEBUG=blue}  [%C] %style{[%t]}{yellow}- %m%n -</Property>
