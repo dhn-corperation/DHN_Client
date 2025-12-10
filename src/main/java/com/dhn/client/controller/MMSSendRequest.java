@@ -253,11 +253,11 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 	private boolean addBase64Image(MultipartBody.Builder builder, String base64Str, String fieldName, SQLParameter mmsparam, boolean required) {
 		if (base64Str == null || base64Str.trim().isEmpty()) {
-			return required; // 필수인데 없으면 Missing
+			return required;
 		}
 
 		try {
-			String ext = "jpg"; // default
+			String ext = "jpg";
 
 			if (base64Str.startsWith("data:image/")) {
 				ext = base64Str.substring(11, base64Str.indexOf(";")).toLowerCase(); // jpeg/png/gif
@@ -268,9 +268,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 			RequestBody fileBody = RequestBody.create(okhttp3.MediaType.parse("image/" + ext), decodedBytes);
 			builder.addFormDataPart(fieldName, fieldName + "." + ext, fileBody);
-
-			// 파일명 저장은 확장자 포함해서 저장
-			mmsparam.setFile1(fieldName + "." + ext);
 
 			return false;
 
