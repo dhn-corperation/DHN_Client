@@ -181,48 +181,22 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				if(imgList.size() > 0) {
 					for (MMSImageBean mmsImageBean : imgList) {
 						SQLParameter mmsparam = new SQLParameter();
-						mmsparam.setFile1("X");
-						mmsparam.setFile2("X");
-						mmsparam.setFile3("X");
 						mmsparam.setMsg_table(param.getMsg_table());
 						mmsparam.setMsg_type("M");
+						mmsparam.setMsgid(mmsImageBean.getMsgid());
 
 						boolean fileMissing = false;
 
 						MultipartBody.Builder builder = new MultipartBody.Builder();
 						builder.addFormDataPart("userid", userid);
-						if(mmsImageBean.getFile1() != null && mmsImageBean.getFile1().length() > 0) {
-							File file = new File(basepath + mmsImageBean.getFile1());
-							mmsparam.setFile1(mmsImageBean.getFile1());
-							if (file.exists() && file.isFile()) {
-								builder.addFormDataPart("image1", mmsImageBean.getFile1(),RequestBody.create(MultipartBody.FORM, file));
-							} else {
-								log.warn("MMS File1 Not Found: {}", file.getAbsolutePath());
-								fileMissing = true;
-							}
-						}
-						if(mmsImageBean.getFile2() != null && mmsImageBean.getFile2().length() > 0) {
-							File file = new File(basepath + mmsImageBean.getFile2());
-							mmsparam.setFile2(mmsImageBean.getFile2());
-							if (file.exists() && file.isFile()) {
-								builder.addFormDataPart("image2", mmsImageBean.getFile2(), RequestBody.create(MultipartBody.FORM, file));
-							} else {
-								log.warn("MMS File2 Not Found: {}", file.getAbsolutePath());
-								fileMissing = true;
-							}
-						}
-						if(mmsImageBean.getFile3() != null && mmsImageBean.getFile3().length() > 0) {
-							File file = new File(basepath + mmsImageBean.getFile3());
-							mmsparam.setFile3(mmsImageBean.getFile3());
-							if (file.exists() && file.isFile()) {
-								builder.addFormDataPart("image3", mmsImageBean.getFile3(), RequestBody.create(MultipartBody.FORM, file));
-							} else {
-								log.warn("MMS File3 Not Found: {}", file.getAbsolutePath());
-								fileMissing = true;
-							}
-						}
+
+						fileMissing |= addBase64Image(builder, mmsImageBean.getFile1(), "image1", mmsparam, true);
+						fileMissing |= addBase64Image(builder, mmsImageBean.getFile2(), "image2", mmsparam, false);
+						fileMissing |= addBase64Image(builder, mmsImageBean.getFile3(), "image3", mmsparam, false);
+
 
 						if (fileMissing) {
+							log.info("MMS Image file missing Error ({})", mmsImageBean.getMsgid());
 							mmsparam.setLog_table(param.getLog_table());
 							reqService.updateMMSImageFail(mmsparam);
 							continue;
@@ -275,6 +249,35 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			}
 		}
 		isProc = false;
+	}
+
+	private boolean addBase64Image(MultipartBody.Builder builder, String base64Str, String fieldName, SQLParameter mmsparam, boolean required) {
+		if (base64Str == null || base64Str.trim().isEmpty()) {
+			return required; // 필수인데 없으면 Missing
+		}
+
+		try {
+			String ext = "jpg"; // default
+
+			if (base64Str.startsWith("data:image/")) {
+				ext = base64Str.substring(11, base64Str.indexOf(";")).toLowerCase(); // jpeg/png/gif
+				base64Str = base64Str.substring(base64Str.indexOf(",") + 1);
+			}
+
+			byte[] decodedBytes = java.util.Base64.getDecoder().decode(base64Str);
+
+			RequestBody fileBody = RequestBody.create(okhttp3.MediaType.parse("image/" + ext), decodedBytes);
+			builder.addFormDataPart(fieldName, fieldName + "." + ext, fileBody);
+
+			// 파일명 저장은 확장자 포함해서 저장
+			mmsparam.setFile1(fieldName + "." + ext);
+
+			return false;
+
+		} catch(Exception ex) {
+			log.warn("Base64 Parsing Error for {}: {}", fieldName, ex.getMessage());
+			return required;
+		}
 	}
 
 }
