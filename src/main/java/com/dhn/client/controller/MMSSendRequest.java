@@ -43,12 +43,15 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 	public static boolean isStart = false;
 	private boolean isProc = false;
+	private boolean isMmsProc = false;
 	private SQLParameter param = new SQLParameter();
 	private String dhnServer;
 	private String userid;
 	private String basepath;
 	private String preGroupNo = "";
 	private String crypto = "";
+
+	private static final OkHttpClient OK_HTTP_CLIENT = new OkHttpClient();
 
 	@Autowired
 	private RequestService reqService;
@@ -172,8 +175,8 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 	@Scheduled(fixedDelay = 100)
 	private void GETImageKey() {
-		if(isStart && !isProc) {
-			isProc = true;
+		if(isStart && !isMmsProc) {
+			isMmsProc = true;
 
 			try {
 				List<MMSImageBean> imgList = reqService.selectMMSImage(param);
@@ -211,9 +214,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 								.post(reqbody)
 								.build();
 
-						try {
-							OkHttpClient client = new OkHttpClient();
-							Response response = client.newCall(request).execute();
+						try (Response response = OK_HTTP_CLIENT.newCall(request).execute()) {
 
 							if(response.code() == 200) {
 								ObjectMapper mapper = new ObjectMapper();
@@ -236,7 +237,6 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 									reqService.updateMMSImageFail(mmsparam);
 								}
 							}
-							response.close();
 						} catch (Exception e) {
 							log.info("MMS Image Key 등록 오류 : {}", e.toString());
 						}
@@ -248,7 +248,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				log.error("MMS Image 등록 오류 : " + e.toString());
 			}
 		}
-		isProc = false;
+		isMmsProc = false;
 	}
 
 	private boolean addBase64Image(MultipartBody.Builder builder, String base64Str, String fieldName, SQLParameter mmsparam, boolean required) {
@@ -265,6 +265,11 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			}
 
 			byte[] decodedBytes = java.util.Base64.getDecoder().decode(base64Str);
+
+			if (decodedBytes.length > 300 * 1024) {
+				log.warn("Image size exceeded: {} bytes", decodedBytes.length);
+				return required;
+			}
 
 			RequestBody fileBody = RequestBody.create(okhttp3.MediaType.parse("image/" + ext), decodedBytes);
 			builder.addFormDataPart(fieldName, fieldName + "." + ext, fileBody);
