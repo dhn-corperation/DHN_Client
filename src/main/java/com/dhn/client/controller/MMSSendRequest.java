@@ -268,7 +268,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
 			if (decodedBytes.length > 300 * 1024) {
 				log.warn("Image size exceeded: {} bytes", decodedBytes.length);
-				return required;
+				return true;
 			}
 
 			RequestBody fileBody = RequestBody.create(okhttp3.MediaType.parse("image/" + ext), decodedBytes);
