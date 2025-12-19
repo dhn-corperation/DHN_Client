@@ -94,7 +94,7 @@
 		  and SNDNG_DT is null
 		  and MSG_SE_CD = '${msg_type}'
 		  and GROUP_NO is null
-		  and MMS_IMG_FILE_ENC_CN1 is not null
+		  and MMS_IMG_NO is null
 	</select>
 
 	<update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter" >
