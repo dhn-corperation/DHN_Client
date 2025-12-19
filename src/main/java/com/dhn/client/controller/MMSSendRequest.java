@@ -247,8 +247,8 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			} catch (Exception e) {
 				log.error("MMS Image 등록 오류 : " + e.toString());
 			}
+			isMmsProc = false;
 		}
-		isMmsProc = false;
 	}
 
 	private boolean addBase64Image(MultipartBody.Builder builder, String base64Str, String fieldName, SQLParameter mmsparam, boolean required) {

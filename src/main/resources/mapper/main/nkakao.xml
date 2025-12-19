@@ -84,9 +84,9 @@
 	</update>
 
 	<select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
-		select LTR_ATCH_FILE_PATH_ADDR as file1
-			 ,LTR_ATCH_FILE_PATH_ADDR2 as file2
-			 ,LTR_ATCH_FILE_PATH_ADDR3 as file3
+		select MMS_IMG_FILE_ENC_CN1 as file1
+			 ,MMS_IMG_FILE_ENC_CN2 as file2
+			 ,MMS_IMG_FILE_ENC_CN3 as file3
 			 ,DAT_ID as msgid
 		from ${msg_table}
 		where MSG_SNDNG_STTS_CD = '0'
@@ -94,7 +94,7 @@
 		  and SNDNG_DT is null
 		  and MSG_SE_CD = '${msg_type}'
 		  and GROUP_NO is null
-		  and LTR_ATCH_FILE_PATH_ADDR is not null
+		  and MMS_IMG_FILE_ENC_CN1 is not null
 	</select>
 
 	<update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter" >
