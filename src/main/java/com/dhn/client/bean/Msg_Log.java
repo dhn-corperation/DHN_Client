@@ -15,12 +15,14 @@ public class Msg_Log {
 	private String end_status;
 	private String msg_type;
 	private String sndg_cpee_dt;
-	private String dbtype;
+    private String telecom;
+    private String resend;
+    private String kakaoErr;
+    private String sentMedia;
 	
-	public Msg_Log(String msg_table, String log_table, String dbtype) {
+	public Msg_Log(String msg_table, String log_table) {
 		this.msg_table = msg_table;
 		this.log_table = log_table;
-		this.dbtype = dbtype;
 	}
 
 }

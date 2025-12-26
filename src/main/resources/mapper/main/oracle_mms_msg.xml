@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.oracle_mms_msg.mapper.SendRequest">
+
+    <!-- SMS 발송대기 건수 조회 (TRAN_TYPE=4 가정) -->
+    <select id="req_sms_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        SELECT COUNT(1) AS cnt
+        FROM ${msg_table}
+        WHERE TRAN_STATUS = '1'
+          AND TRAN_ETC5 IS NULL
+          AND TRAN_TYPE = 4
+          AND TRAN_SENDDATE IS NULL
+          AND TRAN_DATE &lt;= SYSDATE
+    </select>
+
+    <!-- SMS 그룹 업데이트 (TRAN_ETC5에 그룹번호 저장) -->
+    <update id="req_sms_group_update" parameterType="com.dhn.client.bean.SQLParameter">
+        UPDATE ${msg_table}
+        SET TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_STATUS = '1'
+          AND TRAN_ETC5 IS NULL
+          AND TRAN_TYPE = 4
+          AND TRAN_SENDDATE IS NULL
+          AND TRAN_DATE &lt;= SYSDATE
+          AND ROWNUM &lt;= 500
+    </update>
+
+    <!-- LMS 발송대기 건수 조회 (TRAN_TYPE=5 가정) -->
+    <select id="req_lms_count" parameterType="com.dhn.client.bean.SQLParameter" resultType="int">
+        SELECT COUNT(1) AS cnt
+        FROM ${msg_table}
+        WHERE TRAN_STATUS = '1'
+          AND TRAN_ETC5 IS NULL
+          AND TRAN_TYPE = 5
+          AND TRAN_SENDDATE IS NULL
+          AND TRAN_DATE &lt;= SYSDATE
+    </select>
+
+    <!-- LMS 그룹 업데이트 (TRAN_ETC5에 그룹번호 저장) -->
+    <update id="req_lms_group_update" parameterType="com.dhn.client.bean.SQLParameter">
+        UPDATE ${msg_table}
+        SET TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_STATUS = '1'
+          AND TRAN_ETC5 IS NULL
+          AND TRAN_TYPE = 5
+          AND TRAN_SENDDATE IS NULL
+          AND TRAN_DATE &lt;= SYSDATE
+          AND ROWNUM &lt;= 500
+    </update>
+
+    <!-- 결과 맵 정의 -->
+    <resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
+        <result column="TRAN_PR" property="msgid"/>
+        <result column="ETC3" property="messagetype"/>
+        <result column="TRAN_MSG" property="msg"/>
+        <result column="TRAN_MSG" property="msgsms"/>
+        <result column="TRAN_PHONE" property="phn"/>
+        <result column="TRAN_CALLBACK" property="smssender"/>
+        <result column="TRAN_TYPE" property="smskind"/>
+        <result column="TRAN_SUBJECT" property="smslmstit"/>
+        <result column="TRAN_DATE" property="regdt"/>
+        <result column="TRAN_SENDDATE" property="reservedt"/>
+        <result column="p_invoice" property="pinvoice"/>
+    </resultMap>
+
+    <!-- SMS 발송데이터 조회 (TRAN_TYPE=4) -->
+    <select id="req_sms_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="RequestTable">
+        SELECT
+            trim(TRAN_PR) as TRAN_PR,
+            'PH' as ETC3,
+            TRAN_MSG,
+            trim(TRAN_PHONE) as TRAN_PHONE,
+            trim(TRAN_CALLBACK) as TRAN_CALLBACK,
+            'S' as TRAN_TYPE,
+            TRAN_SUBJECT,
+            TO_CHAR(TRAN_DATE, 'YYYY-MM-DD HH24:MI:SS') AS TRAN_DATE,
+            TO_CHAR(TRAN_SENDDATE, '00000000000000') AS TRAN_SENDDATE,
+            '2' AS p_invoice
+        FROM ${msg_table}
+        WHERE TRAN_ETC5 = '${group_no}'
+          AND TRAN_TYPE = 4
+          AND TRAN_STATUS = '1'
+    </select>
+
+    <!-- LMS 발송데이터 조회 (TRAN_TYPE=5) -->
+    <select id="req_lms_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="RequestTable">
+        SELECT
+            trim(TRAN_PR) as TRAN_PR,
+            'PH' as ETC3,
+            TRAN_MSG,
+            trim(TRAN_PHONE) as TRAN_PHONE,
+            trim(TRAN_CALLBACK) as TRAN_CALLBACK,
+            'L' as TRAN_TYPE,
+            TRAN_SUBJECT,
+            TO_CHAR(TRAN_DATE, 'YYYY-MM-DD HH24:MI:SS') AS TRAN_DATE,
+            TO_CHAR(TRAN_SENDDATE, 'YYYY-MM-DD HH24:MI:SS') AS TRAN_SENDDATE,
+            '2' AS p_invoice
+        FROM ${msg_table}
+        WHERE TRAN_ETC5 = '${group_no}'
+          AND TRAN_TYPE = 5
+          AND TRAN_STATUS = '1'
+    </select>
+
+    <!-- 발송완료 업데이트 -->
+    <update id="req_sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
+        UPDATE ${msg_table}
+        SET TRAN_STATUS = '2',
+            TRAN_SENDDATE = SYSDATE
+        WHERE TRAN_ETC5 = '${group_no}'
+          AND TRAN_TYPE IN (4, 5)
+    </update>
+
+    <!-- 발송초기화 업데이트 -->
+    <update id="req_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
+        UPDATE ${msg_table}
+        SET TRAN_STATUS = '1',
+            TRAN_SENDDATE = NULL,
+            TRAN_ETC5 = NULL
+        WHERE TRAN_ETC5 = '${group_no}'
+          AND TRAN_TYPE IN (4, 5)
+    </update>
+
+    <!-- 결과 로그 업데이트 (KB_MMS_MSG 테이블 업데이트) -->
+    <update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+        UPDATE ${msg_table}
+        SET TRAN_STATUS = '${status}',
+            TRAN_RSLT = '${msg_err_code}',
+            TRAN_RSLTDATE = TO_DATE('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
+            TRAN_END_TELCO = '${telecom}'
+        WHERE TRAN_PR = ${msgid}
+    </update>
+
+    <!-- 로그 테이블에 복사 -->
+    <insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
+        INSERT INTO ${log_table}
+        SELECT * FROM ${msg_table} WHERE TRAN_PR = ${msgid}
+    </insert>
+
+    <!-- 원본 테이블에서 삭제 -->
+    <delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
+        DELETE FROM ${msg_table} WHERE TRAN_PR = ${msgid}
+    </delete>
+
+</mapper>

@@ -1,529 +1,407 @@
 package com.dhn.client.dao;
 
-import java.util.List;
-
+import com.dhn.client.bean.KAORequestBean;
+import com.dhn.client.bean.Msg_Log;
+import com.dhn.client.bean.RequestBean;
+import com.dhn.client.bean.SQLParameter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.dhn.client.bean.KAORequestBean;
-import com.dhn.client.bean.MMSImageBean;
-import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.bean.RequestBean;
-import com.dhn.client.bean.SQLParameter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Repository
-public class RequestImpl implements RequestDAO{
+@Slf4j
+public class RequestImpl implements RequestDAO {
 
-	@Autowired
-	private SqlSession sqlSession;
-	
-	@Override
-	public int selectKAORequestCount(SQLParameter param) throws Exception {
-		int cnt = 0;
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			cnt = sqlSession.selectOne("com.dhn.client.kakao_db2.mapper.SendRequest.req_kao_count",param);
-			break;
-		case "oracle":
-			cnt = sqlSession.selectOne("com.dhn.client.kakao_oracle.mapper.SendRequest.req_kao_count",param);
-			break;
-		case "mysql":
-			cnt = sqlSession.selectOne("com.dhn.client.kakao_mysql.mapper.SendRequest.req_kao_count",param);
-			break;
-		case "mssql":
-			cnt = sqlSession.selectOne("com.dhn.client.kakao_mssql.mapper.SendRequest.req_kao_count",param);
-			break;
-		case "postgresql":
-			cnt = sqlSession.selectOne("com.dhn.client.kakao_postgresql.mapper.SendRequest.req_kao_count",param);
-			break;
-		default:
-			cnt = 0;
-		}
-		
-		return cnt;
-	}
+    @Autowired
+    private SqlSession sqlSession;
 
-	@Override
-	public void updateKAOGroupNo(SQLParameter param) throws Exception {
+    ////////////////////////////// SUREDATA //////////////////////////////
 
-		switch(param.getDbtype()) {
-		case "db2":
-			sqlSession.update("com.dhn.client.kakao_db2.mapper.SendRequest.req_kao_group_update",param);
-			break;
-		case "oracle":
-			sqlSession.update("com.dhn.client.kakao_oracle.mapper.SendRequest.req_kao_group_update",param);
-			break;
-		case "mysql":
-			sqlSession.update("com.dhn.client.kakao_mysql.mapper.SendRequest.req_kao_group_update",param);
-			break;
-		case "mssql":
-			sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.req_kao_group_update",param);
-			break;
-		case "postgresql":
-			sqlSession.update("com.dhn.client.kakao_postgresql.mapper.SendRequest.req_kao_group_update",param);
-			break;
-		}
-	}
+    // KAO 발송 대기 건수 확인
+    @Override
+    public int selectKAORequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.req_kao_count", param);
+        return cnt;
+    }
 
-	@Override
-	public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			return sqlSession.selectList("com.dhn.client.kakao_db2.mapper.SendRequest.req_kao_select", param);
-		case "oracle":
-			return sqlSession.selectList("com.dhn.client.kakao_oracle.mapper.SendRequest.req_kao_select", param);
-		case "mysql":
-			return sqlSession.selectList("com.dhn.client.kakao_mysql.mapper.SendRequest.req_kao_select", param);
-		case "mssql":
-			return sqlSession.selectList("com.dhn.client.kakao_mssql.mapper.SendRequest.req_kao_select", param);
-		case "postgresql":
-			return sqlSession.selectList("com.dhn.client.kakao_postgresql.mapper.SendRequest.req_kao_select", param);
-		default:
-			return null;
-		}
-	}
+    // SMS 발송 대기 건수 확인
+    @Override
+    public int selectSMSRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.oracle.mapper.SendRequest.req_sms_count", param);
+        return cnt;
+    }
 
-	@Override
-	public void updateKAOSendComplete(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			sqlSession.update("com.dhn.client.kakao_db2.mapper.SendRequest.req_sent_complete", param); 
-			break;
-		case "oracle":
-			sqlSession.update("com.dhn.client.kakao_oracle.mapper.SendRequest.req_sent_complete", param); 
-			break;
-		case "mysql":
-			sqlSession.update("com.dhn.client.kakao_mysql.mapper.SendRequest.req_sent_complete", param); 
-			break;
-		case "mssql":
-			sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.req_sent_complete", param); 
-			break;
-		case "postgresql":
-			sqlSession.update("com.dhn.client.kakao_postgresql.mapper.SendRequest.req_sent_complete", param); 
-			break;
-		}
-	}
+    // LMS 발송 대기 건수 확인
+    @Override
+    public int selectLMSRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.oracle.mapper.SendRequest.req_lms_count", param);
+        return cnt;
+    }
 
-	@Override
-	public void updateKAOSendInit(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			sqlSession.update("com.dhn.client.kakao_db2.mapper.SendRequest.req_sent_init", param); 
-			break;
-		case "oracle":
-			sqlSession.update("com.dhn.client.kakao_oracle.mapper.SendRequest.req_sent_init", param); 
-			break;
-		case "mysql":
-			sqlSession.update("com.dhn.client.kakao_mysql.mapper.SendRequest.req_sent_init", param);
-			break;
-		case "mssql":
-			sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.req_sent_init", param);
-			break;
-		case "postgresql":
-			sqlSession.update("com.dhn.client.kakao_postgresql.mapper.SendRequest.req_sent_init", param);
-			break;
-		}
-	}
+    // KAO 발송 상태 업테이트(그룹화, 1000건씩)
+    @Override
+    public void updateKAOGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_kao_group_update", param);
+    }
 
-	@Override
-	public int selectSMSReqeustCount(SQLParameter param) throws Exception {
-		int cnt = 0;
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_db2.mapper.SendRequest.req_sms_count",param);
-			break;
-		case "oracle":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_sms_count",param);
-			break;
-		case "mysql":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sms_count",param);
-			break;
-		case "mssql":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sms_count",param);
-			break;
-		case "postgresql":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_sms_count",param);
-			break;
-		default:
-			cnt = 0;
-		}
-		
-		return cnt;
-	}
+    // SMS 발송 상태 업테이트(그룹화, 1000건씩)
+    @Override
+    public void updateSMSGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle.mapper.SendRequest.req_sms_group_update", param);
+    }
 
-	@Override
-	public void updateSMSGroupNo(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			sqlSession.update("com.dhn.client.nkakao_db2.mapper.SendRequest.req_sms_group_update",param);
-			break;
-		case "oracle":
-			sqlSession.update("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_sms_group_update",param);
-			break;
-		case "mysql":
-			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sms_group_update",param);
-			break;
-		case "mssql":
-			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sms_group_update",param);
-			break;
-		case "postgresql":
-			sqlSession.update("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_sms_group_update",param);
-			break;
-		}
-	}
+    // LMS 발송 상태 업테이트(그룹화, 1000건씩)
+    @Override
+    public void updateLMSGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle.mapper.SendRequest.req_lms_group_update", param);
+    }
 
-	@Override
-	public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			return sqlSession.selectList("com.dhn.client.nkakao_db2.mapper.SendRequest.req_sms_select", param);
-		case "oracle":
-			return sqlSession.selectList("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_sms_select", param);
-		case "mysql":
-			return sqlSession.selectList("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sms_select", param);
-		case "mssql":
-			return sqlSession.selectList("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sms_select", param);
-		case "postgresql":
-			return sqlSession.selectList("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_sms_select", param);
-		default:
-			return null;
-		}
-	}
+    // KAO 발송 데이터 조회
+    @Override
+    public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.req_kao_select", param);
+    }
 
-	@Override
-	public void updateSMSSendComplete(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			sqlSession.update("com.dhn.client.nkakao_db2.mapper.SendRequest.req_sent_complete",param);
-			break;
-		case "oracle":
-			sqlSession.update("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_sent_complete",param);
-			break;
-		case "mysql":
-			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sent_complete",param);
-			break;
-		case "mssql":
-			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sent_complete",param);
-			break;
-		case "postgresql":
-			sqlSession.update("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_sent_complete",param);
-			break;
-		}
-	}
+    // SMS 발송 데이터 조회
+    @Override
+    public List<RequestBean> selectSMSRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.oracle.mapper.SendRequest.req_sms_select", param);
+    }
 
-	@Override
-	public void updateSMSSendInit(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			sqlSession.update("com.dhn.client.nkakao_db2.mapper.SendRequest.req_sent_init", param); 
-			break;
-		case "oracle":
-			sqlSession.update("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_sent_init", param); 
-			break;
-		case "mysql":
-			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_sent_init", param); 
-			break;
-		case "mssql":
-			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_sent_init", param); 
-			break;
-		case "postgresql":
-			sqlSession.update("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_sent_init", param); 
-			break;
-		}
+    // LMS 발송 데이터 조회
+    @Override
+    public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.oracle.mapper.SendRequest.req_lms_select", param);
+    }
 
-	}
+    // KAO 발송 완료 상태 변경
+    @Override
+    public void updateKAOSendComplete(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_complete", param);
+    }
 
-	@Override
-	public int selectLMSReqeustCount(SQLParameter param) throws Exception {
-		int cnt = 0;
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_db2.mapper.SendRequest.req_lms_count", param);
-			break;
-		case "oracle":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_lms_count", param);
-			break;
-		case "mysql":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_lms_count", param);
-			break;
-		case "mssql":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_lms_count", param);
-			break;
-		case "postgresql":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_lms_count", param);
-			break;
-		default:
-			cnt = 0;
-		}
-		
-		
-		return cnt;
-	}
+    // SMS 발송 완료 상태 변경
+    @Override
+    public void updateSMSSendComplete(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle.mapper.SendRequest.req_sent_complete", param);
+    }
 
-	@Override
-	public void updateLMSGroupNo(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			sqlSession.update("com.dhn.client.nkakao_db2.mapper.SendRequest.req_lms_group_update", param); 
-			break;
-		case "oracle":
-			sqlSession.update("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_lms_group_update", param); 
-			break;
-		case "mysql":
-			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_lms_group_update", param); 
-			break;
-		case "mssql":
-			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_lms_group_update", param); 
-			break;
-		case "postgresql":
-			sqlSession.update("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_lms_group_update", param); 
-			break;
-		}
-		
-	}
+    // KAO 발송 상태 초기화
+    @Override
+    public void updateKAOSendInit(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_sent_init", param);
+    }
 
-	@Override
-	public List<RequestBean> selectLMSRequests(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			return sqlSession.selectList("com.dhn.client.nkakao_db2.mapper.SendRequest.req_lms_select", param);
-		case "oracle":
-			return sqlSession.selectList("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_lms_select", param);
-		case "mysql":
-			return sqlSession.selectList("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_lms_select", param);
-		case "mssql":
-			return sqlSession.selectList("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_lms_select", param);
-		case "postgresql":
-			return sqlSession.selectList("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_lms_select", param);
-		default:
-			return null;
-		}
-	}
+    // SMS 발송 상태 초기화
+    @Override
+    public void updateSMSSendInit(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle.mapper.SendRequest.req_sent_init", param);
+    }
 
-	@Override
-	public int selectMMSReqeustCount(SQLParameter param) throws Exception {
-		int cnt ;
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_db2.mapper.SendRequest.req_mms_count", param); 
-			break;
-		case "oracle":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_mms_count", param); 
-			break;
-		case "mysql":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_count", param); 
-			break;
-		case "mssql":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_count", param); 
-			break;
-		case "postgresql":
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_mms_count", param); 
-			break;
-		default:
-			cnt = 0;
-		}
+    // 결과 로그 처리
+    @Override
+    public void Insert_msg_log(Msg_Log _ml) throws Exception {
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert1", _ml);
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert2", _ml);
+        sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert3", _ml);
+    }
 
+    ////////////////////////////// TRAN //////////////////////////////
 
-		return cnt;
-	}
+    // KAO 발송 대기 건수 확인
+    @Override
+    public int selectKAOTranRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.kakao_tran.mapper.SendRequest.req_kao_count", param);
+        return cnt;
+    }
 
-	@Override
-	public void updateMMSGroupNo(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			sqlSession.update("com.dhn.client.nkakao_db2.mapper.SendRequest.req_mms_group_update", param);
-			break;
-		case "oracle":
-			sqlSession.update("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_mms_group_update", param);
-			break;
-		case "mysql":
-			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_group_update", param);
-			break;
-		case "mssql":
-			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_group_update", param);
-			break;
-		case "postgresql":
-			sqlSession.update("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_mms_group_update", param);
-			break;
-		}
-	}
+    // SMS 발송 대기 건수 확인
+    @Override
+    public int selectSMSTranRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.oracle_tran.mapper.SendRequest.req_sms_count", param);
+        return cnt;
+    }
 
-	@Override
-	public List<RequestBean> selectMMSRequests(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			return sqlSession.selectList("com.dhn.client.nkakao_db2.mapper.SendRequest.req_mms_select", param);
-		case "oracle":
-			return sqlSession.selectList("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_mms_select", param);
-		case "mysql":
-			return sqlSession.selectList("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_select", param);
-		case "mssql":
-			return sqlSession.selectList("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_select", param);
-		case "postgresql":
-			return sqlSession.selectList("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_mms_select", param);
-		default:
-			return null;
-		}
-	}
+    // LMS 발송 대기 건수 확인
+    @Override
+    public int selectLMSTranRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.oracle_tran.mapper.SendRequest.req_lms_count", param);
+        return cnt;
+    }
 
-	@Override
-	public List<MMSImageBean> selectMMSImage(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			return sqlSession.selectList("com.dhn.client.nkakao_db2.mapper.SendRequest.req_mms_image", param);
-		case "oracle":
-			return sqlSession.selectList("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_mms_image", param);
-		case "mysql":
-			return sqlSession.selectList("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_image", param);
-		case "mssql":
-			return sqlSession.selectList("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_image", param);
-		case "postgresql":
-			return sqlSession.selectList("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_mms_image", param);
-		default:
-			return null;
-		}
-	}
+    // KAO 발송 상태 업테이트(그룹화, 1000건씩)
+    @Override
+    public void updateKAOTranGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao_tran.mapper.SendRequest.req_kao_group_update", param);
+    }
 
-	@Override
-	public void updateMMSImageGroup(SQLParameter param) throws Exception {
-		
-		switch(param.getDbtype()) {
-		case "db2":
-			sqlSession.update("com.dhn.client.nkakao_db2.mapper.SendRequest.req_mms_key_update", param);
-			break;
-		case "oracle":
-			sqlSession.update("com.dhn.client.nkakao_oracle.mapper.SendRequest.req_mms_key_update", param);
-			break;
-		case "mysql":
-			sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.req_mms_key_update", param);
-			break;
-		case "mssql":
-			sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.req_mms_key_update", param);
-			break;
-		case "postgresql":
-			sqlSession.update("com.dhn.client.nkakao_postgresql.mapper.SendRequest.req_mms_key_update", param);
-			break;
-		}
-	}
+    // SMS 발송 상태 업테이트(그룹화, 1000건씩)
+    @Override
+    public void updateSMSTranGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.req_sms_group_update", param);
+    }
 
-	@Override
-	public void Insert_msg_log(Msg_Log _ml) throws Exception {
-		
-		switch(_ml.getDbtype()) {
-		case "db2":
-			if(_ml.getMsg_type().equals("AT") || _ml.getAgan_code().length()>1) {
-				sqlSession.update("com.dhn.client.kakao_db2.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.kakao_db2.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.kakao_db2.mapper.SendRequest.result_log_insert3", _ml);
-			}else {
-				sqlSession.update("com.dhn.client.nkakao_db2.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.nkakao_db2.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.nkakao_db2.mapper.SendRequest.result_log_insert3", _ml);
-			}
-			break;
-		case "oracle":
-			if(_ml.getMsg_type().equals("AT") || _ml.getAgan_code().length()>1) {
-				sqlSession.update("com.dhn.client.kakao_oracle.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.kakao_oracle.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.kakao_oracle.mapper.SendRequest.result_log_insert3", _ml);
-			}else {
-				sqlSession.update("com.dhn.client.nkakao_oracle.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.nkakao_oracle.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.nkakao_oracle.mapper.SendRequest.result_log_insert3", _ml);
-			}
-			break;
-		case "mysql":
-			if(_ml.getMsg_type().equals("AT") || _ml.getAgan_code().length()>1) {
-				sqlSession.update("com.dhn.client.kakao_mysql.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.kakao_mysql.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.kakao_mysql.mapper.SendRequest.result_log_insert3", _ml);
-			}else {
-				sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.nkakao_mysql.mapper.SendRequest.result_log_insert3", _ml);
-			}
-			break;
-		case "mssql":
-			if(_ml.getMsg_type().equals("AT") || _ml.getAgan_code().length()>1) {
-				sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.kakao_mssql.mapper.SendRequest.result_log_insert3", _ml);
-			}else {
-				sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.nkakao_mssql.mapper.SendRequest.result_log_insert3", _ml);
-			}
-			break;
-		case "postgresql":
-			if(_ml.getMsg_type().equals("AT") || _ml.getAgan_code().length()>1) {
-				sqlSession.update("com.dhn.client.kakao_postgresql.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.kakao_postgresql.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.kakao_postgresql.mapper.SendRequest.result_log_insert3", _ml);
-			}else {
-				sqlSession.update("com.dhn.client.nkakao_postgresql.mapper.SendRequest.result_log_insert1", _ml);
-				sqlSession.update("com.dhn.client.nkakao_postgresql.mapper.SendRequest.result_log_insert2", _ml);
-				sqlSession.update("com.dhn.client.nkakao_postgresql.mapper.SendRequest.result_log_insert3", _ml);
-			}
-			break;
-		}
-		
-		
-		/*
-		 switch(ml.getDBType())
-		{
-			case "oracle":
-				try {
-					sqlSession.insert("com.dhn.client.mapper.SendRequest.result_log_insert1", ml);
-					sqlSession.delete("com.dhn.client.mapper.SendRequest.result_log_insert2", ml);
-					sqlSession.update("com.dhn.client.mapper.SendRequest.result_log_insert3", ml);
-				} catch(Exception ex) {
-					if(ex.getMessage().contains("ORA-00942"))
-					{
-						sqlSession.update("com.dhn.client.mapper.SendRequest.create_log_table", ml);
-						sqlSession.insert("com.dhn.client.mapper.SendRequest.result_log_insert1", ml);
-						sqlSession.delete("com.dhn.client.mapper.SendRequest.result_log_insert2", ml);
-						sqlSession.update("com.dhn.client.mapper.SendRequest.result_log_insert3", ml);
-					}
-				}
+    // LMS 발송 상태 업테이트(그룹화, 1000건씩)
+    @Override
+    public void updateLMSTranGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.req_lms_group_update", param);
+    }
 
-				break;
-			case "mysql":			
-				try {
-					sqlSession.insert("com.dhn.client.mapper.SendRequest.result_log_insert1", ml);
-					sqlSession.delete("com.dhn.client.mapper.SendRequest.result_log_insert2", ml);
-					sqlSession.update("com.dhn.client.mapper.SendRequest.result_log_insert3", ml);
-				}catch(Exception ex) {
-					//System.out.println(ex.getMessage());
-					if(ex.getMessage().contains("doesn't exist"))
-					{
-						//System.out.println("Create Table : " + ml.getMsg_log());
-						sqlSession.update("com.dhn.client.mapper.SendRequest.create_log_table", ml);
-						sqlSession.insert("com.dhn.client.mapper.SendRequest.result_log_insert1", ml);
-						sqlSession.delete("com.dhn.client.mapper.SendRequest.result_log_insert2", ml);
-						sqlSession.update("com.dhn.client.mapper.SendRequest.result_log_insert3", ml);
-					}
-				}
-				break;
-		}
-		 */
+    // KAO 발송 데이터 조회
+    @Override
+    public List<KAORequestBean> selectKAOTranRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.kakao_tran.mapper.SendRequest.req_kao_select", param);
+    }
 
-	}
+    // SMS 발송 데이터 조회
+    @Override
+    public List<RequestBean> selectSMSTranRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.oracle_tran.mapper.SendRequest.req_sms_select", param);
+    }
 
+    // LMS 발송 데이터 조회
+    @Override
+    public List<RequestBean> selectLMSTranRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.oracle_tran.mapper.SendRequest.req_lms_select", param);
+    }
+
+    // KAO 발송 완료 상태 변경
+    @Override
+    public void updateKAOTranSendComplete(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao_tran.mapper.SendRequest.req_sent_complete", param);
+    }
+
+    // SMS 발송 완료 상태 변경
+    @Override
+    public void updateSMSTranSendComplete(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.req_sent_complete", param);
+    }
+
+    // KAO 발송 상태 초기화
+    @Override
+    public void updateKAOTranSendInit(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao_tran.mapper.SendRequest.req_sent_init", param);
+    }
+
+    // SMS 발송 상태 초기화
+    @Override
+    public void updateSMSTranSendInit(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.req_sent_init", param);
+    }
+
+    // 결과 로그 처리
+    @Override
+    public void Insert_msg_log_Tran(Msg_Log _ml) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert1", _ml);
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert2", _ml);
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert3", _ml);
+    }
+
+    ////////////////////////////// MMS_MSG //////////////////////////////
+
+    // KAO 발송 대기 건수 확인
+    @Override
+    public int selectKAOMMSMSGRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.kakao_mms_msg.mapper.SendRequest.req_kao_count", param);
+        return cnt;
+    }
+
+    // SMS 발송 대기 건수 확인
+    @Override
+    public int selectSMSMMSMSGRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.oracle_mms_msg.mapper.SendRequest.req_sms_count", param);
+        return cnt;
+    }
+
+    // LMS 발송 대기 건수 확인
+    @Override
+    public int selectLMSMMSMSGRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.oracle_mms_msg.mapper.SendRequest.req_lms_count", param);
+        return cnt;
+    }
+
+    // KAO 발송 상태 업테이트(그룹화, 1000건씩)
+    @Override
+    public void updateKAOMMSMSGGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao_mms_msg.mapper.SendRequest.req_kao_group_update", param);
+    }
+
+    // SMS 발송 상태 업테이트(그룹화, 1000건씩)
+    @Override
+    public void updateSMSMMSMSGGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_mms_msg.mapper.SendRequest.req_sms_group_update", param);
+    }
+
+    // LMS 발송 상태 업테이트(그룹화, 1000건씩)
+    @Override
+    public void updateLMSMMSMSGGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_mms_msg.mapper.SendRequest.req_lms_group_update", param);
+    }
+
+    // KAO 발송 데이터 조회
+    @Override
+    public List<KAORequestBean> selectKAOMMSMSGRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.kakao_mms_msg.mapper.SendRequest.req_kao_select", param);
+    }
+
+    // SMS 발송 데이터 조회
+    @Override
+    public List<RequestBean> selectSMSMMSMSGRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.oracle_mms_msg.mapper.SendRequest.req_sms_select", param);
+    }
+
+    // LMS 발송 데이터 조회
+    @Override
+    public List<RequestBean> selectLMSMMSMSGRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.oracle_mms_msg.mapper.SendRequest.req_lms_select", param);
+    }
+
+    // KAO 발송 완료 상태 변경
+    @Override
+    public void updateKAOMMSMSGSendComplete(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao_mms_msg.mapper.SendRequest.req_sent_complete", param);
+    }
+
+    // SMS 발송 완료 상태 변경
+    @Override
+    public void updateSMSMMSMSGSendComplete(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_mms_msg.mapper.SendRequest.req_sent_complete", param);
+    }
+
+    // KAO 발송 상태 초기화
+    @Override
+    public void updateKAOMMSMSGSendInit(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.kakao_mms_msg.mapper.SendRequest.req_sent_init", param);
+    }
+
+    // SMS 발송 상태 초기화
+    @Override
+    public void updateSMSMMSMSGSendInit(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_mms_msg.mapper.SendRequest.req_sent_init", param);
+    }
+
+    // 결과 로그 처리
+    @Override
+    public void Insert_msg_log_MMS_MSG(Msg_Log _ml) throws Exception {
+        sqlSession.update("com.dhn.client.kakao_mms_msg.mapper.SendRequest.result_log_insert1", _ml);
+        sqlSession.update("com.dhn.client.kakao_mms_msg.mapper.SendRequest.result_log_insert2", _ml);
+        sqlSession.update("com.dhn.client.kakao_mms_msg.mapper.SendRequest.result_log_insert3", _ml);
+    }
+
+    @Override
+    public void logTableCheck(SQLParameter param) throws Exception{
+        LocalDate now = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+
+        log.info("{}",param.toString());
+
+        String lastMonth = now.minusMonths(1).format(formatter);
+        String currentMonth = now.format(formatter);
+        String nextMonth = now.plusMonths(1).format(formatter);
+
+        String logTableLast = param.getLog_table()+"_"+lastMonth;
+        String logTableCurrent = param.getLog_table()+"_"+currentMonth;
+        String logTableNext = param.getLog_table()+"_"+nextMonth;
+
+        Map<String, String> map = new HashMap<>();
+        map.put("msgTable", param.getMsg_table());
+        map.put("logTable",logTableLast);
+        int result_last = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+        if(result_last == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+            log.info("{} 테이블 생성",map.get("logTable"));
+        }
+
+        map.put("logTable",logTableCurrent);
+        int result_current = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+        if(result_current == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+            log.info("{} 테이블 생성",map.get("logTable"));
+
+        }
+
+        map.put("logTable",logTableNext);
+        int result_next = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+        if(result_next == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+            log.info("{} 테이블 생성",map.get("logTable"));
+
+        }
+
+        // 2
+        logTableLast = param.getTran_log_table()+lastMonth;
+        logTableCurrent = param.getTran_log_table()+currentMonth;
+        logTableNext = param.getTran_log_table()+nextMonth;
+
+        map = new HashMap<>();
+        map.put("msgTable", param.getTran_msg_table());
+        map.put("logTable",logTableLast);
+        result_last = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+        if(result_last == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+            log.info("{} 테이블 생성",map.get("logTable"));
+        }
+
+        map.put("logTable",logTableCurrent);
+        result_current = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+        if(result_current == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+            log.info("{} 테이블 생성",map.get("logTable"));
+
+        }
+
+        map.put("logTable",logTableNext);
+        result_next = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+        if(result_next == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+            log.info("{} 테이블 생성",map.get("logTable"));
+
+        }
+
+        // 3
+        logTableLast = param.getMms_log_table()+lastMonth;
+        logTableCurrent = param.getMms_log_table()+currentMonth;
+        logTableNext = param.getMms_log_table()+nextMonth;
+
+        map = new HashMap<>();
+        map.put("msgTable", param.getMms_msg_table());
+        map.put("logTable",logTableLast);
+        result_last = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+        if(result_last == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+            log.info("{} 테이블 생성",map.get("logTable"));
+        }
+
+        map.put("logTable",logTableCurrent);
+        result_current = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+        if(result_current == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+            log.info("{} 테이블 생성",map.get("logTable"));
+
+        }
+
+        map.put("logTable",logTableNext);
+        result_next = sqlSession.selectOne("com.dhn.client.create.mapper.SendRequest.logTableCheck", map);
+        if(result_next == 0){
+            sqlSession.update("com.dhn.client.create.mapper.SendRequest.createLogTable", map);
+            log.info("{} 테이블 생성",map.get("logTable"));
+
+        }
+    }
 }

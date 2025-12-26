@@ -1,9 +1,9 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.RequestBean;
+import com.dhn.client.bean.KAORequestBean;
 import com.dhn.client.bean.SQLParameter;
+import com.dhn.client.service.KAOService;
 import com.dhn.client.service.RequestService;
-import com.dhn.client.service.SMSService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +24,7 @@ import java.util.Map;
 
 @Component
 @Slf4j
-public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent> {
-
+public class KAOMMSMSGSendRequest implements ApplicationListener<ContextRefreshedEvent> {
     public static boolean isStart = false;
     private boolean isProc = false;
     private SQLParameter param = new SQLParameter();
@@ -38,33 +37,35 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private RequestService requestService;
 
     @Autowired
-    private SMSService smsService;
-
-    @Autowired
     private ApplicationContext appContext;
 
     @Autowired
-    private ScheduledAnnotationBeanPostProcessor posts;
+    private KAOService kaoService;
+
+
+    @Autowired
+    ScheduledAnnotationBeanPostProcessor posts;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.mms_msg_table"));
+        param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use"));
+        param.setProfile_key(appContext.getEnvironment().getProperty("dhnclient.profile_key"));
+        param.setKakaobtn(appContext.getEnvironment().getProperty("dhnclient.kakaobtn"));
         param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
-        param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
-        param.setMsg_type("S");
+        param.setMsg_type("T");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-        if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
+        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
+            log.info("KAO 초기화 완료");
             isStart = true;
-            log.info("SMS 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
 
     }
-
 
     @Scheduled(fixedDelay = 100)
     private void SendProcess() {
@@ -73,22 +74,28 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = "S" + now.format(formatter);
+            String group_no = now.format(formatter);
 
             if (!group_no.equals(preGroupNo)) {
+
                 try {
-                    int cnt = requestService.selectSMSRequestCount(param);
+                    int cnt = requestService.selectKAOMMSMSGRequestCount(param);
 
                     if (cnt > 0) {
                         param.setGroup_no(group_no);
 
-                        requestService.updateSMSGroupNo(param);
+                        requestService.updateKAOMMSMSGGroupNo(param);
 
-                        List<RequestBean> _list = requestService.selectSMSRequests(param);
+                        List<KAORequestBean> _list = requestService.selectKAOMMSMSGRequests(param);
+                        log.info(_list.toString());
 
-                        for (RequestBean requestBean : _list) {
-                            requestBean = smsService.encryption(requestBean, crypto);
-                        }
+
+//                        for (KAORequestBean kaoRequestBean : _list) {
+//                            if (kaoRequestBean.getButton1() != null) {
+//                                kaoRequestBean = kaoService.Btn_form(kaoRequestBean);
+//                            }
+//                            kaoRequestBean = kaoService.encryption(kaoRequestBean, crypto);
+//                        }
 
                         StringWriter sw = new StringWriter();
                         ObjectMapper om = new ObjectMapper();
@@ -103,34 +110,35 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                         HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
                         try {
+                            //ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                             ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                             Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                             log.info(res.toString());
 
                             if (response.getStatusCode() == HttpStatus.OK) {
-                                requestService.updateSMSSendComplete(param);
-                                log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
+                                requestService.updateKAOMMSMSGSendComplete(param);
+                                log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
                             } else {
 //                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                                log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
-                                requestService.updateSMSSendInit(param);
+                                log.info("KAO 메세지 전송오류 : " + res.get("message"));
+                                requestService.updateKAOMMSMSGSendInit(param);
                             }
                         } catch (Exception e) {
-                            log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
-                            requestService.updateSMSSendInit(param);
+                            log.info("KAO 메세지 전송 오류 : " + e.toString());
+                            requestService.updateKAOMMSMSGSendInit(param);
                         }
 
                     }
 
                 } catch (Exception e) {
-                    log.error("SMS Send Error : " + e.toString());
+                    log.error("KAO Send Error : " + e.toString());
                 }
+
                 preGroupNo = group_no;
             }
-            isProc = false;
 
+
+            isProc = false;
         }
     }
-
-
 }

@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
-@MapperScan(value = {"com.dhn.client.*.mapper.SendRequest",
+@MapperScan(value = {"com.dhn.client.*.mapper",
 		"com.dhn.client.mapper"}, sqlSessionFactoryRef = "sqlSessionFactory")
 @EnableTransactionManagement
 public class DatabaseConfig {

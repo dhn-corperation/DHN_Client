@@ -11,6 +11,7 @@ public class KAORequestBean {
 	private String button3;
 	private String button4;
 	private String button5;
+    private String attachment;
 	private String imagelink;
 	private String imageurl;
 	private String messagetype;

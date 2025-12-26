@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dhn.client.create.mapper.SendRequest">
+
+    <!-- 로그 테이블 존재 여부 확인 -->
+    <select id="logTableCheck" parameterType="map" resultType="int">
+        SELECT COUNT(1)
+        FROM ALL_TABLES
+        WHERE TABLE_NAME = UPPER(#{logTable})
+    </select>
+
+    <!-- 로그 테이블 생성 (컬럼 구조만 복사) -->
+    <update id="createLogTable" parameterType="map">
+        CREATE TABLE "${logTable}" AS
+        SELECT *
+        FROM "${msgTable}"
+        WHERE 1 = 0
+    </update>
+
+</mapper>

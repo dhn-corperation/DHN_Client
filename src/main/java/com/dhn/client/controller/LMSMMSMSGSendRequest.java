@@ -24,7 +24,7 @@ import java.util.Map;
 
 @Component
 @Slf4j
-public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent> {
+public class LMSMMSMSGSendRequest implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -44,27 +44,27 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private ApplicationContext appContext;
 
     @Autowired
-    private ScheduledAnnotationBeanPostProcessor posts;
+    ScheduledAnnotationBeanPostProcessor posts;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.mms_msg_table"));
         param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
-        param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
-        param.setMsg_type("S");
+        param.setLms_use(appContext.getEnvironment().getProperty("dhnclient.lms_use"));
+        param.setMsg_type("M");
+
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-        if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
+        if (param.getLms_use() != null && param.getLms_use().equalsIgnoreCase("Y")) {
+            log.info("LMS 초기화 완료");
             isStart = true;
-            log.info("SMS 초기화 완료");
         } else {
             posts.postProcessBeforeDestruction(this, null);
         }
 
     }
-
 
     @Scheduled(fixedDelay = 100)
     private void SendProcess() {
@@ -73,18 +73,21 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = "S" + now.format(formatter);
+            String group_no = "L" + now.format(formatter);
 
             if (!group_no.equals(preGroupNo)) {
+
                 try {
-                    int cnt = requestService.selectSMSRequestCount(param);
+                    int cnt = requestService.selectLMSMMSMSGRequestCount(param);
 
                     if (cnt > 0) {
+
                         param.setGroup_no(group_no);
 
-                        requestService.updateSMSGroupNo(param);
+                        requestService.updateLMSMMSMSGGroupNo(param);
 
-                        List<RequestBean> _list = requestService.selectSMSRequests(param);
+                        List<RequestBean> _list = requestService.selectLMSMMSMSGRequests(param);
+                        log.info(_list.toString());
 
                         for (RequestBean requestBean : _list) {
                             requestBean = smsService.encryption(requestBean, crypto);
@@ -106,29 +109,27 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                             ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                             Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                             log.info(res.toString());
-
                             if (response.getStatusCode() == HttpStatus.OK) {
-                                requestService.updateSMSSendComplete(param);
-                                log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
+                                requestService.updateSMSMMSMSGSendComplete(param);
+                                log.info("LMS 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
                             } else {
-//                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                                log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
-                                requestService.updateSMSSendInit(param);
+                                log.error("LMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                                requestService.updateSMSMMSMSGSendInit(param);
                             }
                         } catch (Exception e) {
-                            log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
-                            requestService.updateSMSSendInit(param);
+                            log.error("LMS 메세지 전송 오류(Response) : " + e.toString());
+                            requestService.updateSMSMMSMSGSendInit(param);
                         }
 
                     }
 
+
                 } catch (Exception e) {
-                    log.error("SMS Send Error : " + e.toString());
+                    log.error("LMS 메세지 전송 오류(Send) : " + e.toString());
                 }
                 preGroupNo = group_no;
             }
             isProc = false;
-
         }
     }
 

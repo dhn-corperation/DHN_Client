@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dhn.client.oracle.mapper.SendRequest">
+
+    <!-- SMS 발송대기 건수 조회 -->
+    <select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        SELECT COUNT(1) AS cnt
+        FROM ${msg_table}
+        WHERE RESULT = '0'
+          AND BATCHFLAG = 0
+          AND KIND = '${msg_type}'
+          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND SENTTIME IS NULL
+    </select>
+
+    <!-- SMS 그룹 업데이트 -->
+    <update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        UPDATE ${msg_table}
+        SET IMAGE_URL = '${group_no}'
+        WHERE RESULT = '0'
+          AND BATCHFLAG = 0
+          AND KIND = '${msg_type}'
+          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND SENTTIME IS NULL
+          AND ROWNUM &lt;= 500
+    </update>
+
+    <!-- LMS 발송대기 건수 조회 -->
+    <select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
+        SELECT COUNT(1) AS cnt
+        FROM ${msg_table}
+        WHERE RESULT = '0'
+          AND BATCHFLAG = 0
+          AND KIND = '${msg_type}'
+          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND SENTTIME IS NULL
+    </select>
+
+    <!-- LMS 그룹 업데이트 -->
+    <update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
+        UPDATE ${msg_table}
+        SET IMAGE_URL = '${group_no}'
+        WHERE RESULT = '0'
+          AND BATCHFLAG = 0
+          AND KIND = '${msg_type}'
+          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND SENTTIME IS NULL
+          AND ROWNUM &lt;= 500
+    </update>
+
+    <!-- 결과 맵 정의 -->
+    <resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
+        <result column="SEQNO" property="msgid"/>
+        <result column="BIZTYPE" property="messagetype"/>
+        <result column="MSG" property="msg"/>
+        <result column="MSG" property="msgsms"/>
+        <result column="CALLPHONE" property="phn"/>
+        <result column="REQPHONE" property="smssender"/>
+        <result column="KIND" property="smskind"/>
+        <result column="SUBJECT" property="smslmstit"/>
+        <result column="INTIME" property="regdt"/>
+        <result column="REQTIME" property="reservedt"/>
+        <result column="p_invoice" property="pinvoice"/>
+    </resultMap>
+
+    <!-- SMS 발송데이터 조회 -->
+    <select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+        SELECT
+            trim(SEQNO) as SEQNO,
+            'PH' as BIZTYPE,
+            MSG,
+            trim(CALLPHONE) as CALLPHONE,
+            trim(REQPHONE) as REQPHONE,
+            'S' as KIND,
+            NULL AS SUBJECT,
+            TO_CHAR(
+                    TO_DATE(INTIME, 'YYYYMMDDHH24MISS'),
+                    'YYYY-MM-DD HH24:MI:SS'
+            ) AS INTIME,
+            NVL(REQTIME, '00000000000000') AS REQTIME,
+            REQNAME,
+            CALLNAME,
+            '1' AS p_invoice
+        FROM ${msg_table}
+        WHERE IMAGE_URL = '${group_no}'
+          AND KIND = '${msg_type}'
+          AND RESULT = '0'
+    </select>
+
+    <!-- LMS 발송데이터 조회 -->
+    <select id="req_lms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
+        SELECT
+            trim(SEQNO) as SEQNO,
+            'PH' as BIZTYPE,
+            MSG,
+            trim(CALLPHONE) as CALLPHONE,
+            trim(REQPHONE) as REQPHONE,
+            'L' as KIND,
+            SUBJECT,
+            TO_CHAR(
+                    TO_DATE(INTIME, 'YYYYMMDDHH24MISS'),
+                    'YYYY-MM-DD HH24:MI:SS'
+            ) AS INTIME,
+            NVL(REQTIME, '00000000000000') AS REQTIME,
+            REQNAME,
+            CALLNAME,
+            '1' AS p_invoice
+        FROM ${msg_table}
+        WHERE IMAGE_URL = '${group_no}'
+          AND KIND = '${msg_type}'
+          AND RESULT = '0'
+    </select>
+
+    <!-- 발송완료 업데이트 -->
+    <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
+        UPDATE ${msg_table}
+        SET RESULT = '2',
+            SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+        WHERE IMAGE_URL = '${group_no}'
+          AND KIND = '${msg_type}'
+    </update>
+
+    <!-- 발송초기화 업데이트 -->
+    <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
+        UPDATE ${msg_table}
+        SET RESULT = '0',
+            BATCHFLAG = 0,
+            SENTTIME = NULL
+        WHERE IMAGE_URL = '${group_no}'
+          AND KIND = '${msg_type}'
+    </update>
+
+    <!-- 결과 로그 업데이트 -->
+    <update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+        UPDATE ${msg_table}
+        SET RESULT = '${status}',
+            ERRCODE = ${msg_err_code},
+            RECVTIME = CASE
+                           WHEN '${status}' = '3' THEN TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                           ELSE RECVTIME
+                END
+        WHERE SEQNO = ${msgid}
+    </update>
+
+    <!-- 로그 테이블에 복사 -->
+    <insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
+        INSERT INTO ${log_table}
+        SELECT * FROM ${msg_table} WHERE SEQNO = ${msgid}
+    </insert>
+
+    <!-- 원본 테이블에서 삭제 -->
+    <delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
+        DELETE FROM ${msg_table} WHERE SEQNO = ${msgid}
+    </delete>
+
+</mapper>

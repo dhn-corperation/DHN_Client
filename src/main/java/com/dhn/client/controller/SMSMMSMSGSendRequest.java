@@ -24,7 +24,7 @@ import java.util.Map;
 
 @Component
 @Slf4j
-public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent> {
+public class SMSMMSMSGSendRequest implements ApplicationListener<ContextRefreshedEvent> {
 
     public static boolean isStart = false;
     private boolean isProc = false;
@@ -48,7 +48,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
+        param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.mms_msg_table"));
         param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
         param.setMsg_type("S");
@@ -77,14 +77,14 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
             if (!group_no.equals(preGroupNo)) {
                 try {
-                    int cnt = requestService.selectSMSRequestCount(param);
+                    int cnt = requestService.selectSMSMMSMSGRequestCount(param);
 
                     if (cnt > 0) {
                         param.setGroup_no(group_no);
 
-                        requestService.updateSMSGroupNo(param);
+                        requestService.updateSMSMMSMSGGroupNo(param);
 
-                        List<RequestBean> _list = requestService.selectSMSRequests(param);
+                        List<RequestBean> _list = requestService.selectSMSMMSMSGRequests(param);
 
                         for (RequestBean requestBean : _list) {
                             requestBean = smsService.encryption(requestBean, crypto);
@@ -108,16 +108,16 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                             log.info(res.toString());
 
                             if (response.getStatusCode() == HttpStatus.OK) {
-                                requestService.updateSMSSendComplete(param);
+                                requestService.updateSMSMMSMSGSendComplete(param);
                                 log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
                             } else {
 //                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                                 log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
-                                requestService.updateSMSSendInit(param);
+                                requestService.updateSMSMMSMSGSendInit(param);
                             }
                         } catch (Exception e) {
                             log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
-                            requestService.updateSMSSendInit(param);
+                            requestService.updateSMSMMSMSGSendInit(param);
                         }
 
                     }
