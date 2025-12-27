@@ -341,8 +341,8 @@ public class RequestImpl implements RequestDAO {
 
     @Override
     public void Insert_msg_log_Tran(Msg_Log _ml) throws Exception {
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert1", _ml);
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert2", _ml);
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert3", _ml);
+        sqlSession.update("com.dhn.client.tran.mapper.SendRequest.result_log_insert1", _ml);
+        sqlSession.update("com.dhn.client.tran.mapper.SendRequest.result_log_insert2", _ml);
+        sqlSession.update("com.dhn.client.tran.mapper.SendRequest.result_log_insert3", _ml);
     }
 }

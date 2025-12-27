@@ -124,7 +124,7 @@
         UPDATE ${msg_table}
         SET RESULT = '0',
             BATCHFLAG = 0,
-            SENTTIME = NULL
+            IMAGE_URL = NULL
         WHERE IMAGE_URL = '${group_no}'
           AND KIND = '${msg_type}'
     </update>

@@ -61,12 +61,33 @@
         WHERE TRAN_ETC5 = '${group_no}'
     </update>
 
-    <update id="req_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
+    <update id="req_tran_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET TRAN_STATUS = '1',
             TRAN_ETC5 = NULL,
             TRAN_SENDDATE = NULL
         WHERE TRAN_ETC5 = '${group_no}'
     </update>
+
+    <!-- 결과 로그 업데이트 (KB_MMS_MSG 테이블 업데이트) -->
+    <update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
+        UPDATE ${msg_table}
+        SET TRAN_STATUS = '${status}',
+            TRAN_RSLT = '${msg_err_code}',
+            TRAN_RSLTDATE = TO_DATE('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
+            TRAN_END_TELCO = '${telecom}'
+        WHERE TRAN_PR = '${msgid}'
+    </update>
+
+    <!-- 로그 테이블에 복사 -->
+    <insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
+        INSERT INTO ${log_table}
+        SELECT * FROM ${msg_table} WHERE TRAN_PR = '${msgid}'
+    </insert>
+
+    <!-- 원본 테이블에서 삭제 -->
+    <delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
+        DELETE FROM ${msg_table} WHERE TRAN_PR = '${msgid}'
+    </delete>
 
 </mapper>
