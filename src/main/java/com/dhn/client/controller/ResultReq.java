@@ -103,14 +103,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent> {
                             procCnt--;
                         }
 
-//						JSONArray json = new JSONArray(response.getBody().toString());
-//						if(json.length()>0) {
-//							Thread res = new Thread(() ->ResultProc(json, procCnt) );
-//							res.start();
-//						} else {
-//							procCnt--;
-//						}
-
                     } else {
                         procCnt--;
                     }

@@ -32,7 +32,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
-    private String crypto = "";
 
     @Autowired
     private RequestService requestService;
@@ -49,7 +48,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
-        param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
         param.setMsg_type("S");
 
@@ -85,10 +83,6 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
                         requestService.updateSMSGroupNo(param);
 
                         List<RequestBean> _list = requestService.selectSMSRequests(param);
-
-                        for (RequestBean requestBean : _list) {
-                            requestBean = smsService.encryption(requestBean, crypto);
-                        }
 
                         StringWriter sw = new StringWriter();
                         ObjectMapper om = new ObjectMapper();

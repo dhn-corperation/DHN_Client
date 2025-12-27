@@ -31,7 +31,6 @@ public class KAOTranSendRequest implements ApplicationListener<ContextRefreshedE
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
-    private String crypto = "";
 
     @Autowired
     private RequestService requestService;
@@ -50,8 +49,6 @@ public class KAOTranSendRequest implements ApplicationListener<ContextRefreshedE
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.tran_msg_table"));
         param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use1"));
-        param.setKakaobtn(appContext.getEnvironment().getProperty("dhnclient.kakaobtn"));
-        param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setMsg_type("T");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
@@ -92,7 +89,6 @@ public class KAOTranSendRequest implements ApplicationListener<ContextRefreshedE
                             if (kaoRequestBean.getButton1() != null) {
                                 kaoRequestBean = kaoService.Btn_form(kaoRequestBean);
                             }
-                            kaoRequestBean = kaoService.encryption(kaoRequestBean, crypto);
                         }
 
                         StringWriter sw = new StringWriter();
@@ -118,11 +114,11 @@ public class KAOTranSendRequest implements ApplicationListener<ContextRefreshedE
                                 log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
                             } else {
 //                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                                log.info("KAO 메세지 전송오류 : " + res.get("message"));
+                                log.error("KAO 메세지 전송오류 : " + res.get("message"));
                                 requestService.updateKAOTranSendInit(param);
                             }
                         } catch (Exception e) {
-                            log.info("KAO 메세지 전송 오류 : " + e.toString());
+                            log.error("KAO 메세지 전송 오류 : " + e.toString());
                             requestService.updateKAOTranSendInit(param);
                         }
 

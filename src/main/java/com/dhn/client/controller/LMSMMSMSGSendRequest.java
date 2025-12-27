@@ -32,7 +32,6 @@ public class LMSMMSMSGSendRequest implements ApplicationListener<ContextRefreshe
     private String dhnServer;
     private String userid;
     private String preGroupNo = "";
-    private String crypto = "";
 
     @Autowired
     private RequestService requestService;
@@ -49,7 +48,6 @@ public class LMSMMSMSGSendRequest implements ApplicationListener<ContextRefreshe
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.mms_msg_table"));
-        param.setDbtype(appContext.getEnvironment().getProperty("dhnclient.database"));
         param.setLms_use(appContext.getEnvironment().getProperty("dhnclient.lms_use"));
         param.setMsg_type("M");
 
@@ -87,11 +85,6 @@ public class LMSMMSMSGSendRequest implements ApplicationListener<ContextRefreshe
                         requestService.updateLMSMMSMSGGroupNo(param);
 
                         List<RequestBean> _list = requestService.selectLMSMMSMSGRequests(param);
-                        log.info(_list.toString());
-
-                        for (RequestBean requestBean : _list) {
-                            requestBean = smsService.encryption(requestBean, crypto);
-                        }
 
                         StringWriter sw = new StringWriter();
                         ObjectMapper om = new ObjectMapper();
