@@ -37,35 +37,6 @@ public interface RequestService {
     // 결과 로그 처리
     public void Insert_msg_log(Msg_Log _ml) throws Exception;
 
-    ////////////////////////////// TRAN //////////////////////////////
-
-    // 발송 대기 건수 확인
-    public int selectKAOTranRequestCount(SQLParameter param) throws Exception;
-    public int selectSMSTranRequestCount(SQLParameter param) throws Exception;
-    public int selectLMSTranRequestCount(SQLParameter param) throws Exception;
-
-    // 발송 상태 업테이트(그룹화, 1000건씩)
-    public void updateKAOTranGroupNo(SQLParameter param) throws Exception;
-    public void updateSMSTranGroupNo(SQLParameter param) throws Exception;
-    public void updateLMSTranGroupNo(SQLParameter param) throws Exception;
-
-    // 발송 데이터 조회
-    public List<KAORequestBean> selectKAOTranRequests(SQLParameter param) throws Exception;
-    public List<RequestBean> selectSMSTranRequests(SQLParameter param) throws Exception;
-    public List<RequestBean> selectLMSTranRequests(SQLParameter param) throws Exception;
-
-    // 발송 완료 상태 변경
-    public void updateKAOTranSendComplete(SQLParameter param) throws Exception;
-    public void updateSMSTranSendComplete(SQLParameter param) throws Exception;
-
-    // 발송 상태 초기화
-    public void updateKAOTranSendInit(SQLParameter param) throws Exception;
-    public void updateSMSTranSendInit(SQLParameter param) throws Exception;
-
-    // 결과 로그 처리
-    public void Insert_msg_log_Tran(Msg_Log _ml) throws Exception;
-
-
     ////////////////////////////// MMS_MSG //////////////////////////////
 
     // 발송 대기 건수 확인
@@ -97,4 +68,16 @@ public interface RequestService {
     // 로그테이블 생성
     public void logTableCheck(SQLParameter param) throws Exception;
 
+    // Tran 통일
+    public int selectTranRequestCount(SQLParameter param) throws Exception;
+
+    public void updateTranGroupNo(SQLParameter param) throws Exception;
+
+    public List<RequestBean> selectTranRequests(SQLParameter param) throws Exception;
+
+    public void updateTranSendComplete(SQLParameter param) throws Exception;
+
+    public void updateTranSendInit(SQLParameter param) throws Exception;
+
+    public void Insert_msg_log_Tran(Msg_Log _ml) throws Exception;
 }

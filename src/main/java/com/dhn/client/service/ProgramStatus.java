@@ -25,13 +25,11 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
     public void onApplicationEvent(ContextClosedEvent event) {
         KAOSendRequest.isStart = false;
         KAOMMSMSGSendRequest.isStart = false;
-        KAOTranSendRequest.isStart = false;
         SMSSendRequest.isStart = false;
         SMSMMSMSGSendRequest.isStart = false;
-        SMSTranSendRequest.isStart = false;
         LMSSendRequest.isStart = false;
         LMSMMSMSGSendRequest.isStart = false;
-        LMSTranSendRequest.isStart = false;
+        TranMsgSendRequest.isStart = false;
 
         ResultReq.isStart = false;
 

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,99 +117,6 @@ public class RequestImpl implements RequestDAO {
         sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert3", _ml);
     }
 
-    ////////////////////////////// TRAN //////////////////////////////
-
-    // KAO 발송 대기 건수 확인
-    @Override
-    public int selectKAOTranRequestCount(SQLParameter param) throws Exception {
-        int cnt = 0;
-        cnt = sqlSession.selectOne("com.dhn.client.kakao_tran.mapper.SendRequest.req_kao_count", param);
-        return cnt;
-    }
-
-    // SMS 발송 대기 건수 확인
-    @Override
-    public int selectSMSTranRequestCount(SQLParameter param) throws Exception {
-        int cnt = 0;
-        cnt = sqlSession.selectOne("com.dhn.client.oracle_tran.mapper.SendRequest.req_sms_count", param);
-        return cnt;
-    }
-
-    // LMS 발송 대기 건수 확인
-    @Override
-    public int selectLMSTranRequestCount(SQLParameter param) throws Exception {
-        int cnt = 0;
-        cnt = sqlSession.selectOne("com.dhn.client.oracle_tran.mapper.SendRequest.req_lms_count", param);
-        return cnt;
-    }
-
-    // KAO 발송 상태 업테이트(그룹화, 1000건씩)
-    @Override
-    public void updateKAOTranGroupNo(SQLParameter param) throws Exception {
-        sqlSession.update("com.dhn.client.kakao_tran.mapper.SendRequest.req_kao_group_update", param);
-    }
-
-    // SMS 발송 상태 업테이트(그룹화, 1000건씩)
-    @Override
-    public void updateSMSTranGroupNo(SQLParameter param) throws Exception {
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.req_sms_group_update", param);
-    }
-
-    // LMS 발송 상태 업테이트(그룹화, 1000건씩)
-    @Override
-    public void updateLMSTranGroupNo(SQLParameter param) throws Exception {
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.req_lms_group_update", param);
-    }
-
-    // KAO 발송 데이터 조회
-    @Override
-    public List<KAORequestBean> selectKAOTranRequests(SQLParameter param) throws Exception {
-        return sqlSession.selectList("com.dhn.client.kakao_tran.mapper.SendRequest.req_kao_select", param);
-    }
-
-    // SMS 발송 데이터 조회
-    @Override
-    public List<RequestBean> selectSMSTranRequests(SQLParameter param) throws Exception {
-        return sqlSession.selectList("com.dhn.client.oracle_tran.mapper.SendRequest.req_sms_select", param);
-    }
-
-    // LMS 발송 데이터 조회
-    @Override
-    public List<RequestBean> selectLMSTranRequests(SQLParameter param) throws Exception {
-        return sqlSession.selectList("com.dhn.client.oracle_tran.mapper.SendRequest.req_lms_select", param);
-    }
-
-    // KAO 발송 완료 상태 변경
-    @Override
-    public void updateKAOTranSendComplete(SQLParameter param) throws Exception {
-        sqlSession.update("com.dhn.client.kakao_tran.mapper.SendRequest.req_sent_complete", param);
-    }
-
-    // SMS 발송 완료 상태 변경
-    @Override
-    public void updateSMSTranSendComplete(SQLParameter param) throws Exception {
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.req_sent_complete", param);
-    }
-
-    // KAO 발송 상태 초기화
-    @Override
-    public void updateKAOTranSendInit(SQLParameter param) throws Exception {
-        sqlSession.update("com.dhn.client.kakao_tran.mapper.SendRequest.req_sent_init", param);
-    }
-
-    // SMS 발송 상태 초기화
-    @Override
-    public void updateSMSTranSendInit(SQLParameter param) throws Exception {
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.req_sent_init", param);
-    }
-
-    // 결과 로그 처리
-    @Override
-    public void Insert_msg_log_Tran(Msg_Log _ml) throws Exception {
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert1", _ml);
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert2", _ml);
-        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert3", _ml);
-    }
 
     ////////////////////////////// MMS_MSG //////////////////////////////
 
@@ -309,8 +217,6 @@ public class RequestImpl implements RequestDAO {
         LocalDate now = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 
-        log.info("{}",param.toString());
-
         String lastMonth = now.minusMonths(1).format(formatter);
         String currentMonth = now.format(formatter);
         String nextMonth = now.plusMonths(1).format(formatter);
@@ -403,5 +309,40 @@ public class RequestImpl implements RequestDAO {
             log.info("{} 테이블 생성",map.get("logTable"));
 
         }
+    }
+
+    // tran 통일
+    @Override
+    public int selectTranRequestCount(SQLParameter param) throws Exception {
+        int cnt = 0;
+        cnt = sqlSession.selectOne("com.dhn.client.tran.mapper.SendRequest.req_tran_count", param);
+        return cnt;
+    }
+
+    @Override
+    public void updateTranGroupNo(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.tran.mapper.SendRequest.req_tran_group_update", param);
+    }
+
+    @Override
+    public List<RequestBean> selectTranRequests(SQLParameter param) throws Exception {
+        return sqlSession.selectList("com.dhn.client.tran.mapper.SendRequest.req_tran_select", param);
+    }
+
+    @Override
+    public void updateTranSendComplete(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.tran.mapper.SendRequest.req_tran_sent_complete", param);
+    }
+
+    @Override
+    public void updateTranSendInit(SQLParameter param) throws Exception {
+        sqlSession.update("com.dhn.client.tran.mapper.SendRequest.req_tran_sent_init", param);
+    }
+
+    @Override
+    public void Insert_msg_log_Tran(Msg_Log _ml) throws Exception {
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert1", _ml);
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert2", _ml);
+        sqlSession.update("com.dhn.client.oracle_tran.mapper.SendRequest.result_log_insert3", _ml);
     }
 }

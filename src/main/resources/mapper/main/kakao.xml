@@ -7,10 +7,10 @@
     <select id="req_kao_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         SELECT COUNT(1) AS cnt
         FROM ${msg_table}
-        WHERE RESULT = '0'
-          AND BATCHFLAG = 0
+        WHERE NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND RESULT = '0'
           AND KIND = 'T'
-          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND BATCHFLAG = 0
           AND IMAGE_URL IS NULL
           AND SENTTIME IS NULL
     </select>
@@ -20,12 +20,12 @@
         UPDATE ${msg_table}
         SET IMAGE_URL = '${group_no}',
             RESULT = '1'
-        WHERE RESULT = '0'
-          AND BATCHFLAG = 0
+        WHERE NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND RESULT = '0'
           AND KIND = 'T'
-          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-          AND SENTTIME IS NULL
+          AND BATCHFLAG = 0
           AND IMAGE_URL IS NULL
+          AND SENTTIME IS NULL
           AND ROWNUM &lt;= 500
     </update>
 
@@ -43,6 +43,7 @@
         <result column="MSG" property="msg"/>
         <result column="MSG" property="msgsms"/>
         <result column="SUBJECT" property="smslmstit"/>
+        <result column="SMSKIND" property="smskind"/>
 
         <!-- 이미지 정보 -->
         <result column="IMAGE_URL" property="imageurl"/>
@@ -53,9 +54,6 @@
         <result column="BUTTON3" property="button3"/>
         <result column="BUTTON4" property="button4"/>
         <result column="BUTTON5" property="button5"/>
-
-        <!-- 발송 옵션 -->
-        <result column="RESEND" property="onlysms"/>
 
         <!-- 카카오 채널 정보 -->
         <result column="YELLOWID_KEY" property="profile"/>
@@ -70,29 +68,23 @@
     <!-- 카카오 알림톡 발송데이터 조회 -->
     <select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "KAORequestTable">
         SELECT
-            TRIM(TO_CHAR(SEQNO)) AS SEQNO,
-            TRIM(CASE
-                     WHEN BIZTYPE IS NULL OR BIZTYPE = '' THEN 'PH'
-                     ELSE BIZTYPE
-                END) AS BIZTYPE,
+            TO_CHAR(SEQNO) AS SEQNO,
+            BIZTYPE AS BIZTYPE,
             MSG AS MSG,
             MSG AS MSG,
-            TRIM(CASE
-                     WHEN CALLPHONE LIKE '82%' THEN CALLPHONE
-                     WHEN CALLPHONE LIKE '010%' THEN '82' || SUBSTR(CALLPHONE, 2)
-                     ELSE '82' || SUBSTR(CALLPHONE, 2)
-                END) AS CALLPHONE,
+            CASE
+                 WHEN CALLPHONE LIKE '82%' THEN CALLPHONE
+                 WHEN CALLPHONE LIKE '010%' THEN '82' || SUBSTR(CALLPHONE, 2)
+                 ELSE '82' || SUBSTR(CALLPHONE, 2)
+            END AS CALLPHONE,
             TRIM(REQPHONE) AS REQPHONE,
             SUBJECT AS SUBJECT,
             CASE
                 WHEN RESEND NOT IN('Y','R') THEN ''
-                WHEN LENGTH(MSG) >= 90 THEN 'L'
+                WHEN LENGTHB(MSG) >= 90 THEN 'L'
                 ELSE 'S'
-                END AS smskind,
-            TO_CHAR(
-                    TO_DATE(TRIM(INTIME), 'YYYYMMDDHH24MISS'),
-                    'YYYY-MM-DD HH24:MI:SS'
-            ) AS INTIME,
+            END AS SMSKIND,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS INTIME,
             TRIM(
                     JSON_QUERY(
                             ATTACHMENT,
@@ -125,7 +117,7 @@
             ) AS BUTTON5,
             TEMPLATECODE AS TEMPLATECODE,
             '1' AS p_invoice,
-            TRIM(YELLOWID_KEY) AS YELLOWID_KEY,
+            YELLOWID_KEY AS YELLOWID_KEY,
             NVL(TRIM(REQTIME), '00000000000000') AS REQTIME
         FROM ${msg_table}
         WHERE RESULT = '1'
@@ -159,10 +151,7 @@
         SET RESULT = '${status}',
             ERRCODE = '${msg_err_code}',
             BATCHFLAG = '1',
-            RECVTIME = TO_CHAR(
-                    TO_DATE('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),
-                    'YYYYMMDDHH24MISS'
-                       ),
+            RECVTIME = TO_CHAR(TO_DATE('${sndg_cpee_dt}', 'YYYY-MM-DD HH24:MI:SS'),'YYYYMMDDHH24MISS'),
             RESEND = '${resend}',
             KAKAOERRCODE = '${kakaoErr}',
             SENTMEDIA = '${sentMedia}',

@@ -36,7 +36,7 @@
                        AND TRAN_TYPE = 0
                        AND TRAN_DATE &lt;= SYSDATE
                        AND TRAN_SENDDATE IS NULL
-                       AND TRAN_ETC1 IS NULL
+                       AND TRAN_ETC5 IS NULL
                      ORDER BY TRAN_PR
                  )
             WHERE ROWNUM &lt;= 500
@@ -56,7 +56,7 @@
                        AND TRAN_TYPE = 1
                        AND TRAN_DATE &lt;= SYSDATE
                        AND TRAN_SENDDATE IS NULL
-                       AND TRAN_ETC1 IS NULL
+                       AND TRAN_ETC5 IS NULL
                      ORDER BY TRAN_PR
                  )
             WHERE ROWNUM &lt;= 500
@@ -126,7 +126,7 @@
     <update id="req_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET TRAN_STATUS = '1',
-            TRAN_ETC1 = NULL,
+            TRAN_ETC5 = NULL,
             TRAN_SENDDATE = NULL
         WHERE TRAN_ETC5 = '${group_no}'
           AND TRAN_TYPE IN (0, 1)

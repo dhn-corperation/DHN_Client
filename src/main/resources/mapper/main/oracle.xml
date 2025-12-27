@@ -7,22 +7,24 @@
     <select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         SELECT COUNT(1) AS cnt
         FROM ${msg_table}
-        WHERE RESULT = '0'
-          AND BATCHFLAG = 0
+        WHERE NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND RESULT = '0'
           AND KIND = '${msg_type}'
-          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND BATCHFLAG = 0
           AND SENTTIME IS NULL
+          AND IMAGE_URL IS NULL
     </select>
 
     <!-- SMS 그룹 업데이트 -->
     <update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         UPDATE ${msg_table}
         SET IMAGE_URL = '${group_no}'
-        WHERE RESULT = '0'
-          AND BATCHFLAG = 0
+        WHERE NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND RESULT = '0'
           AND KIND = '${msg_type}'
-          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND BATCHFLAG = 0
           AND SENTTIME IS NULL
+          AND IMAGE_URL IS NULL
           AND ROWNUM &lt;= 500
     </update>
 
@@ -30,22 +32,24 @@
     <select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
         SELECT COUNT(1) AS cnt
         FROM ${msg_table}
-        WHERE RESULT = '0'
-          AND BATCHFLAG = 0
+        WHERE NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND RESULT = '0'
           AND KIND = '${msg_type}'
-          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND BATCHFLAG = 0
           AND SENTTIME IS NULL
+          AND IMAGE_URL IS NULL
     </select>
 
     <!-- LMS 그룹 업데이트 -->
     <update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         UPDATE ${msg_table}
         SET IMAGE_URL = '${group_no}'
-        WHERE RESULT = '0'
-          AND BATCHFLAG = 0
+        WHERE NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND RESULT = '0'
           AND KIND = '${msg_type}'
-          AND NVL(REQTIME, '00000000000000') &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+          AND BATCHFLAG = 0
           AND SENTTIME IS NULL
+          AND IMAGE_URL IS NULL
           AND ROWNUM &lt;= 500
     </update>
 
@@ -67,17 +71,14 @@
     <!-- SMS 발송데이터 조회 -->
     <select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
         SELECT
-            trim(SEQNO) as SEQNO,
+            SEQNO as SEQNO,
             'PH' as BIZTYPE,
             MSG,
-            trim(CALLPHONE) as CALLPHONE,
-            trim(REQPHONE) as REQPHONE,
+            CALLPHONE as CALLPHONE,
+            REQPHONE as REQPHONE,
             'S' as KIND,
             NULL AS SUBJECT,
-            TO_CHAR(
-                    TO_DATE(INTIME, 'YYYYMMDDHH24MISS'),
-                    'YYYY-MM-DD HH24:MI:SS'
-            ) AS INTIME,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS INTIME,
             NVL(REQTIME, '00000000000000') AS REQTIME,
             REQNAME,
             CALLNAME,
@@ -91,17 +92,14 @@
     <!-- LMS 발송데이터 조회 -->
     <select id="req_lms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
         SELECT
-            trim(SEQNO) as SEQNO,
+            SEQNO as SEQNO,
             'PH' as BIZTYPE,
             MSG,
-            trim(CALLPHONE) as CALLPHONE,
-            trim(REQPHONE) as REQPHONE,
+            CALLPHONE as CALLPHONE,
+            REQPHONE as REQPHONE,
             'L' as KIND,
             SUBJECT,
-            TO_CHAR(
-                    TO_DATE(INTIME, 'YYYYMMDDHH24MISS'),
-                    'YYYY-MM-DD HH24:MI:SS'
-            ) AS INTIME,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS INTIME,
             NVL(REQTIME, '00000000000000') AS REQTIME,
             REQNAME,
             CALLNAME,
@@ -130,28 +128,5 @@
         WHERE IMAGE_URL = '${group_no}'
           AND KIND = '${msg_type}'
     </update>
-
-    <!-- 결과 로그 업데이트 -->
-    <update id="result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
-        UPDATE ${msg_table}
-        SET RESULT = '${status}',
-            ERRCODE = ${msg_err_code},
-            RECVTIME = CASE
-                           WHEN '${status}' = '3' THEN TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-                           ELSE RECVTIME
-                END
-        WHERE SEQNO = ${msgid}
-    </update>
-
-    <!-- 로그 테이블에 복사 -->
-    <insert id="result_log_insert2" parameterType="com.dhn.client.bean.Msg_Log">
-        INSERT INTO ${log_table}
-        SELECT * FROM ${msg_table} WHERE SEQNO = ${msgid}
-    </insert>
-
-    <!-- 원본 테이블에서 삭제 -->
-    <delete id="result_log_insert3" parameterType="com.dhn.client.bean.Msg_Log">
-        DELETE FROM ${msg_table} WHERE SEQNO = ${msgid}
-    </delete>
 
 </mapper>

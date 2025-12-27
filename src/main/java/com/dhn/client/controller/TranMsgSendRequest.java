@@ -1,9 +1,9 @@
 package com.dhn.client.controller;
 
-import com.dhn.client.bean.KAORequestBean;
+import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
-import com.dhn.client.service.KAOService;
 import com.dhn.client.service.RequestService;
+import com.dhn.client.service.SMSService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,8 @@ import java.util.Map;
 
 @Component
 @Slf4j
-public class KAOTranSendRequest implements ApplicationListener<ContextRefreshedEvent> {
+public class TranMsgSendRequest  implements ApplicationListener<ContextRefreshedEvent> {
+
     public static boolean isStart = false;
     private boolean isProc = false;
     private SQLParameter param = new SQLParameter();
@@ -39,29 +40,20 @@ public class KAOTranSendRequest implements ApplicationListener<ContextRefreshedE
     private ApplicationContext appContext;
 
     @Autowired
-    private KAOService kaoService;
-
-
-    @Autowired
-    ScheduledAnnotationBeanPostProcessor posts;
+    private ScheduledAnnotationBeanPostProcessor posts;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.tran_msg_table"));
-        param.setKakao_use(appContext.getEnvironment().getProperty("dhnclient.kakao_use1"));
-        param.setMsg_type("T");
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-        if (param.getKakao_use() != null && param.getKakao_use().equalsIgnoreCase("Y")) {
-            log.info("KAO 초기화 완료");
-            isStart = true;
-        } else {
-            posts.postProcessBeforeDestruction(this, null);
-        }
+        isStart = true;
+        log.info("Tran Msg 초기화 완료");
 
     }
+
 
     @Scheduled(fixedDelay = 100)
     private void SendProcess() {
@@ -70,26 +62,18 @@ public class KAOTranSendRequest implements ApplicationListener<ContextRefreshedE
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
             LocalDateTime now = LocalDateTime.now();
-            String group_no = now.format(formatter);
+            String group_no = "TR" + now.format(formatter);
 
             if (!group_no.equals(preGroupNo)) {
-
                 try {
-                    int cnt = requestService.selectKAOTranRequestCount(param);
+                    int cnt = requestService.selectTranRequestCount(param);
 
                     if (cnt > 0) {
                         param.setGroup_no(group_no);
 
-                        requestService.updateKAOTranGroupNo(param);
+                        requestService.updateTranGroupNo(param);
 
-                        List<KAORequestBean> _list = requestService.selectKAOTranRequests(param);
-
-
-                        for (KAORequestBean kaoRequestBean : _list) {
-                            if (kaoRequestBean.getButton1() != null) {
-                                kaoRequestBean = kaoService.Btn_form(kaoRequestBean);
-                            }
-                        }
+                        List<RequestBean> _list = requestService.selectTranRequests(param);
 
                         StringWriter sw = new StringWriter();
                         ObjectMapper om = new ObjectMapper();
@@ -104,35 +88,32 @@ public class KAOTranSendRequest implements ApplicationListener<ContextRefreshedE
                         HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
                         try {
-                            //ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                             ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
                             Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
                             log.info(res.toString());
 
                             if (response.getStatusCode() == HttpStatus.OK) {
-                                requestService.updateKAOTranSendComplete(param);
-                                log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+                                requestService.updateTranSendComplete(param);
+                                log.info("Tran Msg 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
                             } else {
 //                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                                log.error("KAO 메세지 전송오류 : " + res.get("message"));
-                                requestService.updateKAOTranSendInit(param);
+                                log.error("Tran Msg 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                                requestService.updateTranSendInit(param);
                             }
                         } catch (Exception e) {
-                            log.error("KAO 메세지 전송 오류 : " + e.toString());
-                            requestService.updateKAOTranSendInit(param);
+                            log.error("Tran Msg 메세지 전송 오류(Response) : " + e.toString());
+                            requestService.updateTranSendInit(param);
                         }
 
                     }
 
                 } catch (Exception e) {
-                    log.error("KAO Send Error : " + e.toString());
+                    log.error("Tran Msg Send Error : " + e.toString());
                 }
-
                 preGroupNo = group_no;
             }
-
-
             isProc = false;
+
         }
     }
 }

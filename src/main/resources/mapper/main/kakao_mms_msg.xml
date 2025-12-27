@@ -8,9 +8,10 @@
         SELECT COUNT(1) AS cnt
         FROM ${msg_table}
         WHERE TRAN_STATUS = '1'
-          AND TRAN_TYPE = 1
+          AND TRAN_TYPE = '5'
           AND TRAN_SENDDATE IS NULL
           AND TRAN_DATE &lt;= SYSDATE
+          AND TRAN_ETC5 IS NULL
     </select>
 
     <!-- 카카오 알림톡 그룹 업데이트 (TRAN_TYPE=1 가정) -->
@@ -18,9 +19,10 @@
         UPDATE ${msg_table}
         SET TRAN_ETC5 = '${group_no}'
         WHERE TRAN_STATUS = '1'
-          AND TRAN_TYPE = 1
+          AND TRAN_TYPE = '5'
           AND TRAN_SENDDATE IS NULL
           AND TRAN_DATE &lt;= SYSDATE
+          AND TRAN_ETC5 IS NULL
           AND ROWNUM &lt;= 500
     </update>
 
@@ -38,6 +40,7 @@
         <result column="TRAN_MSG" property="msg"/>
         <result column="TRAN_MSG" property="msgsms"/>
         <result column="TRAN_SUBJECT" property="smslmstit"/>
+        <result column="SMSKIND" property="smskind"/>
 
 <!--        &lt;!&ndash; 이미지 정보 &ndash;&gt;-->
 <!--        <result column="IMAGE_URL" property="imageurl"/>-->
@@ -48,9 +51,6 @@
 <!--        <result column="BUTTON3" property="button3"/>-->
 <!--        <result column="BUTTON4" property="button4"/>-->
 <!--        <result column="BUTTON5" property="button5"/>-->
-
-        <!-- 발송 옵션 -->
-        <result column="RESEND" property="onlysms"/>
 
         <!-- 카카오 채널 정보 -->
         <result column="PROFILE_KEY" property="profile"/>
@@ -66,34 +66,29 @@
     <!-- 카카오 알림톡 발송데이터 조회 -->
     <select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "KAORequestTable">
         SELECT
-            TRIM(TO_CHAR(TRAN_PR)) AS TRAN_PR,
-            TRIM(CASE
-                     WHEN TRAN_TYPE = 1 THEN 'AT'
-                     WHEN TRAN_ETC3 IS NULL OR TRAN_ETC3 = '' THEN 'PH'
-                     ELSE TRAN_ETC3
-                END) AS TRAN_ETC3,
+            TO_CHAR(TRAN_PR) AS TRAN_PR,
+            'AT' AS TRAN_ETC3,
             TRAN_MSG AS TRAN_MSG,
             TRAN_MSG AS TRAN_MSG,
-            TRIM(CASE
-                     WHEN TRAN_PHONE LIKE '82%' THEN TRAN_PHONE
-                     WHEN TRAN_PHONE LIKE '010%' THEN '82' || SUBSTR(TRAN_PHONE, 2)
-                     ELSE '82' || SUBSTR(TRAN_PHONE, 2)
-                END) AS TRAN_PHONE,
-            TRIM(TRAN_CALLBACK) AS TRAN_CALLBACK,
+            CASE
+                 WHEN TRAN_PHONE LIKE '82%' THEN TRAN_PHONE
+                 WHEN TRAN_PHONE LIKE '010%' THEN '82' || SUBSTR(TRAN_PHONE, 2)
+                 ELSE '82' || SUBSTR(TRAN_PHONE, 2)
+            END AS TRAN_PHONE,
+            TRAN_CALLBACK AS TRAN_CALLBACK,
             TRAN_SUBJECT AS TRAN_SUBJECT,
             CASE
-                WHEN LENGTH(TRAN_MSG) >= 90 THEN 'L'
-                ELSE 'S'
-                END AS smskind,
+                WHEN LENGTHB(TRAN_MSG) &lt;= 90 THEN 'S'
+                ELSE 'L'
+            END AS SMSKIND,
             TO_CHAR(TRAN_DATE, 'YYYY-MM-DD HH24:MI:SS') AS TRAN_DATE,
-            'Y' AS RESEND,
             '2' AS p_invoice,
             TRAN_TMPL_CD AS TRAN_TMPL_CD,
-            TRIM('${profile_key}') AS PROFILE_KEY,
+            '${profile_key}' AS PROFILE_KEY,
             NVL(TO_CHAR(TRAN_SENDDATE, 'YYYYMMDDHH24MISS'), '00000000000000') AS TRAN_SENDDATE
         FROM ${msg_table}
         WHERE TRAN_ETC5 = '${group_no}'
-          AND TRAN_TYPE = 1
+          AND TRAN_TYPE = '5'
           AND TRAN_STATUS = '1'
     </select>
 
@@ -103,7 +98,7 @@
         SET TRAN_STATUS = '2',
             TRAN_SENDDATE = SYSDATE
         WHERE TRAN_ETC5 = '${group_no}'
-          AND TRAN_TYPE = 1
+          AND TRAN_TYPE = '5'
     </update>
 
     <!-- 발송초기화 업데이트 -->
@@ -113,7 +108,7 @@
             TRAN_SENDDATE = NULL,
             TRAN_ETC5 = NULL
         WHERE TRAN_ETC5 = '${group_no}'
-          AND TRAN_TYPE IN (1)
+          AND TRAN_TYPE = '5'
     </update>
 
     <!-- 결과 로그 업데이트 -->
