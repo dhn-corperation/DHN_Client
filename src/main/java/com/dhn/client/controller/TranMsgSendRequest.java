@@ -45,12 +45,17 @@ public class TranMsgSendRequest  implements ApplicationListener<ContextRefreshed
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.tran_msg_table"));
+        param.setSms_use(appContext.getEnvironment().getProperty("dhnclient.sms_use"));
 
         dhnServer = appContext.getEnvironment().getProperty("dhnclient.server");
         userid = appContext.getEnvironment().getProperty("dhnclient.userid");
 
-        isStart = true;
-        log.info("Tran Msg 초기화 완료");
+        if (param.getSms_use() != null && param.getSms_use().equalsIgnoreCase("Y")) {
+            isStart = true;
+            log.info("Tran Msg 초기화 완료");
+        } else {
+            posts.postProcessBeforeDestruction(this, null);
+        }
 
     }
 
