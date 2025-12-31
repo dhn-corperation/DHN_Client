@@ -8,18 +8,18 @@
         SELECT COUNT(1) AS cnt
         FROM ${msg_table}
         WHERE TRAN_STATUS = '1'
-          AND TRAN_ETC5 IS NULL
+          AND TRAN_ETC3 IS NULL
           AND TRAN_TYPE = 3
           AND TRAN_SENDDATE IS NULL
           AND TRAN_DATE &lt;= SYSDATE
     </select>
 
-    <!-- SMS 그룹 업데이트 (TRAN_ETC5에 그룹번호 저장) -->
+    <!-- SMS 그룹 업데이트 (TRAN_ETC3에 그룹번호 저장) -->
     <update id="req_sms_group_update" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET TRAN_ETC5 = '${group_no}'
+        SET TRAN_ETC3 = '${group_no}'
         WHERE TRAN_STATUS = '1'
-          AND TRAN_ETC5 IS NULL
+          AND TRAN_ETC3 IS NULL
           AND TRAN_TYPE = 3
           AND TRAN_SENDDATE IS NULL
           AND TRAN_DATE &lt;= SYSDATE
@@ -31,18 +31,18 @@
         SELECT COUNT(1) AS cnt
         FROM ${msg_table}
         WHERE TRAN_STATUS = '1'
-          AND TRAN_ETC5 IS NULL
+          AND TRAN_ETC3 IS NULL
           AND TRAN_TYPE = 4
           AND TRAN_SENDDATE IS NULL
           AND TRAN_DATE &lt;= SYSDATE
     </select>
 
-    <!-- LMS 그룹 업데이트 (TRAN_ETC5에 그룹번호 저장) -->
+    <!-- LMS 그룹 업데이트 (TRAN_ETC3에 그룹번호 저장) -->
     <update id="req_lms_group_update" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET TRAN_ETC5 = '${group_no}'
+        SET TRAN_ETC3 = '${group_no}'
         WHERE TRAN_STATUS = '1'
-          AND TRAN_ETC5 IS NULL
+          AND TRAN_ETC3 IS NULL
           AND TRAN_TYPE = 4
           AND TRAN_SENDDATE IS NULL
           AND TRAN_DATE &lt;= SYSDATE
@@ -78,7 +78,7 @@
             NVL(TO_CHAR(TRAN_SENDDATE, 'YYYYMMDDHH24MISS'), '00000000000000') AS TRAN_SENDDATE,
             '2' AS p_invoice
         FROM ${msg_table}
-        WHERE TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_ETC3 = '${group_no}'
           AND TRAN_TYPE = '3'
           AND TRAN_STATUS = '1'
     </select>
@@ -97,7 +97,7 @@
             NVL(TO_CHAR(TRAN_SENDDATE, 'YYYYMMDDHH24MISS'), '00000000000000') AS TRAN_SENDDATE,
             '2' AS p_invoice
         FROM ${msg_table}
-        WHERE TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_ETC3 = '${group_no}'
           AND TRAN_TYPE = '4'
           AND TRAN_STATUS = '1'
     </select>
@@ -107,7 +107,7 @@
         UPDATE ${msg_table}
         SET TRAN_STATUS = '2',
             TRAN_SENDDATE = SYSDATE
-        WHERE TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_ETC3 = '${group_no}'
           AND TRAN_TYPE IN ('3', '4')
     </update>
 
@@ -116,8 +116,8 @@
         UPDATE ${msg_table}
         SET TRAN_STATUS = '1',
             TRAN_SENDDATE = NULL,
-            TRAN_ETC5 = NULL
-        WHERE TRAN_ETC5 = '${group_no}'
+            TRAN_ETC3 = NULL
+        WHERE TRAN_ETC3 = '${group_no}'
           AND TRAN_TYPE IN ('3', '4')
     </update>
 

@@ -9,22 +9,22 @@
         WHERE TRAN_STATUS = '1'
           AND TRAN_DATE &lt;= SYSDATE
           AND TRAN_SENDDATE IS NULL
-          AND TRAN_ETC5 IS NULL
+          AND TRAN_ETC3 IS NULL
     </select>
 
     <update id="req_tran_group_update" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET TRAN_ETC5 = '${group_no}'
+        SET TRAN_ETC3 = '${group_no}'
         WHERE TRAN_STATUS = '1'
           AND TRAN_DATE &lt;= SYSDATE
           AND TRAN_SENDDATE IS NULL
-          AND TRAN_ETC5 IS NULL
+          AND TRAN_ETC3 IS NULL
           AND ROWNUM &lt;= 500
     </update>
 
     <resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
         <result column="TRAN_PR" property="msgid"/>
-        <result column="TRAN_ETC3" property="messagetype"/>
+        <result column="ETC3" property="messagetype"/>
         <result column="TRAN_MSG" property="msg"/>
         <result column="TRAN_MSG" property="msgsms"/>
         <result column="TRAN_PHONE" property="phn"/>
@@ -38,7 +38,7 @@
     <select id="req_tran_select" parameterType="com.dhn.client.bean.SQLParameter" resultMap="RequestTable">
         SELECT
             TRAN_PR as TRAN_PR,
-            'PH' as TRAN_ETC3,
+            'PH' as ETC3,
             TRAN_MSG,
             TRAN_PHONE as TRAN_PHONE,
             TRAN_CALLBACK as TRAN_CALLBACK,
@@ -50,7 +50,7 @@
             NVL(TO_CHAR(TRAN_SENDDATE, 'YYYYMMDDHH24MISS'), '00000000000000') AS TRAN_SENDDATE,
             '3' AS p_invoice
         FROM ${msg_table}
-        WHERE TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_ETC3 = '${group_no}'
           AND TRAN_STATUS = '1'
     </select>
 
@@ -58,15 +58,15 @@
         UPDATE ${msg_table}
         SET TRAN_STATUS = '2',
             TRAN_SENDDATE = SYSDATE
-        WHERE TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_ETC3 = '${group_no}'
     </update>
 
     <update id="req_tran_sent_init" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
         SET TRAN_STATUS = '1',
-            TRAN_ETC5 = NULL,
+            TRAN_ETC3 = NULL,
             TRAN_SENDDATE = NULL
-        WHERE TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_ETC3 = '${group_no}'
     </update>
 
     <!-- 결과 로그 업데이트 (KB_MMS_MSG 테이블 업데이트) -->

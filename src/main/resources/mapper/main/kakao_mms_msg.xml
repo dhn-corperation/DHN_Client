@@ -11,18 +11,18 @@
           AND TRAN_TYPE = '5'
           AND TRAN_SENDDATE IS NULL
           AND TRAN_DATE &lt;= SYSDATE
-          AND TRAN_ETC5 IS NULL
+          AND TRAN_ETC3 IS NULL
     </select>
 
     <!-- 카카오 알림톡 그룹 업데이트 (TRAN_TYPE=1 가정) -->
     <update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
         UPDATE ${msg_table}
-        SET TRAN_ETC5 = '${group_no}'
+        SET TRAN_ETC3 = '${group_no}'
         WHERE TRAN_STATUS = '1'
           AND TRAN_TYPE = '5'
           AND TRAN_SENDDATE IS NULL
           AND TRAN_DATE &lt;= SYSDATE
-          AND TRAN_ETC5 IS NULL
+          AND TRAN_ETC3 IS NULL
           AND ROWNUM &lt;= 500
     </update>
 
@@ -30,7 +30,7 @@
     <resultMap id="KAORequestTable" type="com.dhn.client.bean.KAORequestBean">
         <!-- 발송 식별 정보 -->
         <result column="TRAN_PR" property="msgid"/>
-        <result column="TRAN_ETC3" property="messagetype"/>
+        <result column="TRAN_TYPE" property="messagetype"/>
 
         <!-- 발송자/수신자 정보 -->
         <result column="TRAN_PHONE" property="phn"/>
@@ -67,7 +67,7 @@
     <select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "KAORequestTable">
         SELECT
             TO_CHAR(TRAN_PR) AS TRAN_PR,
-            'AT' AS TRAN_ETC3,
+            'AT' AS TRAN_TYPE,
             TRAN_MSG AS TRAN_MSG,
             TRAN_MSG AS TRAN_MSG,
             CASE
@@ -87,7 +87,7 @@
             '${profile_key}' AS PROFILE_KEY,
             NVL(TO_CHAR(TRAN_SENDDATE, 'YYYYMMDDHH24MISS'), '00000000000000') AS TRAN_SENDDATE
         FROM ${msg_table}
-        WHERE TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_ETC3 = '${group_no}'
           AND TRAN_TYPE = '5'
           AND TRAN_STATUS = '1'
     </select>
@@ -97,7 +97,7 @@
         UPDATE ${msg_table}
         SET TRAN_STATUS = '2',
             TRAN_SENDDATE = SYSDATE
-        WHERE TRAN_ETC5 = '${group_no}'
+        WHERE TRAN_ETC3 = '${group_no}'
           AND TRAN_TYPE = '5'
     </update>
 
@@ -106,8 +106,8 @@
         UPDATE ${msg_table}
         SET TRAN_STATUS = '1',
             TRAN_SENDDATE = NULL,
-            TRAN_ETC5 = NULL
-        WHERE TRAN_ETC5 = '${group_no}'
+            TRAN_ETC3 = NULL
+        WHERE TRAN_ETC3 = '${group_no}'
           AND TRAN_TYPE = '5'
     </update>
 
