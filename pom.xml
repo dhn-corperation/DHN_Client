@@ -12,7 +12,7 @@
 	<artifactId>DHNClientKNUH</artifactId>
 	<version>1.0.0</version>
 	<name>DHNClientKNUH</name>
-	<description>경북대학교병원 발송용</description>
+	<description>강원대병원 발송용</description>
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>

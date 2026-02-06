@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
 public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
@@ -42,8 +41,10 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String userid;
 	private String preGroupNo = "";
 	
+	private static final Logger log = LogManager.getRootLogger();
+	
 	@Autowired
-	private RequestService requestService;
+	private RequestService reqService1;
 	
 	@Autowired
 	private ApplicationContext appContext;
@@ -51,17 +52,15 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		// TODO Auto-generated method stub
-		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.req_table") );
-		param.setZbsysmcd_table(appContext.getEnvironment().getProperty("dhnclient.zbsysmcd_table") );
-
-		param.setMsg_type("3");
+		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.mms_table") );
+		param.setKakao( appContext.getEnvironment().getProperty("dhnclient.kakao") );
+		param.setMsg_type("4");
 		
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
-//		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-
-		log.info("LMS 초기화 완료");
+		
+		//log.info("초기화 완료 됨. - " + param.getKakao() );
 		
 		isStart = true;
 	}
@@ -80,16 +79,16 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				
 				try {
 					
-					int cnt = requestService.selectMMSReqeustCount(param);
+					int cnt = reqService1.selectMMSReqeustCount(param);
 					
 					if(cnt > 0) {
 	
 	
 						param.setGroup_no(group_no);
-
-						requestService.updateMMSGroupNo(param);
 						
-						List<RequestBean> _list = requestService.selectMMSRequests(param);
+						reqService1.updateMMSGroupNo(param);
+						
+						List<RequestBean> _list = reqService1.selectMMSRequests(param);
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
@@ -111,17 +110,17 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 													
 							if(response.getStatusCode() == HttpStatus.OK)
 							{
-								requestService.updateSMSSendComplete(param);
-								log.info("LMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+								reqService1.updateSMSSendComplete(param);
+								log.info("메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("LMS 메세지 전송오류 : " + res.get("message"));
-								requestService.updateSMSSendInit(param);
+								log.info("메세지 전송오류 : " + res.get("message"));
+								reqService1.updateSMSSendInit(param);
 							}
 						} catch(Exception ex) {
-							log.info("LMS 메세지 전송 오류 : " + ex.toString());
-
-							requestService.updateSMSSendInit(param);
+							log.info("메세지 전송 오류 : " + ex.toString());
+							
+							reqService1.updateSMSSendInit(param);
 						}
 						
 					}
@@ -130,7 +129,7 @@ public class MMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
-					log.error("LMS Send Error : " + e.toString());
+					log.error("MMS Send Error : " + e.toString());
 				}
 				preGroupNo = group_no;
 			}

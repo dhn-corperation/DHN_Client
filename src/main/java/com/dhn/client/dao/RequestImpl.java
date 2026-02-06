@@ -1,16 +1,20 @@
 package com.dhn.client.dao;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.dhn.client.bean.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.dhn.client.bean.KAORequestBean;
+import com.dhn.client.bean.KAOtoMMSBean;
+import com.dhn.client.bean.LMSTableBean;
+import com.dhn.client.bean.Msg_Log;
+import com.dhn.client.bean.RequestBean;
+import com.dhn.client.bean.SQLParameter;
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 @Repository
@@ -23,22 +27,16 @@ public class RequestImpl implements RequestDAO{
 	public int selectSMSReqeustCount(SQLParameter param) throws Exception {
 		// TODO Auto-generated method stub
 		int cnt =0 ;
-		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_sms_count_z", param); 
-		} else {
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_sms_count", param); 
-		}
+
+		cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_sms_count", param); 
+		
 		return cnt;
 	}
 
 	@Override
 	public void updateSMSGroupNo(SQLParameter param) throws Exception {
 		
-		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
-			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_sms_group_update_z", param);
-		} else {
-			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_sms_group_update", param);
-		}
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_sms_group_update", param); 
 	}
 	
 	@Override
@@ -61,21 +59,19 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void Insert_msg_log(Msg_Log ml) throws Exception {
 		
-		
-		if(ml.getMsg_type().equals("K")) {
+		if(ml.getMsgType().equals("K")) {
 			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert1", ml);
 			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert2", ml);
 			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_log_insert3", ml);
 		} else {
 			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert1", ml);
-			if(ml.getSecond_flag().equalsIgnoreCase("N")) {
-				sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert2", ml);
-			} else {
-				sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert3", ml);
-			}
-			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert4", ml);
+			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert2", ml);
+			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.result_log_insert3", ml);
 		}
 		
+		if( ml.getNewagent() != null &&  ml.getNewagent().equals("Y") ) {
+			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.result_sdk_update", ml);
+		}
 	}
 
 	@Override
@@ -83,22 +79,14 @@ public class RequestImpl implements RequestDAO{
 		// TODO Auto-generated method stub
 		int cnt ;
 
-		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_mms_count_z", param);
-		} else {
-			cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_mms_count", param);
-		}
+		cnt = sqlSession.selectOne("com.dhn.client.nkakao.mapper.SendRequest.req_mms_count", param); 
 
 		return cnt;
 	}
 
 	@Override
 	public void updateMMSGroupNo(SQLParameter param) throws Exception {
-		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
-			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_mms_group_update_z", param);
-		} else {
-			sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_mms_group_update", param);
-		}
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_mms_group_update", param); 
 	}
 
 	@Override
@@ -146,11 +134,7 @@ public class RequestImpl implements RequestDAO{
 		// TODO Auto-generated method stub
 		int cnt =0 ;
 
-		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
-			cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.req_kao_count_z", param);
-		} else {
-			cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.req_kao_count", param);
-		}
+		cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.req_kao_count", param); 
 		
 		return cnt;
 	}
@@ -158,17 +142,16 @@ public class RequestImpl implements RequestDAO{
 	@Override
 	public void updateKAOGroupNo(SQLParameter param) throws Exception {
 		
-		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
-			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_kao_group_update_z", param);
-		} else {
-			sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_kao_group_update", param);
-		}
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.req_kao_group_update", param); 
 	}
 	
 	@Override
 	public List<KAORequestBean> selectKAORequests(SQLParameter param) throws Exception {
-
-		return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.req_kao_select", param);
+		if(param.getKakaobtn() != null && param.getKakaobtn().equals("Y")) {
+			return sqlSession.selectList("com.dhn.client.kakaobtn.mapper.SendRequest.req_kao_select", param);
+		} else {
+			return sqlSession.selectList("com.dhn.client.kakao.mapper.SendRequest.req_kao_select", param);
+		}
 		
 	}
 
@@ -183,49 +166,91 @@ public class RequestImpl implements RequestDAO{
 	}
 
 	@Override
-	public List<LMSTableBean> kakao_to_sms_select(Msg_Log param) throws Exception {
-		return sqlSession.selectList("com.dhn.client.nkakao.mapper.SendRequest.kakao_to_sms_select", param); 
+	public void checkBackupTable(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_table_backup_1", param);
 	}
 
 	@Override
-	public void insert_sms(LMSTableBean param) throws Exception {
-		sqlSession.insert("com.dhn.client.nkakao.mapper.SendRequest.kakao_to_sms_insert", param); 
+	public void createBackupTable(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_table_backup_2", param);
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_table_backup_3", param);
 	}
 
 	@Override
-	public int selectOldDataCount(SQLParameter param) throws Exception {
-		int cnt =0;
+	public void moveBackupTable(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_table_backup_4", param);
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.req_table_backup_5", param);
+	}
 
-		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
-			cnt = sqlSession.selectOne("com.dhn.client.result.mapper.SendRequest.old_data_count_z", param);
-		} else {
-			cnt = sqlSession.selectOne("com.dhn.client.result.mapper.SendRequest.old_data_count", param);
-		}
+	@Override
+	public void dropBackupTable(SQLParameter param) throws Exception {
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.drop_backup_table", param);
+	}
 
+	@Override
+	public void Insert_sms(LMSTableBean lmst) throws Exception {
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.Insert_sms", lmst);
+	}
+
+	@Override
+	public void Insert_lms(LMSTableBean lmst) throws Exception {
+		sqlSession.update("com.dhn.client.nkakao.mapper.SendRequest.Insert_lms", lmst);
+	}
+
+	@Override
+	public int kakao_to_sms_count(KAOtoMMSBean param) throws Exception {
+		int cnt =0 ;
+
+		cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.kao_to_sms_count", param); 
+		
 		return cnt;
 	}
 
 	@Override
-	public List<OldResultBean> selectOldData(SQLParameter param) throws Exception {
-		if(param.getZbsysmcd_table() != null && param.getZbsysmcd_table().length()>0) {
-			return sqlSession.selectList("com.dhn.client.result.mapper.SendRequest.old_data_list_z", param);
-		} else {
-			return sqlSession.selectList("com.dhn.client.result.mapper.SendRequest.old_data_list", param);
-		}
+	public void kakao_to_sms_group_update(KAOtoMMSBean param) throws Exception {
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kao_to_sms_group_update", param);
 	}
 
 	@Override
-	public void oldDataResult(Msg_Log ml) throws Exception {
-
-		if(!ml.getStat().equalsIgnoreCase("3")){
-			sqlSession.update("com.dhn.client.result.mapper.SendRequest.old_data_update", ml);
-		}
-		if(ml.getPseq()!=null && !ml.getPseq().isEmpty()) {
-			sqlSession.insert("com.dhn.client.result.mapper.SendRequest.old_data_insert2", ml);
-		}else{
-			sqlSession.insert("com.dhn.client.result.mapper.SendRequest.old_data_insert", ml);
-		}
-		sqlSession.delete("com.dhn.client.result.mapper.SendRequest.old_data_delete", ml);
+	public void kakao_to_sms_move(KAOtoMMSBean param) throws Exception {
+		sqlSession.insert("com.dhn.client.kakao.mapper.SendRequest.kao_to_sms_copy", param);
+		
+		sqlSession.insert("com.dhn.client.kakao.mapper.SendRequest.kao_to_sms_delete", param);
 	}
 
+	@Override
+	public int kakao_to_mms_count(KAOtoMMSBean param) throws Exception {
+		int cnt =0 ;
+
+		cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.kao_to_mms_count", param); 
+		
+		return cnt;
+	}
+
+	@Override
+	public void kakao_to_mms_group_update(KAOtoMMSBean param) throws Exception {
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kao_to_mms_group_update", param);
+	}
+
+	@Override
+	public void kakao_to_mms_move(KAOtoMMSBean param) throws Exception {
+		sqlSession.insert("com.dhn.client.kakao.mapper.SendRequest.kao_to_mms_copy", param);
+
+		sqlSession.insert("com.dhn.client.kakao.mapper.SendRequest.kao_to_mms_delete", param);
+	}
+
+	@Override
+	public int kaox_to_sms_count(KAOtoMMSBean param) throws Exception {
+		int cnt = 0;
+		
+		cnt = sqlSession.selectOne("com.dhn.client.kakao.mapper.SendRequest.kaox_to_sms_count", param);
+		
+		return cnt;
+	}
+
+	@Override
+	public void kaox_to_tran_type_update(KAOtoMMSBean param) throws Exception {
+		sqlSession.update("com.dhn.client.kakao.mapper.SendRequest.kaox_to_tran_type_update", param);
+	}
+		
 }

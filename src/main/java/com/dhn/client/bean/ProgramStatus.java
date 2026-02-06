@@ -1,18 +1,27 @@
-package com.dhn.client.service;
+package com.dhn.client.bean;
 
-import com.dhn.client.controller.*;
-import lombok.extern.slf4j.Slf4j;
+import javax.annotation.PostConstruct;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Service;
 
+import com.dhn.client.controller.KAOSendRequest;
+import com.dhn.client.controller.KAOtoMMS;
+import com.dhn.client.controller.KAOtoSMS;
+import com.dhn.client.controller.MMSSendRequest;
+import com.dhn.client.controller.ResultReq;
+import com.dhn.client.controller.SMSSendRequest;
+
 @Service
-@Slf4j
 public class ProgramStatus implements CommandLineRunner, ApplicationListener<ContextClosedEvent> , DisposableBean {
+
+	private static final Logger log = LogManager.getRootLogger();
 	
     @Override
     public void run(String... args) throws Exception {
@@ -24,12 +33,11 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
     	SMSSendRequest.isStart = false;
     	MMSSendRequest.isStart = false;
     	KAOSendRequest.isStart = false;
-		ResultOldLMS.isStart = false;
-		ResultOldKAO.isStart = false;
-		ResultOldSMS.isStart = false;
+    	KAOtoMMS.isStart = false;
+    	KAOtoSMS.isStart = false;
     	log.info("프로그램이 종료 처리 중.....");
     	try {
-			Thread.sleep(5000);
+			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

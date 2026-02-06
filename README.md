@@ -1,4 +1,4 @@
-# 자바 DHN_CLIENT 경북대병원
+# 자바 DHN_CLIENT 강원대병원
 ## Service
 - oracle
 

@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
 public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
@@ -41,9 +40,11 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String dhnServer;
 	private String userid;
 	private String preGroupNo = "";
+
+	private static final Logger log = LogManager.getRootLogger();
 	
 	@Autowired
-	private RequestService requestService;
+	private RequestService reqService;
 	
 	@Autowired
 	private ApplicationContext appContext;
@@ -51,18 +52,16 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		// TODO Auto-generated method stub
-		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.req_table") );
-		param.setZbsysmcd_table(appContext.getEnvironment().getProperty("dhnclient.zbsysmcd_table") );
-
-		param.setMsg_type("1");
+		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.sms_table") );
+		param.setKakao( appContext.getEnvironment().getProperty("dhnclient.kakao") );
+		param.setMsg_type("0");
 		
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
-//		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-
-		log.info("SMS 초기화 완료");
-
+		
+		//log.info("초기화 완료 됨. - " + param.getKakao() );
+		
 		isStart = true;
 	}
 	
@@ -80,15 +79,15 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 			
 				try {
 					
-					int cnt = requestService.selectSMSReqeustCount(param);
+					int cnt = reqService.selectSMSReqeustCount(param);
 					//log.info("SMS Count : " + cnt);
 					if(cnt > 0) {
 	
 						param.setGroup_no(group_no);
-
-						requestService.updateSMSGroupNo(param);
 						
-						List<RequestBean> _list = requestService.selectSMSRequests(param);
+						reqService.updateSMSGroupNo(param);
+						
+						List<RequestBean> _list = reqService.selectSMSRequests(param);
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
@@ -110,17 +109,17 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 													
 							if(response.getStatusCode() ==  HttpStatus.OK)
 							{
-								requestService.updateSMSSendComplete(param);
-								log.info("SMS 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+								reqService.updateSMSSendComplete(param);
+								log.info("메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("SMS 메세지 전송오류 : " + res.get("message"));
-								requestService.updateSMSSendInit(param);
+								log.info("메세지 전송오류 : " + res.get("message"));
+								reqService.updateSMSSendInit(param);
 							}
 						} catch(Exception ex) {
-							log.info("SMS 메세지 전송 오류 : " + ex.toString());
-
-							requestService.updateSMSSendInit(param);
+							log.info("메세지 전송 오류 : " + ex.toString());
+							
+							reqService.updateSMSSendInit(param);
 						}
 						
 					}

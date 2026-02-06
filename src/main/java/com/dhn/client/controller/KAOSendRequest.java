@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,6 @@ import com.dhn.client.service.RequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-@Slf4j
 public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent>{
 
 	public static boolean isStart = false;
@@ -40,8 +38,10 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	private String userid;
 	private String preGroupNo = "";
 
+	private static final Logger log = LogManager.getRootLogger();
+	
 	@Autowired
-	private RequestService requestService;
+	private RequestService reqService;
 	
 	@Autowired
 	private ApplicationContext appContext;
@@ -52,18 +52,18 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		// TODO Auto-generated method stub
-		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.req_table") );
-		param.setZbsysmcd_table(appContext.getEnvironment().getProperty("dhnclient.zbsysmcd_table") );
-		
+		param.setMsg_table( appContext.getEnvironment().getProperty("dhnclient.kakao_table") );
 		param.setKakao( appContext.getEnvironment().getProperty("dhnclient.kakao") );
+		param.setKakaobtn( appContext.getEnvironment().getProperty("dhnclient.kakaobtn") );
+		param.setMsg_type("5");
+		
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
-//		dhnServer = "https://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
-
+		
+		log.info("초기화 완료 됨. - " + param.getKakao() );
 		if(param.getKakao() != null && param.getKakao().toUpperCase().equals("Y")) {
 			isStart = true;
-			log.info("KAO 초기화 완료");
 		} else {
 			posts.postProcessBeforeDestruction(this, null);
 		}
@@ -83,15 +83,15 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 				
 				try {
 					
-					int cnt = requestService.selectKAOReqeustCount(param);
+					int cnt = reqService.selectKAOReqeustCount(param);
 					//log.info("Kakao Count : " + cnt);
 					if(cnt > 0) {
 	
 						param.setGroup_no(group_no);
-
-						requestService.updateKAOGroupNo(param);
 						
-						List<KAORequestBean> _list = requestService.selectKAORequests(param);
+						reqService.updateKAOGroupNo(param);
+						
+						List<KAORequestBean> _list = reqService.selectKAORequests(param);
 						
 						StringWriter sw = new StringWriter();
 						ObjectMapper om = new ObjectMapper();
@@ -113,17 +113,17 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 													
 							if(response.getStatusCode() ==  HttpStatus.OK)
 							{
-								requestService.updateKAOSendComplete(param);
-								log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+								reqService.updateKAOSendComplete(param);
+								log.info("메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
 							} else {
 								Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-								log.info("KAO 메세지 전송오류 : " + res.get("message"));
-								requestService.updateKAOSendInit(param);
+								log.info("메세지 전송오류 : " + res.get("message"));
+								reqService.updateKAOSendInit(param);
 							}
 						} catch(Exception ex) {
-							log.info("KAO 메세지 전송 오류 : " + ex.toString());
-
-							requestService.updateKAOSendInit(param);
+							log.info("메세지 전송 오류 : " + ex.toString());
+							
+							reqService.updateKAOSendInit(param);
 						}
 						
 					}
@@ -132,7 +132,7 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
-					log.error("KAO Send Error : " + e.toString());
+					log.error("SMS Send Error : " + e.toString());
 				}
 				preGroupNo = group_no;
 			}
