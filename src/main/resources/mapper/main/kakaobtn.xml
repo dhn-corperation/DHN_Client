@@ -84,7 +84,7 @@
 		      ,'N' as crypto
 		      ,to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') as curr_date
               ,(case when tran_button1_type is not null then 
-                  '{"type":"' || decode(trim(TRAN_BUTTON1_TYPE) ,'1','DS','2','WL','3','AL','4','BK', '5','MD')||'","name":"'||TRAN_BUTTON1_NAME ||'","url_mobile":"'||TRAN_BUTTON1_URL ||'","url_pc":"'||TRAN_BUTTON1_URL2 ||'"}' 
+                  '{"type":"' || decode(trim(TRAN_BUTTON1_TYPE) ,'1','DS','2','WL','3','AL','4','BK', '5','MD')||'","name":"'||TRAN_BUTTON1_NAME ||'","url_mobile":"'||TRAN_BUTTON1_URL ||'","url_pc":"'||TRAN_BUTTON1_URL2 ||'"}'
               end) as btn_1 
               ,(case when TRAN_BUTTON2_type is not null then 
                   '{"type":"' || decode(trim(TRAN_BUTTON2_TYPE),'1','DS','2','WL','3','AL','4','BK', '5','MD')||'","name":"'||TRAN_BUTTON2_NAME||'","url_mobile":"'||TRAN_BUTTON2_URL||'","url_pc":"'||TRAN_BUTTON2_URL2||'"}' 
