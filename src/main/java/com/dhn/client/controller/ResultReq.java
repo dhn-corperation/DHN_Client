@@ -201,9 +201,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 						if(lmsBean != null){
 
 							lmsBean.setTable(msgTable);
-							if(database.equals("oracle")){
-								lmsBean.setTable_seq(tableseq);
-							}
+							lmsBean.setTable_seq(tableseq);
 							lmsBean.setDatabase(database);
 
 							// SMS가 90자 초과일 경우 LMS로 변경
