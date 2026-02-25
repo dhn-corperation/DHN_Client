@@ -1,6 +1,6 @@
 # 자바 DHN_CLIENT 한국기술교육대학교 (ktech)
 ## Database
-- oracle
+- mariadb
 
 ## Java version
 - 1.8
