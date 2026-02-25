@@ -51,7 +51,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
-		tableseq = appContext.getEnvironment().getProperty("dhnclient.table_seq");
+		tableseq = appContext.getEnvironment().getProperty("dhnclient.table_seq","");
 		database = appContext.getEnvironment().getProperty("dhnclient.database","oracle");
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
@@ -201,7 +201,9 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 						if(lmsBean != null){
 
 							lmsBean.setTable(msgTable);
-							lmsBean.setTable_seq(tableseq);
+							if(database.equals("oracle")){
+								lmsBean.setTable_seq(tableseq);
+							}
 							lmsBean.setDatabase(database);
 
 							// SMS가 90자 초과일 경우 LMS로 변경
