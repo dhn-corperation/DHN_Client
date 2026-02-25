@@ -38,6 +38,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 	private String msgTable = "";
 	private String tableseq = "";
 	private String logTable = "";
+	private String database = "oracle";
 	
 	@Autowired
 	private RequestService requestService;
@@ -51,6 +52,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		msgTable = appContext.getEnvironment().getProperty("dhnclient.msg_table");
 		logTable = appContext.getEnvironment().getProperty("dhnclient.log_table");
 		tableseq = appContext.getEnvironment().getProperty("dhnclient.table_seq");
+		database = appContext.getEnvironment().getProperty("dhnclient.database","oracle");
 
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";
 		userid = appContext.getEnvironment().getProperty("dhnclient.userid");
@@ -175,6 +177,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 			_ml.setMsgid(ent.getString("msgid"));
 			_ml.setMsg_table(msgTable);
 			_ml.setLog_table(logTable);
+			_ml.setDatabase(database);
 
 			String rscode = "7000";
 			_ml.setStatus("2");
@@ -199,6 +202,7 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 
 							lmsBean.setTable(msgTable);
 							lmsBean.setTable_seq(tableseq);
+							lmsBean.setDatabase(database);
 
 							// SMS가 90자 초과일 경우 LMS로 변경
 							if(lmsBean.getSmskind().equals("S")){

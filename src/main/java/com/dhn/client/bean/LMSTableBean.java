@@ -23,5 +23,6 @@ public class LMSTableBean {
     private String table_seq;
     private String table;
     private String smrseq;
+    private String database;
 }
 

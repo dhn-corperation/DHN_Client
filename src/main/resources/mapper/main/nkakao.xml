@@ -4,108 +4,355 @@
 <mapper namespace="com.dhn.client.nkakao.mapper.SendRequest">
 
     <select id="req_sms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
-        select count(1) as cnt
-        from ${msg_table}
-        where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND = '${msg_type}'
-            and RETRY = '0'
+        <choose>
+            <when test="database == 'oracle'">
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+            </when>
+
+            <when test="database == 'mysql'">
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+            </when>
+
+            <otherwise>
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+            </otherwise>
+        </choose>
     </select>
 
     <update id="req_sms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set RETRY = '${group_no}'
-        where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND = '${msg_type}'
-            and RETRY = '0'
-            and ROWNUM &lt;= 1000
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set RETRY = '${group_no}'
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+                    and ROWNUM &lt;= 500
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RETRY = '${group_no}'
+                WHERE RESULT IN ('0','R')
+                    AND (REQTIME = '00000000000000' OR REQTIME &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    AND SENTTIME IS NULL
+                    AND KIND = '${msg_type}'
+                    AND RETRY = '0'
+                LIMIT 500
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set RETRY = '${group_no}'
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+                    and ROWNUM &lt;= 500
+            </otherwise>
+        </choose>
     </update>
 
     <select id="req_lms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
-        select count(1) as cnt
-        from ${msg_table} msg left join ${img_table} img
-        on msg.FKCONTENT = img.SEQNO
-        where msg.RESULT in ('0','R')
-            and (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and msg.SENTTIME is NULL
-            and msg.KIND = '${msg_type}'
-            and (msg.FKCONTENT IS NULL OR img.FILECNT = 0)
-            and msg.RETRY = '0'
+        <choose>
+            <when test="database == 'oracle'">
+                select count(1) as cnt
+                from ${msg_table} msg left join ${img_table} img
+                    on msg.FKCONTENT = img.SEQNO
+                where msg.RESULT in ('0','R')
+                    and (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and msg.SENTTIME is NULL
+                    and msg.KIND = '${msg_type}'
+                    and (msg.FKCONTENT IS NULL OR img.FILECNT = 0)
+                    and msg.RETRY = '0'
+            </when>
+
+            <when test="database == 'mysql'">
+                SELECT COUNT(1) AS cnt
+                FROM ${msg_table} msg LEFT JOIN ${img_table} img
+                    ON msg.FKCONTENT = img.SEQNO
+                WHERE msg.RESULT IN ('0','R')
+                    AND (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    AND msg.SENTTIME IS NULL
+                    AND msg.KIND = '${msg_type}'
+                    AND (msg.FKCONTENT IS NULL OR img.FILECNT = 0)
+                    AND msg.RETRY = '0'
+            </when>
+
+            <otherwise>
+                select count(1) as cnt
+                from ${msg_table} msg left join ${img_table} img
+                    on msg.FKCONTENT = img.SEQNO
+                where msg.RESULT in ('0','R')
+                    and (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and msg.SENTTIME is NULL
+                    and msg.KIND = '${msg_type}'
+                    and (msg.FKCONTENT IS NULL OR img.FILECNT = 0)
+                    and msg.RETRY = '0'
+            </otherwise>
+        </choose>
     </select>
 
     <update id="req_lms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table} msg
-        set msg.RETRY = '${group_no}'
-        where RESULT in ('0','R')
-            and (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and msg.SENTTIME is NULL
-            and msg.KIND = '${msg_type}'
-            AND (
-                msg.FKCONTENT IS NULL
-                OR msg.FKCONTENT IN (
-                    SELECT img.SEQNO
-                    FROM ${img_table} img
-                    WHERE img.FILECNT = 0
-                )
-            )
-            and msg.RETRY = '0'
-            AND ROWNUM &lt;= 1000
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table} msg
+                set msg.RETRY = '${group_no}'
+                where RESULT in ('0','R')
+                    and (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and msg.SENTTIME is NULL
+                    and msg.KIND = '${msg_type}'
+                    AND (
+                        msg.FKCONTENT IS NULL
+                        OR msg.FKCONTENT IN (
+                            SELECT img.SEQNO
+                            FROM ${img_table} img
+                            WHERE img.FILECNT = 0
+                        )
+                    )
+                    and msg.RETRY = '0'
+                    AND ROWNUM &lt;= 500
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table} msg
+                SET msg.RETRY = '${group_no}'
+                WHERE msg.RESULT IN ('0','R')
+                    AND (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    AND msg.SENTTIME IS NULL
+                    AND msg.KIND = '${msg_type}'
+                    AND (
+                        msg.FKCONTENT IS NULL
+                        OR msg.FKCONTENT IN (
+                            SELECT img.SEQNO
+                            FROM ${img_table} img
+                            WHERE img.FILECNT = 0
+                        )
+                    )
+                    AND msg.RETRY = '0'
+                LIMIT 500
+            </when>
+
+            <otherwise>
+                update ${msg_table} msg
+                set msg.RETRY = '${group_no}'
+                where RESULT in ('0','R')
+                    and (msg.REQTIME = '00000000000000' OR msg.REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and msg.SENTTIME is NULL
+                    and msg.KIND = '${msg_type}'
+                    AND (
+                        msg.FKCONTENT IS NULL
+                        OR msg.FKCONTENT IN (
+                            SELECT img.SEQNO
+                            FROM ${img_table} img
+                            WHERE img.FILECNT = 0
+                        )
+                    )
+                    and msg.RETRY = '0'
+                    AND ROWNUM &lt;= 500
+            </otherwise>
+        </choose>
     </update>
 
     <select id="req_mms_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
-        select count(1) as cnt
-        from ${msg_table}
-        where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND = '${msg_type}'
-            and RETRY = '0'
-            and PSEQ is not null
+        <choose>
+            <when test="database == 'oracle'">
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+                    and PSEQ is not null
+            </when>
+
+            <when test="database == 'mysql'">
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+                    and PSEQ is not null
+            </when>
+
+            <otherwise>
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+                    and PSEQ is not null
+            </otherwise>
+        </choose>
     </select>
 
     <update id="req_mms_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set RETRY = '${group_no}'
-        where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND = '${msg_type}'
-            and RETRY = '0'
-            and PSEQ is not null
-            AND ROWNUM &lt;= 1000
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set RETRY = '${group_no}'
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+                    and PSEQ is not null
+                    AND ROWNUM &lt;= 500
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RETRY = '${group_no}'
+                WHERE RESULT IN ('0','R')
+                    AND (REQTIME = '00000000000000' OR REQTIME &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    AND SENTTIME IS NULL
+                    AND KIND = '${msg_type}'
+                    AND RETRY = '0'
+                    AND PSEQ IS NOT NULL
+                LIMIT 500
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set RETRY = '${group_no}'
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND = '${msg_type}'
+                    and RETRY = '0'
+                    and PSEQ is not null
+                    AND ROWNUM &lt;= 500
+            </otherwise>
+        </choose>
     </update>
 
     <select id="req_mms_image_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType="int">
-        select count(1) as cnt
-        from ${msg_table} msg left join ${img_table} img
-        on msg.FKCONTENT = img.SEQNO
-        where msg.FKCONTENT is not null
-            and img.FILECNT > '0'
-            and msg.PSEQ is null
+        <choose>
+            <when test="database == 'oracle'">
+                select count(1) as cnt
+                from ${msg_table} msg left join ${img_table} img
+                    on msg.FKCONTENT = img.SEQNO
+                where msg.FKCONTENT is not null
+                    and img.FILECNT &gt; 0
+                    and msg.PSEQ is null
+            </when>
+
+            <when test="database == 'mysql'">
+                SELECT COUNT(1) AS cnt
+                FROM ${msg_table} msg LEFT JOIN ${img_table} img
+                    ON msg.FKCONTENT = img.SEQNO
+                WHERE msg.FKCONTENT IS NOT NULL
+                    AND img.FILECNT &gt; 0
+                    AND msg.PSEQ IS NULL
+            </when>
+
+            <otherwise>
+                select count(1) as cnt
+                from ${msg_table} msg left join ${img_table} img
+                    on msg.FKCONTENT = img.SEQNO
+                where msg.FKCONTENT is not null
+                    and img.FILECNT &gt; 0
+                    and msg.PSEQ is null
+            </otherwise>
+        </choose>
     </select>
 
     <select id="req_mms_image" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "com.dhn.client.bean.MMSImageBean">
-        select msg.SEQNO as msgid,
-               msg.FKCONTENT as fkContent,
-               img.FILEPATH1 as file1,
-               img.FILEPATH2 as file2,
-               img.FILEPATH3 as file3
-        from ${msg_table} msg join ${img_table} img
-            on msg.FKCONTENT = img.SEQNO
-        where msg.FKCONTENT is not null
-            and img.FILECNT > '0'
-            and msg.PSEQ is null
-            and msg.KIND = 'M'
+        <choose>
+            <when test="database == 'oracle'">
+                select msg.SEQNO as msgid,
+                    msg.FKCONTENT as fkContent,
+                    img.FILEPATH1 as file1,
+                    img.FILEPATH2 as file2,
+                    img.FILEPATH3 as file3
+                from ${msg_table} msg join ${img_table} img
+                    on msg.FKCONTENT = img.SEQNO
+                where msg.FKCONTENT is not null
+                    and img.FILECNT &gt; 0
+                    and msg.PSEQ is null
+                    and msg.KIND = 'M'
+            </when>
+
+            <when test="database == 'mysql'">
+                SELECT
+                    msg.SEQNO AS msgid,
+                    msg.FKCONTENT AS fkContent,
+                    img.FILEPATH1 AS file1,
+                    img.FILEPATH2 AS file2,
+                    img.FILEPATH3 AS file3
+                FROM ${msg_table} msg JOIN ${img_table} img
+                    ON msg.FKCONTENT = img.SEQNO
+                WHERE msg.FKCONTENT IS NOT NULL
+                    AND img.FILECNT &gt; 0
+                    AND msg.PSEQ IS NULL
+                    AND msg.KIND = 'M'
+            </when>
+
+            <otherwise>
+                select msg.SEQNO as msgid,
+                    msg.FKCONTENT as fkContent,
+                    img.FILEPATH1 as file1,
+                    img.FILEPATH2 as file2,
+                    img.FILEPATH3 as file3
+                from ${msg_table} msg join ${img_table} img
+                    on msg.FKCONTENT = img.SEQNO
+                where msg.FKCONTENT is not null
+                    and img.FILECNT &gt; 0
+                    and msg.PSEQ is null
+                    and msg.KIND = 'M'
+            </otherwise>
+        </choose>
     </select>
 
     <update id="req_mms_key_update" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set PSEQ = '${mms_key}'
-        where FKCONTENT = '${fkContent}'
-            and SEQNO = '${msgid}'
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set PSEQ = '${mms_key}'
+                where FKCONTENT = '${fkContent}'
+                    and SEQNO = '${msgid}'
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET PSEQ = '${mms_key}'
+                WHERE FKCONTENT = '${fkContent}'
+                    AND SEQNO = '${msgid}'
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set PSEQ = '${mms_key}'
+                where FKCONTENT = '${fkContent}'
+                    and SEQNO = '${msgid}'
+            </otherwise>
+        </choose>
     </update>
 
     <resultMap id="RequestTable" type="com.dhn.client.bean.RequestBean">
@@ -125,83 +372,263 @@
     </resultMap>
 
     <select id="req_sms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        select
-            SEQNO as msg_id,
-            'PH' as message_type,
-            MSG as msg_txt,
-            MSG as sms_txt,
-            CALLPHONE as call_to,
-            REQPHONE as call_from,
-            null as msg_txt_title,
-            'S' as smskind,
-            'D' as pcom,
-            'N' as crypto,
-            to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
-            NVL(REQTIME, '00000000000000') AS snd_dttm
-        from ${msg_table}
-        WHERE RESULT in ('0','R')
-            and RETRY = '${group_no}'
-            and KIND = '${msg_type}'
+        <choose>
+            <when test="database == 'oracle'">
+                select
+                    SEQNO as msg_id,
+                    'PH' as message_type,
+                    MSG as msg_txt,
+                    MSG as sms_txt,
+                    CALLPHONE as call_to,
+                    REQPHONE as call_from,
+                    null as msg_txt_title,
+                    'S' as smskind,
+                    'D' as pcom,
+                    'N' as crypto,
+                    to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
+                    NVL(REQTIME, '00000000000000') AS snd_dttm
+                from ${msg_table}
+                WHERE RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+            </when>
+
+            <when test="database == 'mysql'">
+                SELECT
+                    SEQNO AS msg_id,
+                    'PH' AS message_type,
+                    MSG AS msg_txt,
+                    MSG AS sms_txt,
+                    CALLPHONE AS call_to,
+                    REQPHONE AS call_from,
+                    NULL AS msg_txt_title,
+                    'S' AS smskind,
+                    'D' AS pcom,
+                    'N' AS crypto,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS curr_date,
+                    IFNULL(REQTIME, '00000000000000') AS snd_dttm
+                FROM ${msg_table}
+                WHERE RESULT IN ('0','R')
+                    AND RETRY = '${group_no}'
+                    AND KIND = '${msg_type}'
+            </when>
+
+            <otherwise>
+                select
+                    SEQNO as msg_id,
+                    'PH' as message_type,
+                    MSG as msg_txt,
+                    MSG as sms_txt,
+                    CALLPHONE as call_to,
+                    REQPHONE as call_from,
+                    null as msg_txt_title,
+                    'S' as smskind,
+                    'D' as pcom,
+                    'N' as crypto,
+                    to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
+                    NVL(REQTIME, '00000000000000') AS snd_dttm
+                from ${msg_table}
+                WHERE RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+            </otherwise>
+        </choose>
     </select>
 
     <select id="req_lms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        select
-            SEQNO as msg_id,
-            'PH' as message_type,
-            MSG as msg_txt,
-            MSG as sms_txt,
-            CALLPHONE as call_to,
-            REQPHONE as call_from,
-            SUBJECT as msg_txt_title,
-            'L' as smskind,
-            'D' as pcom,
-            'N' as crypto,
-            to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
-            NVL(REQTIME, '00000000000000') AS snd_dttm
-        from ${msg_table}
-        where RESULT in ('0','R')
-            and RETRY = '${group_no}'
-            and KIND = '${msg_type}'
+        <choose>
+            <when test="database == 'oracle'">
+                select
+                    SEQNO as msg_id,
+                    'PH' as message_type,
+                    MSG as msg_txt,
+                    MSG as sms_txt,
+                    CALLPHONE as call_to,
+                    REQPHONE as call_from,
+                    SUBJECT as msg_txt_title,
+                    'L' as smskind,
+                    'D' as pcom,
+                    'N' as crypto,
+                    to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
+                    NVL(REQTIME, '00000000000000') AS snd_dttm
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+            </when>
+
+            <when test="database == 'mysql'">
+                SELECT
+                    SEQNO AS msg_id,
+                    'PH' AS message_type,
+                    MSG AS msg_txt,
+                    MSG AS sms_txt,
+                    CALLPHONE AS call_to,
+                    REQPHONE AS call_from,
+                    SUBJECT AS msg_txt_title,
+                    'L' AS smskind,
+                    'D' AS pcom,
+                    'N' AS crypto,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS curr_date,
+                    IFNULL(REQTIME, '00000000000000') AS snd_dttm
+                FROM ${msg_table}
+                WHERE RESULT IN ('0','R')
+                    AND RETRY = '${group_no}'
+                    AND KIND = '${msg_type}'
+            </when>
+
+            <otherwise>
+                select
+                    SEQNO as msg_id,
+                    'PH' as message_type,
+                    MSG as msg_txt,
+                    MSG as sms_txt,
+                    CALLPHONE as call_to,
+                    REQPHONE as call_from,
+                    SUBJECT as msg_txt_title,
+                    'L' as smskind,
+                    'D' as pcom,
+                    'N' as crypto,
+                    to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
+                    NVL(REQTIME, '00000000000000') AS snd_dttm
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+            </otherwise>
+        </choose>
     </select>
 
     <select id="req_mms_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        select
-            SEQNO as msg_id,
-            'PH' as message_type,
-            MSG as msg_txt,
-            MSG as sms_txt,
-            CALLPHONE as call_to,
-            REQPHONE as call_from,
-            SUBJECT as msg_txt_title,
-            'M' as smskind,
-            'D' as pcom,
-            'N' as crypto,
-            to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
-            NVL(REQTIME, '00000000000000') AS snd_dttm,
-            PSEQ as mms_image_key
-        from ${msg_table}
-        where RESULT in ('0','R')
-          and RETRY = '${group_no}'
-          and KIND = '${msg_type}'
-          and PSEQ is not null
+        <choose>
+            <when test="database == 'oracle'">
+                select
+                    SEQNO as msg_id,
+                    'PH' as message_type,
+                    MSG as msg_txt,
+                    MSG as sms_txt,
+                    CALLPHONE as call_to,
+                    REQPHONE as call_from,
+                    SUBJECT as msg_txt_title,
+                    'M' as smskind,
+                    'D' as pcom,
+                    'N' as crypto,
+                    to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
+                    NVL(REQTIME, '00000000000000') AS snd_dttm,
+                    PSEQ as mms_image_key
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+                    and PSEQ is not null
+            </when>
+
+            <when test="database == 'mysql'">
+                SELECT
+                    SEQNO AS msg_id,
+                    'PH' AS message_type,
+                    MSG AS msg_txt,
+                    MSG AS sms_txt,
+                    CALLPHONE AS call_to,
+                    REQPHONE AS call_from,
+                    SUBJECT AS msg_txt_title,
+                    'M' AS smskind,
+                    'D' AS pcom,
+                    'N' AS crypto,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS curr_date,
+                    IFNULL(REQTIME, '00000000000000') AS snd_dttm,
+                    PSEQ AS mms_image_key
+                FROM ${msg_table}
+                WHERE RESULT IN ('0','R')
+                    AND RETRY = '${group_no}'
+                    AND KIND = '${msg_type}'
+                    AND PSEQ IS NOT NULL
+            </when>
+
+            <otherwise>
+                select
+                    SEQNO as msg_id,
+                    'PH' as message_type,
+                    MSG as msg_txt,
+                    MSG as sms_txt,
+                    CALLPHONE as call_to,
+                    REQPHONE as call_from,
+                    SUBJECT as msg_txt_title,
+                    'M' as smskind,
+                    'D' as pcom,
+                    'N' as crypto,
+                    to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
+                    NVL(REQTIME, '00000000000000') AS snd_dttm,
+                    PSEQ as mms_image_key
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+                    and PSEQ is not null
+            </otherwise>
+        </choose>
     </select>
 
     <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set RESULT = '1',
-            SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-        where RESULT in ('0','R')
-          and RETRY = '${group_no}'
-          and KIND = '${msg_type}'
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set RESULT = '1',
+                    SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RESULT = '1',
+                    SENTTIME = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+                WHERE RESULT IN ('0','R')
+                    AND RETRY = '${group_no}'
+                    AND KIND = '${msg_type}'
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set RESULT = '1',
+                    SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+            </otherwise>
+        </choose>
     </update>
 
     <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set RESULT = '0',
-            RETRY = '0',
-            SENTTIME = NULL
-        where RETRY = '${group_no}'
-          and KIND = '${msg_type}'
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set RESULT = '0',
+                    RETRY = '0',
+                    SENTTIME = NULL
+                where RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RESULT = '0',
+                    RETRY = '0',
+                    SENTTIME = NULL
+                WHERE RETRY = '${group_no}'
+                    AND KIND = '${msg_type}'
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set RESULT = '0',
+                    RETRY = '0',
+                    SENTTIME = NULL
+                where RETRY = '${group_no}'
+                    and KIND = '${msg_type}'
+            </otherwise>
+        </choose>
     </update>
 
     <resultMap id="LMSTable" type="com.dhn.client.bean.LMSTableBean">
@@ -212,7 +639,6 @@
         <result column="reqphone" property="reqphone"/>
         <result column="callname" property="callname"/>
         <result column="callphone" property="callphone"/>
-        <result column="msgtitle" property="msgtitle"/>
         <result column="msgtitle" property="msgtitle"/>
         <result column="msg" property="msg"/>
         <result column="msgsms" property="msgsms"/>
@@ -226,105 +652,417 @@
     </resultMap>
 
     <select id="kakao_to_sms_select" parameterType="com.dhn.client.bean.Msg_Log" resultMap="LMSTable">
-        select SEQNO      as msgid,
-               INTIME     as intime,
-               USERCODE   as usercode,
-               REQNAME    as reqname,
-               REQPHONE   as reqphone,
-               CALLNAME   as callname,
-               CALLPHONE  as callphone,
-               SUBJECT    as msgtitle,
-               MSG        as msg,
-               RETEXT     as msgsms,
-               (case
-                    when RESENTFLAG = '7' then 'S'
-                    when RESENTFLAG in ('8', '9') then 'M'
-                   end)   as smskind,
-               FKCONTENT  as mmskey,
-               DEPTCODE   as deptcode,
-               SEQ_EX_UMS as seq_ex_ums,
-               EMPL_NO    as empl_no,
-               REQID      as reqid,
-               SURE_MESSAGE_REQUEST_SEQ as smrseq
-        from ${msg_table}
-        where SEQNO = '${msgid}'
-          and nvl(RESENTFLAG, '0') != '0'
+        <choose>
+            <when test="database == 'oracle'">
+                select SEQNO      as msgid,
+                    INTIME     as intime,
+                    USERCODE   as usercode,
+                    REQNAME    as reqname,
+                    REQPHONE   as reqphone,
+                    CALLNAME   as callname,
+                    CALLPHONE  as callphone,
+                    SUBJECT    as msgtitle,
+                    MSG        as msg,
+                    RETEXT     as msgsms,
+                    (case
+                        when RESENTFLAG = '7' then 'S'
+                        when RESENTFLAG in ('8', '9') then 'M'
+                    end)   as smskind,
+                    FKCONTENT  as mmskey,
+                    DEPTCODE   as deptcode,
+                    SEQ_EX_UMS as seq_ex_ums,
+                    EMPL_NO    as empl_no,
+                    REQID      as reqid,
+                    SURE_MESSAGE_REQUEST_SEQ as smrseq
+                from ${msg_table}
+                where SEQNO = '${msgid}'
+                    and nvl(RESENTFLAG, '0') != '0'
+            </when>
+
+            <when test="database == 'mysql'">
+                SELECT
+                    SEQNO AS msgid,
+                    INTIME AS intime,
+                    USERCODE AS usercode,
+                    REQNAME AS reqname,
+                    REQPHONE AS reqphone,
+                    CALLNAME AS callname,
+                    CALLPHONE AS callphone,
+                    SUBJECT AS msgtitle,
+                    MSG AS msg,
+                    RETEXT AS msgsms,
+                    CASE
+                        WHEN RESENTFLAG = '7' THEN 'S'
+                        WHEN RESENTFLAG IN ('8','9') THEN 'M'
+                    END AS smskind,
+                    FKCONTENT AS mmskey,
+                    DEPTCODE AS deptcode,
+                    SEQ_EX_UMS AS seq_ex_ums,
+                    EMPL_NO AS empl_no,
+                    REQID AS reqid,
+                    SURE_MESSAGE_REQUEST_SEQ AS smrseq
+                FROM ${msg_table}
+                WHERE SEQNO = '${msgid}'
+                    AND IFNULL(RESENTFLAG, '0') != '0'
+            </when>
+
+            <otherwise>
+                select SEQNO      as msgid,
+                    INTIME     as intime,
+                    USERCODE   as usercode,
+                    REQNAME    as reqname,
+                    REQPHONE   as reqphone,
+                    CALLNAME   as callname,
+                    CALLPHONE  as callphone,
+                    SUBJECT    as msgtitle,
+                    MSG        as msg,
+                    RETEXT     as msgsms,
+                    (case
+                        when RESENTFLAG = '7' then 'S'
+                        when RESENTFLAG in ('8', '9') then 'M'
+                    end)   as smskind,
+                    FKCONTENT  as mmskey,
+                    DEPTCODE   as deptcode,
+                    SEQ_EX_UMS as seq_ex_ums,
+                    EMPL_NO    as empl_no,
+                    REQID      as reqid,
+                    SURE_MESSAGE_REQUEST_SEQ as smrseq
+                from ${msg_table}
+                where SEQNO = '${msgid}'
+                    and nvl(RESENTFLAG, '0') != '0'
+            </otherwise>
+        </choose>
     </select>
 
     <insert id="kao_to_sms_insert" parameterType="com.dhn.client.bean.LMSTableBean">
-        insert into ${table} (
-            SEQNO,
-            INTIME,
-            USERCODE,
-            REQNAME,
-            REQPHONE,
-            CALLNAME,
-            CALLPHONE,
-            SUBJECT,
-            MSG,
-            KIND,
-            FKCONTENT,
-            DEPTCODE,
-            SEQ_EX_UMS,
-            EMPL_NO,
-            REQID,
-            SURE_MESSAGE_REQUEST_SEQ
-             )
-        values (
-            ${table_seq}.nextval
-            ,TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-            ,'${usercode}'
-            ,'${reqname}'
-            ,'${reqphone}'
-            ,'${callname}'
-            ,'${callphone}'
-            ,'${msgtitle}'
-            ,'${msgsms}'
-            ,'${smskind}'
-            ,'${mmskey}'
-            ,'${deptcode}'
-            ,'${seq_ex_ums}'
-            ,'${empl_no}'
-            ,'${reqid}'
-            ,'${smrseq}'
-             )
+        <choose>
+            <when test="database == 'oracle'">
+                insert into ${table} (
+                    SEQNO,
+                    INTIME,
+                    USERCODE,
+                    REQNAME,
+                    REQPHONE,
+                    REQTIME,
+                    CALLNAME,
+                    CALLPHONE,
+                    SUBJECT,
+                    MSG,
+                    KIND,
+                    FKCONTENT,
+                    DEPTCODE,
+                    SEQ_EX_UMS,
+                    EMPL_NO,
+                    REQID,
+                    SURE_MESSAGE_REQUEST_SEQ,
+                    RESULT,
+                    BATCHFLAG,
+                    RETRY,
+                    K_EXPIRETIME,
+                    K_AT_SEND_TYPE,
+                    K_AD_FLAG,
+                    PSEQ
+                )
+                values (
+                    ${table_seq}.nextval
+                    ,TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                    ,'${usercode}'
+                    ,'${reqname}'
+                    ,'${reqphone}'
+                    ,'00000000000000'
+                    ,'${callname}'
+                    ,'${callphone}'
+                    ,'${msgtitle}'
+                    ,'${msgsms}'
+                    ,'${smskind}'
+                    ,'${mmskey}'
+                    ,'${deptcode}'
+                    ,'${seq_ex_ums}'
+                    ,'${empl_no}'
+                    ,'${reqid}'
+                    ,'${smrseq}'
+                    ,'0'
+                    ,0
+                    ,0
+                    ,180
+                    ,'0'
+                    ,'N'
+                    ,''
+                )
+            </when>
+
+            <when test="database == 'mysql'">
+                INSERT INTO ${table} (
+                    INTIME,
+                    USERCODE,
+                    REQNAME,
+                    REQPHONE,
+                    REQTIME,
+                    CALLNAME,
+                    CALLPHONE,
+                    SUBJECT,
+                    MSG,
+                    KIND,
+                    FKCONTENT,
+                    DEPTCODE,
+                    SEQ_EX_UMS,
+                    EMPL_NO,
+                    REQID,
+                    SURE_MESSAGE_REQUEST_SEQ,
+                    RESULT,
+                    BATCHFLAG,
+                    RETRY,
+                    K_EXPIRETIME,
+                    K_AT_SEND_TYPE,
+                    K_AD_FLAG,
+                    PSEQ
+                )
+                VALUES (
+                    DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'),
+                    '${usercode}',
+                    '${reqname}',
+                    '${reqphone}',
+                    '00000000000000',
+                    '${callname}',
+                    '${callphone}',
+                    '${msgtitle}',
+                    '${msgsms}',
+                    '${smskind}',
+                    IF('${mmskey}' = '', NULL, '${mmskey}'),
+                    '${deptcode}',
+                    IF('${seq_ex_ums}' = '', NULL, '${seq_ex_ums}'),
+                    '${empl_no}',
+                    '${reqid}',
+                    IF('${smrseq}' = '', NULL, '${smrseq}'),
+                    '0',
+                    0,
+                    0,
+                    180,
+                    '0',
+                    'N',
+                    ''
+                );
+            </when>
+
+            <otherwise>
+                insert into ${table} (
+                    SEQNO,
+                    INTIME,
+                    USERCODE,
+                    REQNAME,
+                    REQPHONE,
+                    REQTIME,
+                    CALLNAME,
+                    CALLPHONE,
+                    SUBJECT,
+                    MSG,
+                    KIND,
+                    FKCONTENT,
+                    DEPTCODE,
+                    SEQ_EX_UMS,
+                    EMPL_NO,
+                    REQID,
+                    SURE_MESSAGE_REQUEST_SEQ,
+                    RESULT,
+                    BATCHFLAG,
+                    RETRY,
+                    K_EXPIRETIME,
+                    K_AT_SEND_TYPE,
+                    K_AD_FLAG,
+                    PSEQ
+                )
+                values (
+                    ${table_seq}.nextval
+                    ,TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                    ,'${usercode}'
+                    ,'${reqname}'
+                    ,'${reqphone}'
+                    ,'00000000000000'
+                    ,'${callname}'
+                    ,'${callphone}'
+                    ,'${msgtitle}'
+                    ,'${msgsms}'
+                    ,'${smskind}'
+                    ,'${mmskey}'
+                    ,'${deptcode}'
+                    ,'${seq_ex_ums}'
+                    ,'${empl_no}'
+                    ,'${reqid}'
+                    ,'${smrseq}'
+                    ,'0'
+                    ,0
+                    ,0
+                    ,180
+                    ,'0'
+                    ,'N'
+                    ,''
+                )
+            </otherwise>
+        </choose>
     </insert>
 
     <update id = "result_log_insert1" parameterType="com.dhn.client.bean.Msg_Log">
-        update ${msg_table}
-            set RECVTIME = TO_CHAR(TO_DATE('${result_time}', 'YYYY-MM-DD HH24:MI:SS'), 'YYYYMMDDHH24MISS'),
-                ERRCODE = '${result}',
-                RESULT = '${status}'
-        where SEQNO = '${msgid}'
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set RECVTIME = TO_CHAR(TO_DATE('${result_time}', 'YYYY-MM-DD HH24:MI:SS'), 'YYYYMMDDHH24MISS'),
+                    ERRCODE = '${result}',
+                    RESULT = '${status}'
+                where SEQNO = '${msgid}'
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RECVTIME = DATE_FORMAT(STR_TO_DATE('${result_time}', '%Y-%m-%d %H:%i:%s'),'%Y%m%d%H%i%s'),
+                    ERRCODE = '${result}',
+                    RESULT  = '${status}'
+                WHERE SEQNO = '${msgid}';
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set RECVTIME = TO_CHAR(TO_DATE('${result_time}', 'YYYY-MM-DD HH24:MI:SS'), 'YYYYMMDDHH24MISS'),
+                    ERRCODE = '${result}',
+                    RESULT = '${status}'
+                where SEQNO = '${msgid}'
+            </otherwise>
+        </choose>
     </update>
 
     <insert id="result_log_insert2" parameterType="com.dhn.client.bean.SQLParameter">
-        insert into ${log_table} select * from ${msg_table} where SEQNO = '${msgid}'
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${log_table}
+                SELECT *
+                FROM ${msg_table}
+                WHERE SEQNO = '${msgid}';
+            </when>
+
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
+                SELECT *
+                FROM ${msg_table}
+                WHERE SEQNO = '${msgid}';
+            </when>
+
+            <otherwise>
+                INSERT INTO ${log_table}
+                SELECT *
+                FROM ${msg_table}
+                WHERE SEQNO = '${msgid}';
+            </otherwise>
+        </choose>
     </insert>
 
     <delete id="result_log_insert3" parameterType="com.dhn.client.bean.SQLParameter">
-        delete from ${msg_table} where SEQNO = '${msgid}'
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE SEQNO = '${msgid}';
+            </when>
+
+            <when test="database == 'mysql'">
+                DELETE FROM ${msg_table}
+                WHERE SEQNO = '${msgid}';
+            </when>
+
+            <otherwise>
+                DELETE FROM ${msg_table}
+                WHERE SEQNO = '${msgid}';
+            </otherwise>
+        </choose>
+
     </delete>
 
     <select id="log_move_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
-        select count(1) as cnt
-        from ${msg_table}
-        where RESULT = 'C'
+        <choose>
+            <when test="database == 'oracle'">
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT = 'C'
+            </when>
+
+            <when test="database == 'mysql'">
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT = 'C'
+            </when>
+
+            <otherwise>
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT = 'C'
+            </otherwise>
+        </choose>
     </select>
 
     <update id="log_move_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set RETRY = '${group_no}'
-        where RESULT = 'C'
-          and ROWNUM &lt;= 1000
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set RETRY = '${group_no}'
+                where RESULT = 'C'
+                    and ROWNUM &lt;= 500
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RETRY = '${group_no}'
+                WHERE RESULT = 'C'
+                LIMIT 500;
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set RETRY = '${group_no}'
+                where RESULT = 'C'
+                    and ROWNUM &lt;= 500
+            </otherwise>
+        </choose>
     </update>
 
     <insert id="log_move_insert" parameterType="com.dhn.client.bean.SQLParameter">
-        insert into ${log_table} select * from ${msg_table} where RETRY = '${group_no}'
+        <choose>
+            <when test="database == 'oracle'">
+                INSERT INTO ${log_table}
+                SELECT *
+                FROM ${msg_table}
+                WHERE RETRY = '${group_no}';
+            </when>
+
+            <when test="database == 'mysql'">
+                INSERT INTO ${log_table}
+                SELECT *
+                FROM ${msg_table}
+                WHERE RETRY = '${group_no}';
+            </when>
+
+            <otherwise>
+                INSERT INTO ${log_table}
+                SELECT *
+                FROM ${msg_table}
+                WHERE RETRY = '${group_no}';
+            </otherwise>
+        </choose>
     </insert>
 
     <delete id="log_move_delete" parameterType="com.dhn.client.bean.SQLParameter">
-        delete from ${msg_table} where RETRY = '${group_no}'
+        <choose>
+            <when test="database == 'oracle'">
+                DELETE FROM ${msg_table}
+                WHERE RETRY = '${group_no}';
+            </when>
+
+            <when test="database == 'mysql'">
+                DELETE FROM ${msg_table}
+                WHERE RETRY = '${group_no}';
+            </when>
+
+            <otherwise>
+                DELETE FROM ${msg_table}
+                WHERE RETRY = '${group_no}';
+            </otherwise>
+        </choose>
     </delete>
 
 

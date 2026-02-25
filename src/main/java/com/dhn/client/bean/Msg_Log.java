@@ -11,5 +11,6 @@ public class Msg_Log {
 	private String telecom;
 	private String status;
 	private String result_time;
+	private String database;
 
 }

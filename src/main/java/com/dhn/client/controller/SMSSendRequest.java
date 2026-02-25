@@ -42,6 +42,7 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
 		param.setImg_table(appContext.getEnvironment().getProperty("dhnclient.img_table"));
+		param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database","oracle"));
 		param.setMsg_type("S");
 		
 		dhnServer = "http://" + appContext.getEnvironment().getProperty("dhnclient.server") + "/";

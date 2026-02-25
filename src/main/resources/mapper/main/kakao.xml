@@ -3,24 +3,74 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dhn.client.kakao.mapper.SendRequest">
     <select id="req_kao_count" parameterType = "com.dhn.client.bean.SQLParameter" resultType = "int">
-        select count(1) as cnt
-        from ${msg_table}
-        where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND in ('A','F')
-            and RETRY = '0'
+        <choose>
+            <when test="database == 'oracle'">
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND in ('A','F')
+                    and RETRY = '0'
+            </when>
+
+            <when test="database == 'mysql'">
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    and SENTTIME is null
+                    and KIND in ('A','F')
+                    and RETRY = '0'
+            </when>
+
+            <otherwise>
+                select count(1) as cnt
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND in ('A','F')
+                    and RETRY = '0'
+            </otherwise>
+        </choose>
     </select>
 
     <update id="req_kao_group_update" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set RETRY = '${group_no}'
-        where RESULT in ('0','R')
-            and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-            and SENTTIME is NULL
-            and KIND in ('A','F')
-            and RETRY = '0'
-            and ROWNUM &lt;= 1000
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set RETRY = '${group_no}'
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND in ('A','F')
+                    and RETRY = '0'
+                    and ROWNUM &lt;= 500
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RETRY = '${group_no}'
+                WHERE RESULT IN ('0','R')
+                    AND (REQTIME = '00000000000000' OR REQTIME &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                    AND SENTTIME IS NULL
+                    AND KIND IN ('A','F')
+                    AND RETRY = '0'
+                LIMIT 500
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set RETRY = '${group_no}'
+                where RESULT in ('0','R')
+                    and (REQTIME = '00000000000000' OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                    and SENTTIME is NULL
+                    and KIND in ('A','F')
+                    and RETRY = '0'
+                    and ROWNUM &lt;= 500
+            </otherwise>
+        </choose>
     </update>
 
     <resultMap id="RequestTable" type="com.dhn.client.bean.KAORequestBean">
@@ -42,55 +92,174 @@
     </resultMap>
 
     <select id="req_kao_select" parameterType = "com.dhn.client.bean.SQLParameter" resultMap = "RequestTable">
-        select
-            SEQNO as msg_id,
-            (case
-                when KIND = 'A' then 'AT'
-                when KIND = 'F' then 'FT'
-                else 'PH'
-            end) as message_type,
-            MSG as msg_txt,
-            null as sms_txt,
-            (case
-                when CALLPHONE like '82%' then CALLPHONE
-                when CALLPHONE like '010%' then '82' || substr(CALLPHONE,2,15)
-                else '82' || substr(CALLPHONE,2,15)
-            end) as call_to,
-            REQPHONE as call_from,
-            SUBJECT as msg_txt_title,
-            'D' as pcom,
-            'N' as crypto,
-            K_ATTACH as button,
-            to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
-            BUTTON_NAME as btn_name,
-            BUTTON_URL as btn_url,
-            trim(TEMPLATECODE) as template_cd,
-            (case when YELLOWID_KEY = '74cd69ab6e0066074e2da0f197409633b46efb5e' then
-                'bfdb1b51fe4b29c3dc7e3f3d40fba90fb66bf858'
-                else YELLOWID_KEY
-            end) as profile_key,
-            NVL(REQTIME, '00000000000000') AS snd_dttm
-        from ${msg_table}
-        where RESULT in ('0','R')
-          and RETRY = '${group_no}'
-          and KIND in ('A','F')
+        <choose>
+            <when test="database == 'oracle'">
+                select
+                    SEQNO as msg_id,
+                    (case
+                        when KIND = 'A' then 'AT'
+                        when KIND = 'F' then 'FT'
+                        else 'PH'
+                    end) as message_type,
+                    MSG as msg_txt,
+                    null as sms_txt,
+                    (case
+                        when CALLPHONE like '82%' then CALLPHONE
+                        when CALLPHONE like '010%' then '82' || substr(CALLPHONE,2,15)
+                        else '82' || substr(CALLPHONE,2,15)
+                    end) as call_to,
+                    REQPHONE as call_from,
+                    SUBJECT as msg_txt_title,
+                    'D' as pcom,
+                    'N' as crypto,
+                    K_ATTACH as button,
+                    to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
+                    BUTTON_NAME as btn_name,
+                    BUTTON_URL as btn_url,
+                    trim(TEMPLATECODE) as template_cd,
+                    (case
+                        when YELLOWID_KEY = '74cd69ab6e0066074e2da0f197409633b46efb5e' then 'bfdb1b51fe4b29c3dc7e3f3d40fba90fb66bf858'
+                        else YELLOWID_KEY
+                    end) as profile_key,
+                    NVL(REQTIME, '00000000000000') AS snd_dttm
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND in ('A','F')
+            </when>
+
+            <when test="database == 'mysql'">
+                SELECT
+                    SEQNO AS msg_id,
+                    CASE
+                        WHEN KIND = 'A' THEN 'AT'
+                        WHEN KIND = 'F' THEN 'FT'
+                        ELSE 'PH'
+                    END AS message_type,
+                    MSG AS msg_txt,
+                    NULL AS sms_txt,
+                    CASE
+                        WHEN CALLPHONE LIKE '82%' THEN CALLPHONE
+                        WHEN CALLPHONE LIKE '010%' THEN CONCAT('82', SUBSTRING(CALLPHONE, 2))
+                        ELSE CONCAT('82', SUBSTRING(CALLPHONE, 2))
+                    END AS call_to,
+                    REQPHONE AS call_from,
+                    SUBJECT AS msg_txt_title,
+                    'D' AS pcom,
+                    'N' AS crypto,
+                    K_ATTACH AS button,
+                    DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS curr_date,
+                    BUTTON_NAME AS btn_name,
+                    BUTTON_URL AS btn_url,
+                    TRIM(TEMPLATECODE) AS template_cd,
+                    CASE
+                        WHEN YELLOWID_KEY = '74cd69ab6e0066074e2da0f197409633b46efb5e'
+                        THEN 'bfdb1b51fe4b29c3dc7e3f3d40fba90fb66bf858'
+                        ELSE YELLOWID_KEY
+                    END AS profile_key,
+                    IFNULL(REQTIME, '00000000000000') AS snd_dttm
+                FROM ${msg_table}
+                WHERE RESULT IN ('0','R')
+                    AND RETRY = '${group_no}'
+                    AND KIND IN ('A','F')
+            </when>
+
+            <otherwise>
+                select
+                    SEQNO as msg_id,
+                    (case
+                        when KIND = 'A' then 'AT'
+                        when KIND = 'F' then 'FT'
+                        else 'PH'
+                    end) as message_type,
+                    MSG as msg_txt,
+                    null as sms_txt,
+                    (case
+                        when CALLPHONE like '82%' then CALLPHONE
+                        when CALLPHONE like '010%' then '82' || substr(CALLPHONE,2,15)
+                        else '82' || substr(CALLPHONE,2,15)
+                    end) as call_to,
+                    REQPHONE as call_from,
+                    SUBJECT as msg_txt_title,
+                    'D' as pcom,
+                    'N' as crypto,
+                    K_ATTACH as button,
+                    to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') AS curr_date,
+                    BUTTON_NAME as btn_name,
+                    BUTTON_URL as btn_url,
+                    trim(TEMPLATECODE) as template_cd,
+                    (case
+                        when YELLOWID_KEY = '74cd69ab6e0066074e2da0f197409633b46efb5e' then 'bfdb1b51fe4b29c3dc7e3f3d40fba90fb66bf858'
+                        else YELLOWID_KEY
+                    end) as profile_key,
+                    NVL(REQTIME, '00000000000000') AS snd_dttm
+                from ${msg_table}
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND in ('A','F')
+            </otherwise>
+        </choose>
     </select>
 
     <update id="req_sent_complete" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set RESULT = '1',
-            SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-        where RESULT in ('0','R')
-            and RETRY = '${group_no}'
-            and KIND in ('A','F')
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set RESULT = '1',
+                    SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND in ('A','F')
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RESULT = '1',
+                    SENTTIME = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+                WHERE RESULT IN ('0','R')
+                    AND RETRY = '${group_no}'
+                    AND KIND IN ('A','F')
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set RESULT = '1',
+                    SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                where RESULT in ('0','R')
+                    and RETRY = '${group_no}'
+                    and KIND in ('A','F')
+            </otherwise>
+        </choose>
     </update>
 
     <update id="req_sent_init" parameterType = "com.dhn.client.bean.SQLParameter" >
-        update ${msg_table}
-        set RESULT = '0',
-            RETRY = '0',
-            SENTTIME = NULL
-        where RETRY = '${group_no}'
-            and KIND in ('A','F')
+        <choose>
+            <when test="database == 'oracle'">
+                update ${msg_table}
+                set RESULT = '0',
+                    RETRY = '0',
+                    SENTTIME = NULL
+                where RETRY = '${group_no}'
+                    and KIND in ('A','F')
+            </when>
+
+            <when test="database == 'mysql'">
+                UPDATE ${msg_table}
+                SET RESULT = '0',
+                    RETRY = '0',
+                    SENTTIME = NULL
+                WHERE RETRY = '${group_no}'
+                    AND KIND IN ('A','F')
+            </when>
+
+            <otherwise>
+                update ${msg_table}
+                set RESULT = '0',
+                    RETRY = '0',
+                    SENTTIME = NULL
+                where RETRY = '${group_no}'
+                    and KIND in ('A','F')
+            </otherwise>
+        </choose>
     </update>
 </mapper>

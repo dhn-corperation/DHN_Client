@@ -33,6 +33,7 @@ public class Log_Move implements ApplicationListener<ContextRefreshedEvent> {
     public void onApplicationEvent(ContextRefreshedEvent event) {
         param.setMsg_table(appContext.getEnvironment().getProperty("dhnclient.msg_table"));
         param.setLog_table(appContext.getEnvironment().getProperty("dhnclient.log_table"));
+        param.setDatabase(appContext.getEnvironment().getProperty("dhnclient.database","oracle"));
 
         isStart = true;
     }
