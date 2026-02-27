@@ -841,7 +841,7 @@
                     '0',
                     'N',
                     ''
-                );
+                )
             </when>
 
             <otherwise>
@@ -916,7 +916,7 @@
                 SET RECVTIME = DATE_FORMAT(STR_TO_DATE('${result_time}', '%Y-%m-%d %H:%i:%s'),'%Y%m%d%H%i%s'),
                     ERRCODE = '${result}',
                     RESULT  = '${status}'
-                WHERE SEQNO = '${msgid}';
+                WHERE SEQNO = '${msgid}'
             </when>
 
             <otherwise>
@@ -935,21 +935,21 @@
                 INSERT INTO ${log_table}
                 SELECT *
                 FROM ${msg_table}
-                WHERE SEQNO = '${msgid}';
+                WHERE SEQNO = '${msgid}'
             </when>
 
             <when test="database == 'mysql'">
                 INSERT INTO ${log_table}
                 SELECT *
                 FROM ${msg_table}
-                WHERE SEQNO = '${msgid}';
+                WHERE SEQNO = '${msgid}'
             </when>
 
             <otherwise>
                 INSERT INTO ${log_table}
                 SELECT *
                 FROM ${msg_table}
-                WHERE SEQNO = '${msgid}';
+                WHERE SEQNO = '${msgid}'
             </otherwise>
         </choose>
     </insert>
@@ -958,17 +958,17 @@
         <choose>
             <when test="database == 'oracle'">
                 DELETE FROM ${msg_table}
-                WHERE SEQNO = '${msgid}';
+                WHERE SEQNO = '${msgid}'
             </when>
 
             <when test="database == 'mysql'">
                 DELETE FROM ${msg_table}
-                WHERE SEQNO = '${msgid}';
+                WHERE SEQNO = '${msgid}'
             </when>
 
             <otherwise>
                 DELETE FROM ${msg_table}
-                WHERE SEQNO = '${msgid}';
+                WHERE SEQNO = '${msgid}'
             </otherwise>
         </choose>
 
@@ -1009,7 +1009,7 @@
                 UPDATE ${msg_table}
                 SET RETRY = '${group_no}'
                 WHERE RESULT = 'C'
-                LIMIT 500;
+                LIMIT 500
             </when>
 
             <otherwise>
@@ -1027,21 +1027,21 @@
                 INSERT INTO ${log_table}
                 SELECT *
                 FROM ${msg_table}
-                WHERE RETRY = '${group_no}';
+                WHERE RETRY = '${group_no}'
             </when>
 
             <when test="database == 'mysql'">
                 INSERT INTO ${log_table}
                 SELECT *
                 FROM ${msg_table}
-                WHERE RETRY = '${group_no}';
+                WHERE RETRY = '${group_no}'
             </when>
 
             <otherwise>
                 INSERT INTO ${log_table}
                 SELECT *
                 FROM ${msg_table}
-                WHERE RETRY = '${group_no}';
+                WHERE RETRY = '${group_no}'
             </otherwise>
         </choose>
     </insert>
@@ -1050,17 +1050,17 @@
         <choose>
             <when test="database == 'oracle'">
                 DELETE FROM ${msg_table}
-                WHERE RETRY = '${group_no}';
+                WHERE RETRY = '${group_no}'
             </when>
 
             <when test="database == 'mysql'">
                 DELETE FROM ${msg_table}
-                WHERE RETRY = '${group_no}';
+                WHERE RETRY = '${group_no}'
             </when>
 
             <otherwise>
                 DELETE FROM ${msg_table}
-                WHERE RETRY = '${group_no}';
+                WHERE RETRY = '${group_no}'
             </otherwise>
         </choose>
     </delete>
