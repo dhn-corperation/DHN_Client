@@ -79,6 +79,8 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		_kaoCode.put("3014", "7314");
 		_kaoCode.put("3015", "7315");
 		_kaoCode.put("3018", "7318");
+		_kaoCode.put("3019", "7319");
+		_kaoCode.put("3020", "7320");
 		_kaoCode.put("3022", "7322");
 		_kaoCode.put("3024", "7324");
 		_kaoCode.put("3025", "7325");
