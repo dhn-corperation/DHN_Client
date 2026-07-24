@@ -189,12 +189,7 @@ public class MMSImageUpload implements ApplicationListener<ContextRefreshedEvent
                 failParam.setMsg_table(globalParam.getMsg_table());
                 failParam.setMsg_type(globalParam.getMsg_type());
                 failParam.setSms_kind(globalParam.getSms_kind());
-
-                if("Y".equalsIgnoreCase(globalParam.getLog_back())) {
-                    failParam.setLog_table(baseLogTable + "_" + currentMonth);
-                } else {
-                    failParam.setLog_table(baseLogTable);
-                }
+                failParam.setLog_table(baseLogTable);
 
                 failParam.setMsgid(bean.getMsgid());
                 failParam.setMsg_image_code(errCode);
