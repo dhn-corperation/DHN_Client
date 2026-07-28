@@ -64,68 +64,72 @@ public class KAOSendRequest implements ApplicationListener<ContextRefreshedEvent
 
     }
 
-    @Scheduled(fixedDelay = 100)
+    @Scheduled(fixedDelay = 500)
     private void SendProcess() {
         if (isStart && !isProc) {
             isProc = true;
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-            LocalDateTime now = LocalDateTime.now();
-            String group_no = now.format(formatter);
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+                LocalDateTime now = LocalDateTime.now();
+                String group_no = now.format(formatter);
 
-            if (!group_no.equals(preGroupNo)) {
+                if (!group_no.equals(preGroupNo)) {
 
-                try {
-                    int cnt = requestService.selectKAORequestCount(param);
+                    try {
+                        int cnt = requestService.selectKAORequestCount(param);
 
-                    if (cnt > 0) {
-                        param.setGroup_no(group_no);
+                        if (cnt > 0) {
+                            log.info("KAO 발송 데이터 처리 시작");
+                            param.setGroup_no(group_no);
 
-                        requestService.updateKAOGroupNo(param);
+                            requestService.updateKAOGroupNo(param);
 
-                        List<KAORequestBean> _list = requestService.selectKAORequests(param);
+                            List<KAORequestBean> _list = requestService.selectKAORequests(param);
 
-                        StringWriter sw = new StringWriter();
-                        ObjectMapper om = new ObjectMapper();
-                        om.writeValue(sw, _list);
+                            StringWriter sw = new StringWriter();
+                            ObjectMapper om = new ObjectMapper();
+                            om.writeValue(sw, _list);
 
-                        HttpHeaders header = new HttpHeaders();
+                            HttpHeaders header = new HttpHeaders();
 
-                        header.setContentType(MediaType.APPLICATION_JSON);
-                        header.set("userid", userid);
+                            header.setContentType(MediaType.APPLICATION_JSON);
+                            header.set("userid", userid);
 
-                        RestTemplate rt = new RestTemplate();
-                        HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+                            RestTemplate rt = new RestTemplate();
+                            HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
-                        try {
-                            ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                            Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                            log.info(res.toString());
+                            try {
+                                ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                                log.info(res.toString());
 
-                            if (response.getStatusCode() == HttpStatus.OK) {
-                                requestService.updateKAOSendComplete(param);
-                                log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
-                            } else {
+                                if (response.getStatusCode() == HttpStatus.OK) {
+                                    requestService.updateKAOSendComplete(param);
+                                    log.info("KAO 메세지 전송 완료 : " + group_no + " / " + _list.size() + " 건");
+                                } else {
 //                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                                log.error("KAO 메세지 전송오류 : " + res.get("message"));
+                                    log.error("KAO 메세지 전송오류 : " + res.get("message"));
+                                    requestService.updateKAOSendInit(param);
+                                }
+                            } catch (Exception e) {
+                                log.error("KAO 메세지 전송 오류 : " + e.toString());
                                 requestService.updateKAOSendInit(param);
                             }
-                        } catch (Exception e) {
-                            log.error("KAO 메세지 전송 오류 : " + e.toString());
-                            requestService.updateKAOSendInit(param);
+
                         }
 
+                    } catch (Exception e) {
+                        log.error("KAO Send Error : " + e.toString());
+                    } finally {
+                        preGroupNo = group_no;
                     }
-
-                } catch (Exception e) {
-                    log.error("KAO Send Error : " + e.toString());
                 }
-
-                preGroupNo = group_no;
+            }catch (Exception e) {
+                log.error("KAO Send Process Outer Error : {}", e.toString());
+            } finally {
+                isProc = false;
             }
-
-
-            isProc = false;
         }
     }
 

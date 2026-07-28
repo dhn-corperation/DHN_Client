@@ -64,65 +64,72 @@ public class LMSSendRequest implements ApplicationListener<ContextRefreshedEvent
 
     }
 
-    @Scheduled(fixedDelay = 100)
+    @Scheduled(fixedDelay = 500)
     private void SendProcess() {
         if (isStart && !isProc) {
             isProc = true;
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-            LocalDateTime now = LocalDateTime.now();
-            String group_no = "L" + now.format(formatter);
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+                LocalDateTime now = LocalDateTime.now();
+                String group_no = "L" + now.format(formatter);
 
-            if (!group_no.equals(preGroupNo)) {
+                if (!group_no.equals(preGroupNo)) {
 
-                try {
-                    int cnt = requestService.selectLMSRequestCount(param);
+                    try {
+                        int cnt = requestService.selectLMSRequestCount(param);
 
-                    if (cnt > 0) {
+                        if (cnt > 0) {
+                            log.info("LMS 발송 데이터 처리 시작");
 
-                        param.setGroup_no(group_no);
+                            param.setGroup_no(group_no);
 
-                        requestService.updateLMSGroupNo(param);
+                            requestService.updateLMSGroupNo(param);
 
-                        List<RequestBean> _list = requestService.selectLMSRequests(param);
+                            List<RequestBean> _list = requestService.selectLMSRequests(param);
 
-                        StringWriter sw = new StringWriter();
-                        ObjectMapper om = new ObjectMapper();
-                        om.writeValue(sw, _list);
+                            StringWriter sw = new StringWriter();
+                            ObjectMapper om = new ObjectMapper();
+                            om.writeValue(sw, _list);
 
-                        HttpHeaders header = new HttpHeaders();
+                            HttpHeaders header = new HttpHeaders();
 
-                        header.setContentType(MediaType.APPLICATION_JSON);
-                        header.set("userid", userid);
+                            header.setContentType(MediaType.APPLICATION_JSON);
+                            header.set("userid", userid);
 
-                        RestTemplate rt = new RestTemplate();
-                        HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+                            RestTemplate rt = new RestTemplate();
+                            HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
-                        try {
-                            ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                            Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                            log.info(res.toString());
-                            if (response.getStatusCode() == HttpStatus.OK) {
-                                requestService.updateSMSSendComplete(param);
-                                log.info("LMS 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
-                            } else {
-                                log.error("LMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                            try {
+                                ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                                log.info(res.toString());
+                                if (response.getStatusCode() == HttpStatus.OK) {
+                                    requestService.updateSMSSendComplete(param);
+                                    log.info("LMS 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
+                                } else {
+                                    log.error("LMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                                    requestService.updateSMSSendInit(param);
+                                }
+                            } catch (Exception e) {
+                                log.error("LMS 메세지 전송 오류(Response) : " + e.toString());
                                 requestService.updateSMSSendInit(param);
                             }
-                        } catch (Exception e) {
-                            log.error("LMS 메세지 전송 오류(Response) : " + e.toString());
-                            requestService.updateSMSSendInit(param);
+
                         }
 
+
+                    } catch (Exception e) {
+                        log.error("LMS 메세지 전송 오류(Send) : " + e.toString());
+                    } finally {
+                        preGroupNo = group_no;
                     }
-
-
-                } catch (Exception e) {
-                    log.error("LMS 메세지 전송 오류(Send) : " + e.toString());
                 }
-                preGroupNo = group_no;
+            }catch (Exception e) {
+                log.error("LMS Send Process Outer Error : {}", e.toString());
+            } finally {
+                isProc = false;
             }
-            isProc = false;
         }
     }
 

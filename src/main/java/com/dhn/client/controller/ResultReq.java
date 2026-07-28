@@ -59,11 +59,10 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent> {
         isStart = true;
     }
 
-    @Scheduled(fixedDelay = 100)
+    @Scheduled(fixedDelay = 5000)
     private void SendProcess() {
-        if (isStart && !isProc && procCnt < 10) {
+        if (isStart && !isProc) {
             isProc = true;
-            procCnt++;
             try {
                 ObjectMapper om = new ObjectMapper();
                 HttpHeaders header = new HttpHeaders();
@@ -88,38 +87,32 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent> {
                                 JSONArray jsonArray = dataObject.getJSONArray("detail");
 
                                 if (jsonArray.length() > 0) {
-                                    Thread res = new Thread(() -> ResultProc(jsonArray, procCnt));
-                                    res.start();
-                                } else {
-                                    Thread.sleep(5000);
-                                    procCnt--;
+                                    log.info("결과 데이터 처리 시작 총 건수: {} / {}", jsonArray.length(), isProc);
+                                    ResultProc(jsonArray);
                                 }
                             } else {
                                 log.error("결과 수신 오류 : 결과 배열(detail)이 없습니다.");
-                                procCnt--;
                             }
                         } else {
                             log.error("결과 수신 오류 : (data) 필드가 없습니다.");
-                            procCnt--;
                         }
 
                     } else {
-                        procCnt--;
+
                     }
                 } catch (Exception ex) {
                     log.info("결과 수신 오류 : " + ex.toString());
-                    procCnt--;
                 }
 
             } catch (Exception e) {
                 log.info("결과 수신 오류 : " + e.toString());
-                procCnt--;
+            } finally {
+                isProc = false;
             }
-            isProc = false;
         }
     }
 
-    private void ResultProc(JSONArray json, int _pc) {
+    private void ResultProc(JSONArray json) {
 
         LocalDate now = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
@@ -244,7 +237,6 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent> {
             }
         }
         log.info("결과 수신 완료 : " + json.length() + " 건");
-        procCnt--;
 
     }
 

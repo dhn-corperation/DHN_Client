@@ -64,64 +64,71 @@ public class SMSSendRequest implements ApplicationListener<ContextRefreshedEvent
     }
 
 
-    @Scheduled(fixedDelay = 100)
+    @Scheduled(fixedDelay = 500)
     private void SendProcess() {
         if (isStart && !isProc) {
             isProc = true;
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-            LocalDateTime now = LocalDateTime.now();
-            String group_no = "S" + now.format(formatter);
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+                LocalDateTime now = LocalDateTime.now();
+                String group_no = "S" + now.format(formatter);
 
-            if (!group_no.equals(preGroupNo)) {
-                try {
-                    int cnt = requestService.selectSMSRequestCount(param);
+                if (!group_no.equals(preGroupNo)) {
+                    try {
+                        int cnt = requestService.selectSMSRequestCount(param);
 
-                    if (cnt > 0) {
-                        param.setGroup_no(group_no);
+                        if (cnt > 0) {
+                            log.info("LMS 발송 데이터 처리 시작");
+                            param.setGroup_no(group_no);
 
-                        requestService.updateSMSGroupNo(param);
+                            requestService.updateSMSGroupNo(param);
 
-                        List<RequestBean> _list = requestService.selectSMSRequests(param);
+                            List<RequestBean> _list = requestService.selectSMSRequests(param);
 
-                        StringWriter sw = new StringWriter();
-                        ObjectMapper om = new ObjectMapper();
-                        om.writeValue(sw, _list);
+                            StringWriter sw = new StringWriter();
+                            ObjectMapper om = new ObjectMapper();
+                            om.writeValue(sw, _list);
 
-                        HttpHeaders header = new HttpHeaders();
+                            HttpHeaders header = new HttpHeaders();
 
-                        header.setContentType(MediaType.APPLICATION_JSON);
-                        header.set("userid", userid);
+                            header.setContentType(MediaType.APPLICATION_JSON);
+                            header.set("userid", userid);
 
-                        RestTemplate rt = new RestTemplate();
-                        HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
+                            RestTemplate rt = new RestTemplate();
+                            HttpEntity<String> entity = new HttpEntity<String>(sw.toString(), header);
 
-                        try {
-                            ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
-                            Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                            log.info(res.toString());
+                            try {
+                                ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
+                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
+                                log.info(res.toString());
 
-                            if (response.getStatusCode() == HttpStatus.OK) {
-                                requestService.updateSMSSendComplete(param);
-                                log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
-                            } else {
+                                if (response.getStatusCode() == HttpStatus.OK) {
+                                    requestService.updateSMSSendComplete(param);
+                                    log.info("SMS 메세지 전송 완료(" + response.getStatusCode() + ") : " + group_no + " / " + _list.size() + " 건");
+                                } else {
 //                                Map<String, String> res = om.readValue(response.getBody().toString(), Map.class);
-                                log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                                    log.error("SMS 메세지 전송 오류(Http ERR) : " + res.get("userid") + " / " + res.get("message"));
+                                    requestService.updateSMSSendInit(param);
+                                }
+                            } catch (Exception e) {
+                                log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
                                 requestService.updateSMSSendInit(param);
                             }
-                        } catch (Exception e) {
-                            log.error("SMS 메세지 전송 오류(Response) : " + e.toString());
-                            requestService.updateSMSSendInit(param);
+
                         }
 
+                    } catch (Exception e) {
+                        log.error("SMS Send Error : " + e.toString());
+                    } finally {
+                        preGroupNo = group_no;
                     }
-
-                } catch (Exception e) {
-                    log.error("SMS Send Error : " + e.toString());
                 }
-                preGroupNo = group_no;
+            }catch (Exception e) {
+                log.error("SMS Send Process Outer Error : {}", e.toString());
+            } finally {
+                isProc = false;
             }
-            isProc = false;
 
         }
     }
