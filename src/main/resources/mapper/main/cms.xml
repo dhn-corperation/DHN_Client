@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dhn.client.cms.mapper.SendRequest">
+
+    <sql id="msg_type_condition">
+        <choose>
+            <when test="msg_type == 'AT'"> AND USED_CD = '30' </when>
+            <when test="msg_type == 'BM'"> AND USED_CD = '40' </when>
+            <when test="msg_type == 'SM'"> AND USED_CD = '00' </when>
+            <when test="msg_type == 'LM'"> AND USED_CD = '10' </when>
+            <when test="msg_type == 'MM'"> AND USED_CD = '20' </when>
+        </choose>
+    </sql>
+
+    <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
+        <choose>
+            <when test="database != null and database == 'mysql'">
+                SELECT
+                CMP_MSG_ID AS msgid,
+                CASE
+                    WHEN USED_CD IN ('00', '10', '20') THEN 'PH'
+                    WHEN USED_CD = '30' THEN 'AT'
+                    WHEN USED_CD = '40' THEN 'G1'
+                END AS messagetype,
+                CASE
+                    WHEN USED_CD = '00' THEN 'S'
+                    WHEN USED_CD = '10' THEN 'L'
+                    WHEN USED_CD = '20' THEN 'M'
+                END AS smskind,
+                SND_MSG AS msgsms,
+                CASE
+                WHEN RCV_PHN_ID LIKE '82%' THEN RCV_PHN_ID
+                WHEN RCV_PHN_ID LIKE '010%' THEN CONCAT('82', SUBSTRING(RCV_PHN_ID, 2, 15))
+                ELSE CONCAT('82', SUBSTRING(RCV_PHN_ID, 2, 15))
+                END AS phn,
+                SND_PHN_ID AS smssender, RESERVED_DTTM AS reservedt,
+                DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
+                TMPL_CD AS tmplid, SENDER_KEY AS profile, KISA_CODE AS kisacode, MSG_TITLE AS title,
+                ATT_IMAGE AS attimage, ATT_BUTTON AS attbutton, ATT_ITEM AS attitem, ATT_COUPON AS attcoupon,
+                CAR_HEAD AS carhead, CAR_LIST AS carlist, CAR_TAIL AS cartail
+                FROM ${msg_table}
+                WHERE SMS_STATUS = '0'
+                <include refid="msg_type_condition"/>
+            </when>
+            <when test="database != null and database == 'mssql'">
+                SELECT
+                CMP_MSG_ID AS msgid,
+                CASE
+                    WHEN USED_CD IN ('00', '10', '20') THEN 'PH'
+                    WHEN USED_CD = '30' THEN 'AT'
+                    WHEN USED_CD = '40' THEN 'G1'
+                END AS messagetype,
+                CASE
+                    WHEN USED_CD = '00' THEN 'S'
+                    WHEN USED_CD = '10' THEN 'L'
+                    WHEN USED_CD = '20' THEN 'M'
+                END AS smskind,
+                SND_MSG AS msgsms,
+                CASE
+                    WHEN RCV_PHN_ID LIKE '82%' THEN RCV_PHN_ID
+                    WHEN RCV_PHN_ID LIKE '010%' THEN '82' + SUBSTRING(RCV_PHN_ID, 2, 15)
+                ELSE '82' + SUBSTRING(RCV_PHN_ID, 2, 15)
+                END AS phn,
+                SND_PHN_ID AS smssender, RESERVED_DTTM AS reservedt,
+                FORMAT(GETDATE(), 'yyyy-MM-dd HH:mm:ss') AS regdt,
+                TMPL_CD AS tmplid, SENDER_KEY AS profile, KISA_CODE AS kisacode, MSG_TITLE AS title,
+                ATT_IMAGE AS attimage, ATT_BUTTON AS attbutton, ATT_ITEM AS attitem, ATT_COUPON AS attcoupon,
+                CAR_HEAD AS carhead, CAR_LIST AS carlist, CAR_TAIL AS cartail
+                FROM ${msg_table}
+                WHERE SMS_STATUS = '0'
+                <include refid="msg_type_condition"/>
+            </when>
+            <otherwise>
+                SELECT
+                CMP_MSG_ID AS msgid,
+                CASE
+                    WHEN USED_CD IN ('00', '10', '20') THEN 'PH'
+                    WHEN USED_CD = '30' THEN 'AT'
+                    WHEN USED_CD = '40' THEN 'G1'
+                END AS messagetype,
+                CASE
+                    WHEN USED_CD = '00' THEN 'S'
+                    WHEN USED_CD = '10' THEN 'L'
+                    WHEN USED_CD = '20' THEN 'M'
+                END AS smskind,
+                SND_MSG AS msgsms,
+                CASE
+                    WHEN RCV_PHN_ID LIKE '82%' THEN RCV_PHN_ID
+                    WHEN RCV_PHN_ID LIKE '010%' THEN '82' || SUBSTR(RCV_PHN_ID, 2, 15)
+                ELSE '82' || SUBSTR(RCV_PHN_ID, 2, 15)
+                END AS phn,
+                SND_PHN_ID AS smssender, RESERVED_DTTM AS reservedt,
+                TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                TMPL_CD AS tmplid, SENDER_KEY AS profile, KISA_CODE AS kisacode, MSG_TITLE AS title,
+                ATT_IMAGE AS attimage, ATT_BUTTON AS attbutton, ATT_ITEM AS attitem, ATT_COUPON AS attcoupon,
+                CAR_HEAD AS carhead, CAR_LIST AS carlist, CAR_TAIL AS cartail
+                FROM ${msg_table}
+                WHERE SMS_STATUS = '0'
+                <include refid="msg_type_condition"/>
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
+        <choose>
+            <when test="database != null and database == 'mysql'">
+                UPDATE ${msg_table}
+                SET SMS_STATUS = '1',
+                CMP_SND_DTTM = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+                WHERE CMP_MSG_ID IN
+                <foreach collection="msgIds" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <when test="database != null and database == 'mssql'">
+                UPDATE ${msg_table}
+                SET SMS_STATUS = '1',
+                CMP_SND_DTTM = FORMAT(GETDATE(), 'yyyyMMddHHmmss')
+                WHERE CMP_MSG_ID IN
+                <foreach collection="msgIds" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </when>
+            <otherwise>
+                UPDATE ${msg_table}
+                SET SMS_STATUS = '1',
+                CMP_SND_DTTM = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                WHERE CMP_MSG_ID IN
+                <foreach collection="msgIds" item="msgid" open="(" separator="," close=")">
+                    #{msgid}
+                </foreach>
+            </otherwise>
+        </choose>
+    </update>
+
+    <update id="invalid_update" parameterType="map">
+        <choose>
+            <when test="ml.database == 'oracle'">
+                UPDATE ${ml.msg_table}
+                SET SMS_STATUS = '${ml.status}', RSLT_VAL = '${ml.code}', REG_RCV_DTTM = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                WHERE CMP_MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
+            </when>
+            <when test="ml.database == 'mysql'">
+                UPDATE ${ml.msg_table}
+                SET SMS_STATUS = '${ml.status}', RSLT_VAL = '${ml.code}', REG_RCV_DTTM = DATE_FORMAT(NOW(), '%Y%m%d%H%i%s')
+                WHERE CMP_MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
+            </when>
+            <when test="ml.database == 'mssql'">
+                UPDATE ${ml.msg_table}
+                SET SMS_STATUS = '${ml.status}', RSLT_VAL = '${ml.code}', REG_RCV_DTTM = FORMAT(GETDATE(), 'yyyyMMddHHmmss')
+                WHERE CMP_MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
+            </when>
+        </choose>
+    </update>
+
+</mapper>
