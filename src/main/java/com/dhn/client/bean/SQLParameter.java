@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder(toBuilder = true)
 @NoArgsConstructor
@@ -40,5 +42,6 @@ public class SQLParameter {
 	private String img_err_msg;
 	private String time;
 	private String log_back;
+	private List<String> msgIds;
 
 }
