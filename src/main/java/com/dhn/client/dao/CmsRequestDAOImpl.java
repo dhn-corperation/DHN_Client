@@ -1,7 +1,6 @@
 package com.dhn.client.dao;
 
 import com.dhn.client.bean.Msg_Log;
-import com.dhn.client.dao.AbstractRequestDAO;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
