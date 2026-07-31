@@ -6,15 +6,9 @@ import com.dhn.client.bean.SQLParameter;
 import java.util.List;
 
 public interface RequestService {
-    int selectRequestCount(SQLParameter param) throws Exception;
-    void updateGroupNo(SQLParameter param) throws Exception;
     List<RequestBean> selectRequests(SQLParameter param) throws Exception;
     void updateSendComplete(SQLParameter param) throws Exception;
-    void updateSendInit(SQLParameter param) throws Exception;
     void updateInvalidData(List<String> invalidList, Msg_Log ml) throws Exception;
-
-    // ⭐️ 결과 수신 업데이트 메서드 추가!
-    void updateMsgLog(Msg_Log ml) throws Exception;
 
     // 테이블 존재 체크용 (만약 필요하다면)
     void logTableCheck(String msgTable, String logTable) throws Exception;

@@ -11,16 +11,6 @@ public abstract class AbstractRequestServiceImpl implements RequestService {
     protected abstract AbstractRequestDAO getDao();
 
     @Override
-    public int selectRequestCount(SQLParameter param) throws Exception {
-        return getDao().selectRequestCount(param);
-    }
-
-    @Override
-    public void updateGroupNo(SQLParameter param) throws Exception {
-        getDao().updateGroupNo(param);
-    }
-
-    @Override
     // ⭐️ 해결: RequestBean_bk 에서 RequestBean 으로 수정 완료!
     public List<RequestBean> selectRequests(SQLParameter param) throws Exception {
         return getDao().selectRequests(param);
@@ -32,18 +22,8 @@ public abstract class AbstractRequestServiceImpl implements RequestService {
     }
 
     @Override
-    public void updateSendInit(SQLParameter param) throws Exception {
-        getDao().updateSendInit(param);
-    }
-
-    @Override
     public void updateInvalidData(List<String> invalidList, Msg_Log ml) throws Exception {
         getDao().updateInvalidData(invalidList, ml);
-    }
-
-    @Override
-    public void updateMsgLog(Msg_Log ml) throws Exception {
-        getDao().updateMsgLog(ml);
     }
 
     @Override
