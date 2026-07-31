@@ -65,6 +65,7 @@ public class RequestBean {
     private String kind;
     private String attitems;
     private String pushalarm;
+	private String mmsimageid;
     private int expectedbroadcastcnt;
 
     // ==========================================

@@ -80,7 +80,7 @@ public abstract class AbstractSendAgent {
             RestTemplate rt = new RestTemplate();
 
             // ⭐️ "req" -> "send" 로 API 엔드포인트 통일!
-            ResponseEntity<String> response = rt.postForEntity(dhnServer + "send", entity, String.class);
+            ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 log.info("[{}-{}] 외부 API 전송 완료 ({} 건)", getChannelName(), msgType, sendList.size());

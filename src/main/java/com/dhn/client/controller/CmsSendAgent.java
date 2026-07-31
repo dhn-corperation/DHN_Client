@@ -39,9 +39,15 @@ public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모
     @Value("${dhnclient.cms.log_table:TBL_MSG_HIST}")
     private String logTable;
 
+    @Value("${dhnclient.cms_use:N}")
+    private String cmsUse;
+
     // ⏰ 0.1초마다 돌면서 msgType 별로 부모의 스레드풀에 작업을 던집니다!
     @Scheduled(fixedDelay = 1000)
     public void SendProcess() {
+        if (!"Y".equalsIgnoreCase(cmsUse)) {
+            return;
+        }
         String[] msgTypes = {"AT", "BM", "SM", "LM", "MM"};
         for (String msgType : msgTypes) {
             // ⭐️ 자물쇠를 풀고 묶는 부모의 강력한 병렬 프로세스를 호출

@@ -168,7 +168,10 @@
 
     <update id="result_update" parameterType="com.dhn.client.bean.Msg_Log">
         UPDATE ${msg_table}
-        SET SMS_STATUS = '2',               RSLT_VAL = #{code},             REG_RCV_DTTM = #{result_dt}     WHERE CMP_MSG_ID = #{msgid}
+        SET SMS_STATUS = '2',
+            RSLT_VAL = #{code},
+            REG_RCV_DTTM = #{result_dt}
+        WHERE CMP_MSG_ID = #{msgid}
     </update>
 
     <insert id="result_log_insert" parameterType="com.dhn.client.bean.Msg_Log">
