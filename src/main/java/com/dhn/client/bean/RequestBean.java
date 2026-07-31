@@ -14,7 +14,8 @@ import java.util.List;
 @Slf4j
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 인 필드는 API JSON 변환 시 자동 제외!
 public class RequestBean {
-
+	@JsonIgnore // ⭐️ 핵심: DB에서는 값을 쏙 담아오지만, 나중에 API 쏠 때 JSON 변환에서는 투명인간 처리됨!
+	private String etc5;
     // ==========================================
     // 1. 외부 API 전송 및 공통 필드
     // ==========================================
