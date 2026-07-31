@@ -1,4 +1,4 @@
-package com.dhn.client.controller; // ⭐️ 형님 패키지로 세팅 완료!
+package com.dhn.client.controller;
 
 import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.RequestBean;
@@ -17,168 +17,139 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 1번 에러 해결!
+public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모 상속 누락 해결!
 
     @Autowired
     @Qualifier("cmsService")
-    private RequestService requestService; // ⭐️ RequestService 인터페이스 주입!
+    private RequestService requestService;
 
-    @Value("${dhnclient.server}") private String dhnServer;
-    @Value("${dhnclient.cms.userid}") private String userid;
-    @Value("${dhnclient.cms.db-target}") private String dbTarget;
-    @Value("${dhnclient.cms.msg_table}") private String msgTable;
-    @Value("${dhnclient.cms.log_table}") private String logTable;
+    // ⭐️ 범인 1 해결: yml 명세와 완벽하게 일치하는 변수명과 안전한 기본값!
+    @Value("${dhnclient.cms.userid:}")
+    private String userid;
 
-    // 알림톡, 브랜드톡 등 사용여부 플래그
-    @Value("${dhnclient.cms.kakao_use}") private String kakaoUse;
-    @Value("${dhnclient.cms.brand_use}") private String brandUse;
-    @Value("${dhnclient.cms.sms_use}") private String smsUse;
-    @Value("${dhnclient.cms.lms_use}") private String lmsUse;
-    @Value("${dhnclient.cms.mms_use}") private String mmsUse;
+    @Value("${dhnclient.server:}")
+    private String dhnServer;
 
-    // ==========================================
-    // ⏰ 스케줄러
-    // ==========================================
+    @Value("${dhnclient.cms.db-target:oracle1}")
+    private String dbTarget;
+
+    @Value("${dhnclient.cms.msg_table:TBL_SUBMIT_QUEUE}")
+    private String msgTable;
+
+    @Value("${dhnclient.cms.log_table:TBL_MSG_HIST}")
+    private String logTable;
+
+    // ⏰ 0.1초마다 돌면서 msgType 별로 부모의 스레드풀에 작업을 던집니다!
     @Scheduled(fixedDelay = 1000)
-    public void runAlimtalk() {
-        if ("Y".equalsIgnoreCase(kakaoUse)) {
-            // ⭐️ 2번 에러 해결! (dhnServer, userid, "AT" 순서로 딱 맞음)
-            super.executeProcess(dhnServer, userid, "AT");
-        }
-    }
-
-    @Scheduled(fixedDelay = 1000)
-    public void runBrandMsg() {
-        if ("Y".equalsIgnoreCase(brandUse)) {
-            super.executeProcess(dhnServer, userid, "BM");
-        }
-    }
-
-    @Scheduled(fixedDelay = 1000)
-    public void runSms() {
-        if ("Y".equalsIgnoreCase(smsUse)) {
-            // ⭐️ 2번 에러 해결! (dhnServer, userid, "AT" 순서로 딱 맞음)
-            super.executeProcess(dhnServer, userid, "SM");
-        }
-    }
-
-    @Scheduled(fixedDelay = 1000)
-    public void runLms() {
-        if ("Y".equalsIgnoreCase(lmsUse)) {
-            // ⭐️ 2번 에러 해결! (dhnServer, userid, "AT" 순서로 딱 맞음)
-            super.executeProcess(dhnServer, userid, "LM");
-        }
-    }
-
-    @Scheduled(fixedDelay = 1000)
-    public void runMms() {
-        if ("Y".equalsIgnoreCase(mmsUse)) {
-            // ⭐️ 2번 에러 해결! (dhnServer, userid, "AT" 순서로 딱 맞음)
-            super.executeProcess(dhnServer, userid, "MS");
+    public void SendProcess() {
+        String[] msgTypes = {"AT", "BM", "SM", "LM", "MM"};
+        for (String msgType : msgTypes) {
+            // ⭐️ 자물쇠를 풀고 묶는 부모의 강력한 병렬 프로세스를 호출
+            super.executeProcess(this.dhnServer, this.userid, msgType);
         }
     }
 
     // ==========================================
-    // 🛠️ 부모 숙제(추상 메서드) 완벽 오버라이드
+    // ⭐️ 부모의 추상 메서드 구현 영역
     // ==========================================
-    @Override
-    protected String getChannelName() {
-        return "CMS";
-    }
 
     @Override
-    protected String getDbTarget() {
-        return this.dbTarget;
-    }
+    protected String getChannelName() { return "CMS"; }
+
+    @Override
+    protected String getDbTarget() { return this.dbTarget; }
 
     @Override
     protected List<RequestBean> fetchWaitingData(String msgType) {
-        List<RequestBean> finalSendList = new ArrayList<>(); // 최종적으로 부모에게 줄 합격 데이터
-        List<String> invalidList = new ArrayList<>();        // 형식 오류난 불합격 데이터 (DB 에러 처리용)
+        List<RequestBean> finalSendList = new ArrayList<>();
+        List<String> invalidList = new ArrayList<>();
 
         try {
-            // 1. 파라미터 세팅
             SQLParameter param = new SQLParameter();
             param.setMsg_table(msgTable);
             param.setMsg_type(msgType);
-            param.setDatabase(dbTarget);
+            param.setDatabase(dbTarget); // SQL 빈값 방지
 
-            // 2. DB에서 데이터 조회 (날것의 데이터)
             List<RequestBean> rawList = requestService.selectRequests(param);
 
             if (rawList == null || rawList.isEmpty()) {
-                return finalSendList; // 데이터 없으면 바로 빈 리스트 리턴
+                return finalSendList;
             }
 
             ObjectMapper mapper = new ObjectMapper();
 
-            // =========================================================
-            // ⭐️ 3. 데이터 제조 및 정제 구역 (형님이 찾으시던 바로 그곳!)
-            // =========================================================
             for (RequestBean bean : rawList) {
-
-                // [정제 예시 1] 번호가 없거나 짧으면 컷!
                 if (bean.getPhn() == null || bean.getPhn().length() < 10) {
                     invalidList.add(bean.getMsgid());
                     continue;
                 }
 
-                // [정제 예시 2] 특정 채널에만 들어가는 하드코딩 값 세팅
-                // TODO: 여기서 각 타이명 제조
-                if ("AT".equals(msgType)) {
-                    bean.setProfile("발송프로필키_하드코딩_또는_변수");
+                // =======================================================
+                // 🚀 [추가] 실시간 전송 데이터 구분 및 메시지 타입(OT) 강제 변환
+                // =======================================================
+                // CMS 채널에서 일반 단문(SM/SMS) 발송 시 기본값이 'PH'라고 가정할 때,
+                // 실시간 스위치(isRealTimeData)가 켜진 데이터면 'OT'로 변신시킵니다!
+                if (msgType.equals("SM") || msgType.equals("LM")) {
+                    if (isRealTimeData(bean)) {
+                        bean.setMessagetype("OT"); // 실시간이면 OT로 세팅
+                        log.info("[CMS] 실시간 데이터 감지됨! msgid: {} ➔ OT 타입으로 변환", bean.getMsgid());
+                    } else {
+                        // 명시적으로 설정이 필요하다면 아래 주석 해제 (이미 DB에서 PH로 온다면 패스)
+                        // bean.setMessagetype("PH");
+                    }
                 }
+                // =======================================================
 
-                // [정제 예시 3] 아까 만든 만능 JSON (버튼, 이미지 등) 조립 로직 실행!
-                // 정상적으로 조립되면 true가 반환됨
+                // JSON 페이로드 정제
                 boolean isGoodData = bean.processJsonPayload(mapper, invalidList);
-
-                // 모든 검문소를 통과한 진짜 A급 데이터만 발송 리스트에 추가!
                 if (isGoodData) {
                     finalSendList.add(bean);
                 }
             }
-            // =========================================================
 
-            // 4. 불량 데이터(Invalid) 짬통 처리 (에러코드 7999 업데이트)
             if (!invalidList.isEmpty()) {
-                if (!invalidList.isEmpty()) {
-                    Msg_Log ml = new Msg_Log();
-                    ml.setMsg_table(msgTable);
-                    // ml.setLog_table(logTable); 👈 이 부분 아예 삭제!
-                    ml.setStatus("4");
-                    ml.setResult_message("(AGENT) 데이터 형식 또는 정제 오류");
-                    ml.setCode("7999");
+                Msg_Log ml = new Msg_Log();
+                ml.setMsg_table(msgTable);
+                ml.setLog_table(logTable);
+                ml.setStatus("4");
+                ml.setResult_message("(AGENT) 데이터 형식 또는 정제 오류");
+                ml.setCode("7999");
+                ml.setDatabase(dbTarget);
 
-                    // DB 상태값 업데이트 (위에서 오버라이드한 UPDATE문만 실행됨)
-                    requestService.updateInvalidData(invalidList, ml);
-
-                    // ⭐️ 파일 텍스트 로그에 확실하게 흔적 남기기
-                    log.error("[CMS - {}] 데이터 정제 실패! 발송 제외 처리됨. ({}건) MSG_ID: {}", msgType, invalidList.size(), invalidList);
-                    }
+                requestService.updateInvalidData(invalidList, ml);
+                log.error("[CMS - {}] 데이터 정제 실패! 발송 제외 처리됨. ({}건)", msgType, invalidList.size());
             }
 
         } catch (Exception e) {
-            log.error("[CMS - {}] 데이터 조회/정제 중 오류: {}", msgType, e.getMessage());
+            log.error("[CMS - {}] 데이터 조회/정제 오류: {}", msgType, e.getMessage());
         }
 
-        // 5. 완벽하게 깎인 데이터만 부모의 executeProcess 로 던져줌 -> API 전송 시작!
         return finalSendList;
     }
 
     @Override
     protected void updateStatusToSent(List<String> msgIds) {
         try {
-            // ⭐️ SQLParameter 로 감싸서 던지기 (에러 완벽 해결!)
             SQLParameter param = new SQLParameter();
             param.setMsg_table(msgTable);
             param.setMsgIds(msgIds);
-            param.setDatabase(dbTarget);// 리스트를 담아줌
+            param.setDatabase(dbTarget);
 
-            // API 전송 성공 시, SMS_STATUS를 1로 변경
             requestService.updateSendComplete(param);
         } catch (Exception e) {
             log.error("[CMS] 상태값 업데이트 오류: {}", e.getMessage());
         }
+    }
+
+    private boolean isRealTimeData(RequestBean bean) {
+        // TODO: 나중에 '특정 필드'가 정해지면 이 안의 조건을 수정해 주십쇼!
+        // 예시 1: 예약 시간이 비어있으면 실시간으로 간주한다?
+        // return bean.getReservedt() == null || bean.getReservedt().isEmpty();
+
+        // 예시 2: 특정 템플릿 코드나 플래그 값이 'R(Realtime)' 이면 실시간?
+        // return "R".equals(bean.getSomeRealTimeFlag());
+
+        // (현재는 로직만 세팅해두고 false로 꺼둡니다)
+        return false;
     }
 }

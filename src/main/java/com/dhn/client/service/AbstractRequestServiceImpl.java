@@ -40,4 +40,19 @@ public abstract class AbstractRequestServiceImpl implements RequestService {
     public void updateInvalidData(List<String> invalidList, Msg_Log ml) throws Exception {
         getDao().updateInvalidData(invalidList, ml);
     }
+
+    @Override
+    public void updateMsgLog(Msg_Log ml) throws Exception {
+        getDao().updateMsgLog(ml);
+    }
+
+    @Override
+    public void logTableCheck(String msgTable, String logTable) throws Exception {
+        getDao().logTableCheck(msgTable, logTable);
+    }
+
+    @Override
+    public void applyResultProcess(Msg_Log ml) throws Exception {
+        getDao().applyResultProcess(ml);
+    }
 }

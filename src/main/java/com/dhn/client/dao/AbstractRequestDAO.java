@@ -114,4 +114,24 @@ public abstract class AbstractRequestDAO {
         }
         return false;
     }
+
+    public void updateMsgLog(Msg_Log ml) throws Exception {
+        sqlSession.update(getNamespace() + ".msg_log_update", ml);
+    }
+
+    public void logTableCheck(String msgTable, String logTable) throws Exception {
+        // 만약 동적 테이블 생성이나 체크가 필요할 때 사용 (필요없다면 비워둬도 무방합니다)
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void applyResultProcess(Msg_Log ml) throws Exception {
+        // 1. 큐 테이블에 결과값 적용 (UPDATE)
+        sqlSession.update(getNamespace() + ".result_update", ml);
+
+        // 2. 결과가 적용된 데이터를 로그 테이블로 복사 (INSERT SELECT)
+        sqlSession.insert(getNamespace() + ".result_log_insert", ml);
+
+        // 3. 발송 큐 테이블에서 해당 데이터 완전 삭제 (DELETE)
+        sqlSession.delete(getNamespace() + ".result_delete", ml);
+    }
 }
