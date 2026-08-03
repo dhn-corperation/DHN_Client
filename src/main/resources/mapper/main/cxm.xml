@@ -13,6 +13,7 @@
             SUBJECT AS title,
             MSG AS msg,
             TO_CHAR(REQ_TIME, 'YYYYMMDDHH24MISS') AS reservedt,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
             SENDER_KEY AS profile,
             TMPL_CD AS tmplid,
             BUTTON_INFO AS button_json,

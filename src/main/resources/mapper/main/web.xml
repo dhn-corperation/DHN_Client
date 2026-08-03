@@ -13,6 +13,7 @@
             CALLPHONE AS phn,
             REQPHONE AS smssender,
             REQTIME AS reservedt,
+            FORMAT(GETDATE(), 'yyyy-MM-dd HH:mm:ss') AS regdt,
             YELLOWID_KEY AS profile,
             TEMPLATECODE AS tmplid,
             BTN_02_URL_01 AS button1

@@ -5,40 +5,111 @@
 <mapper namespace="com.dhn.client.erp.mapper.SendRequest">
     <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
         SELECT * FROM (
-          SELECT
-              MSG_KEY AS msgid,
-              MSG_TYPE AS messagetype,
-              MESSAGE AS msg,
-              MESSAGE AS msg_sms,
-              SUBJECT AS smslmstit,
-              CALL_TO AS phn,
-              CALL_FROM AS smssender,
-              -- 오라클 DATETIME형 예약 시간을 yyyyMMddHHmmss 문자열 형태로 포맷팅
-              TO_CHAR(RES_DATE, 'YYYYMMDDHH24MISS') AS reservedt,
-              SENDER_KEY AS profile,
-              TEMPLATE_CODE AS tmplid,
-              BUTTON AS button1,
-              SERVER_INFO AS serverinfo
-          FROM ${msg_table}
-          WHERE MSG_STATE = '0'
-            AND MSG_TYPE = #{msg_type}
-            -- 예약시간 방어막 (NULL이거나 현재 시간보다 같거나 과거인 것만 조회)
+            SELECT
+            MSG_KEY AS msgid,
+            CASE
+            WHEN MSG_TYPE = 'ALT' THEN 'AT'
+            WHEN MSG_TYPE = 'ALI' THEN 'AI'
+            WHEN MSG_TYPE = 'FRT' THEN 'FT'
+            WHEN MSG_TYPE = 'FRI' THEN 'FI'
+            WHEN MSG_TYPE = 'BRI' THEN 'BM'
+            WHEN MSG_TYPE IN ('SMS','LMS') THEN 'PH'
+            ELSE MSG_TYPE
+            END AS messagetype,
+            MESSAGE AS msg,
+            MESSAGE AS msgsms,
+            SUBJECT AS smslmstit,
+            CALL_TO AS phn,
+            CALL_FROM AS smssender,
+            TO_CHAR(RES_DATE, 'YYYYMMDDHH24MISS') AS reservedt,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+            SENDER_KEY AS profile,
+            TEMPLATE_CODE AS tmplid,
+            WIDE AS wide,
+            BUTTON AS button1
+            FROM ${msg_table}
+            WHERE MSG_STATE = '1'
             AND (
-              RES_DATE IS NULL
-                  OR RES_DATE &lt;= SYSDATE
-              )
-          ORDER BY MSG_KEY ASC
-          )
+            RES_DATE IS NULL
+            OR RES_DATE &lt;= SYSDATE
+            )
+            <if test="msg_type == 'AT'">
+                AND MSG_TYPE IN ('ALT', 'ALI')
+            </if>
+            <if test="msg_type == 'FT'">
+                AND MSG_TYPE IN ('FRT', 'FRI', 'FRW')
+            </if>
+            <if test="msg_type == 'SMS'">
+                AND MSG_TYPE = 'SMS'
+            </if>
+            <if test="msg_type == 'LMS'">
+                AND MSG_TYPE = 'LMS'
+            </if>
+            <if test="msg_type == 'BM'">
+                AND MSG_TYPE = 'BRI'
+            </if>
+            ORDER BY MSG_KEY ASC
+        )
         WHERE ROWNUM &lt;= 200
     </select>
 
     <update id="sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET MSG_STATE = '1',
+        SET MSG_STATE = '5',
         SENT_DATE = SYSDATE
         WHERE MSG_KEY IN
         <foreach collection="msgIds" item="msgid" open="(" separator="," close=")">
             #{msgid}
         </foreach>
     </update>
+
+    <update id="result_update" parameterType="com.dhn.client.bean.Msg_Log">
+        UPDATE ${msg_table}
+        SET MSG_STATE = #{status},
+            RSLT_DATE = TO_DATE(#{result_dt}, 'YYYYMMDDHH24MISS'),
+            RSLT_CODE = #{code},
+            RSLT_NET = #{telecom},
+            RSLT_TYPE = #{media_type}
+        WHERE MSG_KEY = #{msgid}
+    </update>
+
+    <insert id="result_log_insert" parameterType="com.dhn.client.bean.Msg_Log">
+        INSERT INTO ${log_table}
+        SELECT * FROM ${msg_table}
+        WHERE MSG_KEY = #{msgid}
+    </insert>
+
+    <delete id="result_delete" parameterType="com.dhn.client.bean.Msg_Log">
+        DELETE FROM ${msg_table}
+        WHERE MSG_KEY = #{msgid}
+    </delete>
+
+    <update id="invalid_update" parameterType="map">
+        UPDATE ${ml.msg_table}
+        SET MSG_STATE = '${ml.status}',
+        RSLT_CODE = '${ml.code}',
+        RSLT_EXPLA = '${ml.result_message}', SENT_DATE = SYSDATE,
+        RSLT_DATE = SYSDATE
+        WHERE MSG_KEY IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
+    </update>
+
+    <insert id="invalid_log_insert" parameterType="map">
+        INSERT INTO ${ml.log_table}
+        SELECT * FROM ${ml.msg_table}
+        WHERE MSG_KEY IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
+    </insert>
+
+    <delete id="invalid_delete" parameterType="map">
+        DELETE FROM ${ml.msg_table}
+        WHERE MSG_KEY IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
+    </delete>
 </mapper>

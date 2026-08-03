@@ -13,6 +13,7 @@
                 CALLPHONE AS phn,
                 REQPHONE AS smssender,
                 REQTIME AS reservedt,
+                TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                 SUBJECT AS title,
                 YELLOWID_KEY AS profile,
                 TEMPLATECODE AS tmplid
