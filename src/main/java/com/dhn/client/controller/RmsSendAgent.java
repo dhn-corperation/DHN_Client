@@ -26,7 +26,7 @@ public class RmsSendAgent extends AbstractSendAgent {
     // yml 설정값 바인딩
     @Value("${dhnclient.rms.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
-    @Value("${dhnclient.rms.db-target:oracle1}") private String dbTarget;
+    @Value("${dhnclient.rms.db-target:oracle}") private String dbTarget;
     @Value("${dhnclient.rms.msg_table:SUREDATA}") private String msgTable;
     @Value("${dhnclient.rms.log_table:SUREDATA_LOG}") private String logTable;
     @Value("${dhnclient.rms_use:N}") private String rmsUse;

@@ -30,7 +30,7 @@ public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모
     @Value("${dhnclient.server:}")
     private String dhnServer;
 
-    @Value("${dhnclient.cms.db-target:oracle1}")
+    @Value("${dhnclient.cms.db-target:oracle}")
     private String dbTarget;
 
     @Value("${dhnclient.cms.msg_table:TBL_SUBMIT_QUEUE}")

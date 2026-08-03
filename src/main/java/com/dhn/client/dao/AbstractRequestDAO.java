@@ -115,10 +115,6 @@ public abstract class AbstractRequestDAO {
         return false;
     }
 
-    public void updateMsgLog(Msg_Log ml) throws Exception {
-        sqlSession.update(getNamespace() + ".msg_log_update", ml);
-    }
-
     public void logTableCheck(String msgTable, String logTable) throws Exception {
         // 만약 동적 테이블 생성이나 체크가 필요할 때 사용 (필요없다면 비워둬도 무방합니다)
     }

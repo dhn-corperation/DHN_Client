@@ -5,23 +5,28 @@
 <mapper namespace="com.dhn.client.rms.mapper.SendRequest">
 
     <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
-        SELECT
-            SEQNO AS msgid,
-            BIZTYPE AS messagetype,
-            MSG AS msg,
-            CALLPHONE AS phn,
-            REQPHONE AS smssender,
-            REQTIME AS reservedt,
-            SUBJECT AS title,
-            YELLOWID_KEY AS profile,
-            TEMPLATECODE AS tmplid FROM ${msg_table}
-        WHERE RESULT = '0'
-          AND BIZTYPE = #{msg_type}
-          AND (
-            REQTIME IS NULL
-                OR REQTIME = '00000000000000'
-                OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-            )
+        SELECT * FROM (
+            SELECT
+                SEQNO AS msgid,
+                BIZTYPE AS messagetype,
+                MSG AS msg,
+                CALLPHONE AS phn,
+                REQPHONE AS smssender,
+                REQTIME AS reservedt,
+                SUBJECT AS title,
+                YELLOWID_KEY AS profile,
+                TEMPLATECODE AS tmplid
+            FROM ${msg_table}
+            WHERE RESULT = '0'
+              AND BIZTYPE = #{msg_type}
+              AND (
+                REQTIME IS NULL
+                    OR REQTIME = '00000000000000'
+                    OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                )
+            ORDER BY SEQNO ASC
+        )
+        WHERE ROWNUM &lt;= 200
     </select>
 
     <update id="sent_complete" parameterType="com.dhn.client.bean.SQLParameter">

@@ -41,10 +41,31 @@ public abstract class AbstractSendAgent {
             return;
         }
 
-        final String targetDb = getDbTarget();
+//        final String targetDb = getDbTarget();
+//
+//        executorService.submit(() -> {
+//            DbContextHolder.setDbTarget(targetDb);
+//            try {
+//                // 1. 대기 상태 데이터 셀렉 & 정제 (자식이 구현)
+//                List<RequestBean> sendList = fetchWaitingData(msgType);
+//
+//                if (sendList == null || sendList.isEmpty()) {
+//                    return;
+//                }
+//
+//                // 2. API 전송 후 상태값 변경
+//                sendToApiAndUpdateStatus(sendList, dhnServer, userid, msgType);
+//
+//            } catch (Exception e) {
+//                log.error("[{}-{}] 발송 프로세스 오류: {}", getChannelName(), msgType, e.getMessage());
+//            } finally {
+//                DbContextHolder.clear();
+//                // ⭐️ 로직이 끝나면 반드시 내 채널의 자물쇠를 풀어준다!
+//                procMap.put(msgType, false);
+//            }
+//        });
 
         executorService.submit(() -> {
-            DbContextHolder.setDbTarget(targetDb);
             try {
                 // 1. 대기 상태 데이터 셀렉 & 정제 (자식이 구현)
                 List<RequestBean> sendList = fetchWaitingData(msgType);
@@ -59,8 +80,6 @@ public abstract class AbstractSendAgent {
             } catch (Exception e) {
                 log.error("[{}-{}] 발송 프로세스 오류: {}", getChannelName(), msgType, e.getMessage());
             } finally {
-                DbContextHolder.clear();
-                // ⭐️ 로직이 끝나면 반드시 내 채널의 자물쇠를 풀어준다!
                 procMap.put(msgType, false);
             }
         });

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dhn.client.erp.mapper.SendRequest">
+    <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
+        SELECT * FROM (
+          SELECT
+              MSG_KEY AS msgid,
+              MSG_TYPE AS messagetype,
+              MESSAGE AS msg,
+              MESSAGE AS msg_sms,
+              SUBJECT AS smslmstit,
+              CALL_TO AS phn,
+              CALL_FROM AS smssender,
+              -- 오라클 DATETIME형 예약 시간을 yyyyMMddHHmmss 문자열 형태로 포맷팅
+              TO_CHAR(RES_DATE, 'YYYYMMDDHH24MISS') AS reservedt,
+              SENDER_KEY AS profile,
+              TEMPLATE_CODE AS tmplid,
+              BUTTON AS button1,
+              SERVER_INFO AS serverinfo
+          FROM ${msg_table}
+          WHERE MSG_STATE = '0'
+            AND MSG_TYPE = #{msg_type}
+            -- 예약시간 방어막 (NULL이거나 현재 시간보다 같거나 과거인 것만 조회)
+            AND (
+              RES_DATE IS NULL
+                  OR RES_DATE &lt;= SYSDATE
+              )
+          ORDER BY MSG_KEY ASC
+          )
+        WHERE ROWNUM &lt;= 200
+    </select>
+
+    <update id="sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
+        UPDATE ${msg_table}
+        SET MSG_STATE = '1',
+        SENT_DATE = SYSDATE
+        WHERE MSG_KEY IN
+        <foreach collection="msgIds" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
+    </update>
+</mapper>

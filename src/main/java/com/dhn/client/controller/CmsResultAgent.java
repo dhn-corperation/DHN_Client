@@ -99,6 +99,7 @@ public class CmsResultAgent extends AbstractResultAgent {
 
             String code = "0000";
             String rawDt = ""; // 통신사가 준 날것의 19자리 시간 문자열
+            String telecom = "";
 
             // 1. 채널별 데이터 추출
             if (ent.getString("message_type").equalsIgnoreCase("AT")) {
@@ -110,9 +111,26 @@ public class CmsResultAgent extends AbstractResultAgent {
                 code = _msgCode.getOrDefault(ent.getString("code"), "8011");
                 rawDt = ent.optString("remark2", "");
                 _ml.setResult_message(ent.optString("message", ""));
+
+                String rawRemark1 = ent.optString("remark1", "");
+
+                if (rawRemark1 != null && !rawRemark1.isEmpty()) {
+                    String r1 = rawRemark1.trim();
+
+                    if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
+                        telecom = "3";
+                    } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
+                        telecom = "1";
+                    } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
+                        telecom = "2";
+                    } else {
+                        telecom = "4";
+                    }
+                }
             }
 
             _ml.setCode(code);
+            _ml.setTelecom(telecom);
 
             // =====================================================================
             // 🚀 핵심 수정: 19자리 문자열("2026-07-31 08:58:40")을 14자리 숫자로 압축!
