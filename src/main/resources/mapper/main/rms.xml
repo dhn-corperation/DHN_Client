@@ -17,6 +17,11 @@
             TEMPLATECODE AS tmplid FROM ${msg_table}
         WHERE RESULT = '0'
           AND BIZTYPE = #{msg_type}
+          AND (
+            REQTIME IS NULL
+                OR REQTIME = '00000000000000'
+                OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+            )
     </select>
 
     <update id="sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
@@ -43,6 +48,28 @@
     <delete id="result_delete" parameterType="com.dhn.client.bean.Msg_Log">
         DELETE FROM ${msg_table}
         WHERE SEQNO = #{msgid}
+    </delete>
+
+    <update id="invalid_update" parameterType="map">
+        UPDATE ${ml.msg_table}
+        SET RESULT = '${ml.status}',
+        ERRCODE = '${ml.code}',
+        SENTTIME = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+        WHERE SEQNO IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
+    </update>
+
+    <insert id="invalid_log_insert" parameterType="map">
+        INSERT INTO ${ml.log_table}
+        SELECT * FROM ${ml.msg_table}
+        WHERE SEQNO IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
+    </insert>
+
+    <delete id="invalid_delete" parameterType="map">
+        DELETE FROM ${ml.msg_table}
+        WHERE SEQNO IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
     </delete>
 
 </mapper>

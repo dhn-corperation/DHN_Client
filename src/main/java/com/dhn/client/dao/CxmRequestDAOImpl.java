@@ -24,6 +24,8 @@ public class CxmRequestDAOImpl extends AbstractRequestDAO {
 
         // 1. 발송 테이블의 상태값을 4(또는 9)와 에러코드 7999로 변경만 함
         sqlSession.update(getNamespace() + ".invalid_update", param);
+        sqlSession.insert(getNamespace() + ".invalid_log_insert", param);
+        sqlSession.delete(getNamespace() + ".invalid_delete", param);
 
         // 👉 로그 테이블이 없으므로 INSERT 와 DELETE 구문은 과감히 삭제!
     }

@@ -24,7 +24,7 @@ public class CmsResultAgent extends AbstractResultAgent {
     @Qualifier("cmsService")
     protected RequestService requestService;
 
-    // yml 설정값 (modId, dual 싹 제거됨!)
+    @Value("${dhnclient.cms_use:N}") private String cmsUse;
     @Value("${dhnclient.cms.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
     @Value("${dhnclient.cms.db-target:oracle}") private String dbTarget;
@@ -36,6 +36,14 @@ public class CmsResultAgent extends AbstractResultAgent {
 
     @PostConstruct
     public void init() {
+        if ("Y".equalsIgnoreCase(cmsUse)) {
+            // 코드 맵 초기화
+            initCodeMap();
+            super.initAgent();
+        }
+    }
+
+    private void initCodeMap() {
         // CMS 코드 맵핑 초기화
         _kaoCode.put("0000","0000"); _kaoCode.put("3000","2001"); _kaoCode.put("1006","3005");
         _kaoCode.put("1001","3023"); _kaoCode.put("1003","3024"); _kaoCode.put("3012","3030");
@@ -60,11 +68,14 @@ public class CmsResultAgent extends AbstractResultAgent {
         _msgCode.put("7074","4306"); _msgCode.put("7021","4307"); _msgCode.put("7029","5300");
         _msgCode.put("7011","8011");
 
-        super.initAgent();
     }
 
     @Scheduled(fixedDelay = 5000)
     public void runResultProcess() {
+        if (!"Y".equalsIgnoreCase(cmsUse)) {
+            return;
+        }
+
         DbContextHolder.setDbTarget(dbTarget);
         try {
             super.executeResultProcess();

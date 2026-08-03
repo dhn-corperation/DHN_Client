@@ -22,6 +22,7 @@ public class RmsResultAgent extends AbstractResultAgent {
     @Qualifier("rmsService")
     protected RequestService requestService;
 
+    @Value("${dhnclient.rms_use:N}") private String rmsUse;
     @Value("${dhnclient.rms.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
     @Value("${dhnclient.rms.db-target:oracle1}") private String dbTarget;
@@ -30,11 +31,17 @@ public class RmsResultAgent extends AbstractResultAgent {
 
     @PostConstruct
     public void init() {
-        super.initAgent();
+        if ("Y".equalsIgnoreCase(rmsUse)) {
+            super.initAgent();
+        }
     }
 
     @Scheduled(fixedDelay = 100)
     public void runResultProcess() {
+        if (!"Y".equalsIgnoreCase(rmsUse)) {
+            return;
+        }
+
         DbContextHolder.setDbTarget(dbTarget);
         try {
             super.executeResultProcess();
@@ -58,7 +65,7 @@ public class RmsResultAgent extends AbstractResultAgent {
             // =========================================================
             // 🚀 TODO: RMS(슈어엠) 통신사 결과코드 ➔ 내부 에러코드 맵핑 구간!
             // =========================================================
-            String rawCode = ent.optString("code", "E999"); // 통신사가 준 원본 코드
+            String rawCode = ent.optString("s_code", "E999"); // 통신사가 준 원본 코드
 
             // 나중에 맵핑 테이블(_rmsCodeMap)이 나오면 아래 주석을 풀고 적용하시면 됩니다.
             // String mappedCode = _rmsCodeMap.getOrDefault(rawCode, "E999");

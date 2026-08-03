@@ -34,11 +34,11 @@ public class DatabaseConfig {
 	// ==========================================
 	// 1. 실물 DataSource 3개 생성 (yml 정보 매핑)
 	// ==========================================
-	@Bean(name = "oracle1DataSource")
-	@ConfigurationProperties(prefix = "spring.datasource.oracle1")
-	public DataSource oracle1DataSource() {
-		return DataSourceBuilder.create().type(HikariDataSource.class).build();
-	}
+//	@Bean(name = "oracle1DataSource")
+//	@ConfigurationProperties(prefix = "spring.datasource.oracle1")
+//	public DataSource oracle1DataSource() {
+//		return DataSourceBuilder.create().type(HikariDataSource.class).build();
+//	}
 
 //	@Bean(name = "oracle2DataSource")
 //	@ConfigurationProperties(prefix = "spring.datasource.oracle2")
@@ -46,11 +46,11 @@ public class DatabaseConfig {
 //		return DataSourceBuilder.create().type(HikariDataSource.class).build();
 //	}
 //
-//	@Bean(name = "mssqlDataSource")
-//	@ConfigurationProperties(prefix = "spring.datasource.mssql")
-//	public DataSource mssqlDataSource() {
-//		return DataSourceBuilder.create().type(HikariDataSource.class).build();
-//	}
+	@Bean(name = "mssqlDataSource")
+	@ConfigurationProperties(prefix = "spring.datasource.mssql")
+	public DataSource mssqlDataSource() {
+		return DataSourceBuilder.create().type(HikariDataSource.class).build();
+	}
 
 	// ==========================================
 	// 2. 동적 라우팅 DataSource 구성
@@ -59,18 +59,18 @@ public class DatabaseConfig {
 	public DataSource routingDataSource(
 //			@Qualifier("oracle1DataSource") DataSource oracle1,
 //			@Qualifier("oracle2DataSource") DataSource oracle2,
-//			@Qualifier("mssqlDataSource") DataSource mssql) {
-			@Qualifier("oracle1DataSource") DataSource oracle1) {
+			@Qualifier("mssqlDataSource") DataSource mssql) {
+//			@Qualifier("oracle1DataSource") DataSource oracle1) {
 
 		RoutingDataSource routingDataSource = new RoutingDataSource();
 
 		Map<Object, Object> dataSourceMap = new HashMap<>();
-		dataSourceMap.put("oracle1", oracle1); // yml의 db-target 이름과 매칭될 키값
+//		dataSourceMap.put("oracle1", oracle1); // yml의 db-target 이름과 매칭될 키값
 //		dataSourceMap.put("oracle2", oracle2);
-//		dataSourceMap.put("mssql", mssql);
+		dataSourceMap.put("mssql", mssql);
 
 		routingDataSource.setTargetDataSources(dataSourceMap);
-		routingDataSource.setDefaultTargetDataSource(oracle1); // 아무 지정이 없을 때 기본값
+		routingDataSource.setDefaultTargetDataSource(mssql); // 아무 지정이 없을 때 기본값
 
 		return routingDataSource;
 	}

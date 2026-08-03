@@ -14,6 +14,7 @@ public class Msg_Log {
 	private String telecom;
 	private String status;
 	private String real_send_type;
+	private String media_type;
 	private String database;
 	private String bcast_cnt;
 }

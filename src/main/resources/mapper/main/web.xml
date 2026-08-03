@@ -2,37 +2,35 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.dhn.client.cxm.mapper.SendRequest">
-
+<mapper namespace="com.dhn.client.web.mapper.SendRequest">
     <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
-        SELECT
-        SEQ_NO AS msgid,
-        CALL_TO AS phn,
-        CALL_FROM AS smssender,
-        SUBJECT AS title,
-        MSG AS msg,
-        TO_CHAR(REQ_TIME, 'YYYYMMDDHH24MISS') AS reservedt,
-        SENDER_KEY AS profile,
-        TMPL_CD AS tmplid,
-        BUTTON_INFO AS button_json,
-        ETC5 AS etc5 FROM ${msg_table}
-        WHERE CUR_STATE = '0'
-        AND REQ_TIME &lt;= SYSDATE
-        <if test="msg_type == 'AT'">
-            AND MSG_TYPE = 'T' AND BIZ_TYPE = 'AT'
-        </if>
-        <if test="msg_type == 'FT'">
-            AND MSG_TYPE = 'T' AND BIZ_TYPE = 'FT'
-        </if>
-        <if test="msg_type == 'LMS'">
-            AND MSG_TYPE = 'L'
-        </if>
+        SELECT TOP (200)
+            SEQNO AS msgid,
+            BIZTYPE AS messagetype,
+            MSG AS msg,
+            MSG AS msg_sms,
+            SUBJECT AS smslmstit,
+            CALLPHONE AS phn,
+            REQPHONE AS smssender,
+            REQTIME AS reservedt,
+            YELLOWID_KEY AS profile,
+            TEMPLATECODE AS tmplid,
+            BTN_02_URL_01 AS button1
+        FROM ${msg_table}
+        WHERE RESULT = '0'
+          AND KIND = #{msg_type}
+          AND (
+            REQTIME IS NULL
+                OR REQTIME = '00000000000000'
+                OR REQTIME &lt;= FORMAT(GETDATE(), 'yyyyMMddHHmmss')
+            )
+        ORDER BY SEQNO ASC
     </select>
 
     <update id="sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET CUR_STATE = '1', SENT_TIME = SYSDATE
-        WHERE SEQ_NO IN
+        SET RESULT = '1', SENTTIME = FORMAT(GETDATE(), 'yyyyMMddHHmmss')
+        WHERE SEQNO IN
         <foreach collection="msgIds" item="msgid" open="(" separator="," close=")">
             #{msgid}
         </foreach>
@@ -40,38 +38,46 @@
 
     <update id="result_update" parameterType="com.dhn.client.bean.Msg_Log">
         UPDATE ${msg_table}
-        SET CUR_STATE = #{status}, RSLT_TIME = TO_DATE(#{result_dt}, 'YYYYMMDDHH24MISS'),
-            RSLT_CODE = #{code}
-        WHERE SEQ_NO = #{msgid}
+        SET RESULT = #{status},
+            RECVTIME = #{result_dt},
+            ERRCODE = CAST(#{s_code} AS INT),
+            FKCONTENT = CAST(#{code} AS INT),
+            BATCHFLAG = CAST(#{telecom} AS INT),
+            MEDIATYPE = CAST(#{media_type} AS INT),
+            SENTMEDIA = #{real_send_type}
+        WHERE SEQNO = #{msgid}
     </update>
 
     <insert id="result_log_insert" parameterType="com.dhn.client.bean.Msg_Log">
         INSERT INTO ${log_table}
-        SELECT * FROM ${msg_table} WHERE SEQ_NO = #{msgid}
+        SELECT * FROM ${msg_table}
+        WHERE SEQNO = #{msgid}
     </insert>
 
     <delete id="result_delete" parameterType="com.dhn.client.bean.Msg_Log">
-        DELETE FROM ${msg_table} WHERE SEQ_NO = #{msgid}
+        DELETE FROM ${msg_table}
+        WHERE SEQNO = #{msgid}
     </delete>
 
     <update id="invalid_update" parameterType="map">
         UPDATE ${ml.msg_table}
-        SET CUR_STATE = '${ml.status}',
-        RESULT_CODE = '${ml.code}'
-        WHERE SEQ_NO IN
+        SET RESULT = '${ml.status}',
+        ERRCODE = '${ml.code}',
+        SENTTIME = FORMAT(GETDATE(), 'yyyyMMddHHmmss')
+        WHERE SEQNO IN
         <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
     </update>
 
     <insert id="invalid_log_insert" parameterType="map">
         INSERT INTO ${ml.log_table}
         SELECT * FROM ${ml.msg_table}
-        WHERE SEQ_NO IN
+        WHERE SEQNO IN
         <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
     </insert>
 
     <delete id="invalid_delete" parameterType="map">
         DELETE FROM ${ml.msg_table}
-        WHERE SEQ_NO IN
+        WHERE SEQNO IN
         <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
     </delete>
 

@@ -42,6 +42,10 @@
                 CAR_HEAD AS carhead, CAR_LIST AS carlist, CAR_TAIL AS cartail
                 FROM ${msg_table}
                 WHERE SMS_STATUS = '0'
+                AND (
+                RESERVED_FG = 'I'
+                OR (RESERVED_FG = 'R' AND RESERVED_DTTM &lt;= DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'))
+                )
                 <include refid="msg_type_condition"/>
             </when>
             <when test="database != null and database == 'mssql'">
@@ -70,6 +74,10 @@
                 CAR_HEAD AS carhead, CAR_LIST AS carlist, CAR_TAIL AS cartail
                 FROM ${msg_table}
                 WHERE SMS_STATUS = '0'
+                AND (
+                RESERVED_FG = 'I'
+                OR (RESERVED_FG = 'R' AND RESERVED_DTTM &lt;= FORMAT(GETDATE(), 'yyyyMMddHHmmss'))
+                )
                 <include refid="msg_type_condition"/>
             </when>
             <otherwise>
@@ -98,6 +106,10 @@
                 CAR_HEAD AS carhead, CAR_LIST AS carlist, CAR_TAIL AS cartail
                 FROM ${msg_table}
                 WHERE SMS_STATUS = '0'
+                AND (
+                RESERVED_FG = 'I'
+                OR (RESERVED_FG = 'R' AND RESERVED_DTTM &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
+                )
                 <include refid="msg_type_condition"/>
             </otherwise>
         </choose>
