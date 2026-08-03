@@ -67,7 +67,7 @@ public class WebSendAgent extends AbstractSendAgent {
                     continue;
                 }
 
-                bean.setMessagetype("AT"); // 알림톡 타입 지정
+                bean.setMessagetype("AO"); // 알림톡 타입 지정
 
                 try {
                     byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
