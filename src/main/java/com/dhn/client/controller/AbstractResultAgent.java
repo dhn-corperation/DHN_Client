@@ -44,7 +44,13 @@ public abstract class AbstractResultAgent {
             header.setContentType(MediaType.APPLICATION_JSON);
             header.set("userid", getUserid());
 
-            RestTemplate rt = new RestTemplate();
+            org.springframework.http.client.SimpleClientHttpRequestFactory factory =
+                    new org.springframework.http.client.SimpleClientHttpRequestFactory();
+
+            factory.setConnectTimeout(5000); // 연결 타임아웃: 5초 (서버와 커넥션 맺을 때 최대 대기 시간)
+            factory.setReadTimeout(10000);   // 읽기 타임아웃: 10초 (서버가 응답 데이터를 줄 때 최대 대기 시간)
+
+            RestTemplate rt = new RestTemplate(factory);
             HttpEntity<String> entity = new HttpEntity<>(null, header);
 
             ResponseEntity<String> response = rt.postForEntity(getDhnServer() + "result", entity, String.class);
