@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PreDestroy;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,8 @@ public abstract class AbstractSendAgent {
 
     protected static final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
+    protected static volatile boolean isRunning = true;
+
     // ⭐️ 5개 채널(msgType)이 서로 막히지 않게 개별 자물쇠(Map) 생성!
     protected final Map<String, Boolean> procMap = new ConcurrentHashMap<>();
 
@@ -30,7 +33,16 @@ public abstract class AbstractSendAgent {
     protected abstract List<RequestBean> fetchWaitingData(String msgType);
     protected abstract void updateStatusToSent(List<String> msgIds);
 
+    public static void onShutDown() {
+        log.warn("서버 종료 요청 발송 프로세스 종료");
+        isRunning = false;
+    }
+
     public void executeProcess(String dhnServer, String userid, String msgType) {
+        if (!isRunning) {
+            return;
+        }
+
         // 내 채널(msgType)이 처리 중이면 패스
         if (procMap.getOrDefault(msgType, false)) return;
         procMap.put(msgType, true); // 내 자물쇠 잠금

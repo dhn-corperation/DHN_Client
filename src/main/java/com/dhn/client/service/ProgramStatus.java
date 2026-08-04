@@ -1,5 +1,7 @@
 package com.dhn.client.service;
 
+import com.dhn.client.controller.AbstractResultAgent;
+import com.dhn.client.controller.AbstractSendAgent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.CommandLineRunner;
@@ -23,6 +25,8 @@ public class ProgramStatus implements CommandLineRunner, ApplicationListener<Con
     @Override
     public void onApplicationEvent(ContextClosedEvent event) {
         log.info("프로그램 종료 처리 중.....");
+        AbstractSendAgent.onShutDown();
+        AbstractResultAgent.onShutDown();
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
