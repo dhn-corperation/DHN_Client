@@ -12,6 +12,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -99,20 +101,7 @@ public class ErpResultAgent extends AbstractResultAgent {
             String cleanSCode = rawSCode.replaceAll("[^0-9]", "");
             if(cleanSCode.isEmpty()) cleanSCode = "";
 
-            String telecomMapped = "ETC";
-
-            if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
-                String r1 = rawRemark1.trim();
-                if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
-                    telecomMapped = "LGT";
-                } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
-                    telecomMapped = "SKT";
-                } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
-                    telecomMapped = "KTF";
-                } else {
-                    telecomMapped = "ETC";
-                }
-            }
+            String telecomMapped = "";
 
             String message_type = ent.optString("message_type","");
             String rslt_type = "";
@@ -131,6 +120,19 @@ public class ErpResultAgent extends AbstractResultAgent {
 
                 if(!cleanSCode.trim().isEmpty()) {
                     pre_rslt_code = cleanSCode;
+                }
+
+                if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
+                    String r1 = rawRemark1.trim();
+                    if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
+                        telecomMapped = "LGT";
+                    } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
+                        telecomMapped = "SKT";
+                    } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
+                        telecomMapped = "KTF";
+                    } else {
+                        telecomMapped = "ETC";
+                    }
                 }
             } else {
                 if("AT".equalsIgnoreCase(message_type)){

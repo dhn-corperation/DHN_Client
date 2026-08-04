@@ -94,6 +94,7 @@ public abstract class AbstractSendAgent {
             HttpHeaders header = new HttpHeaders();
             header.setContentType(MediaType.APPLICATION_JSON);
             header.set("userid", userid);
+            header.set("v2flag", "1");
 
             HttpEntity<String> entity = new HttpEntity<>(sw.toString(), header);
 

@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,9 +89,10 @@ public class WebSendAgent extends AbstractSendAgent {
             }
 
             if (!invalidList.isEmpty()) {
+                String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
                 Msg_Log ml = new Msg_Log();
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(logTable);
+                ml.setLog_table(logTable+"_"+yyyyMM);
                 ml.setStatus("4");
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);

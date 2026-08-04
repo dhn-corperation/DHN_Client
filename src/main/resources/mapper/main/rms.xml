@@ -7,25 +7,38 @@
     <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
         SELECT * FROM (
             SELECT
-                SEQNO AS msgid,
-                BIZTYPE AS messagetype,
-                MSG AS msg,
-                CALLPHONE AS phn,
-                REQPHONE AS smssender,
-                REQTIME AS reservedt,
+                msg.SEQNO AS msgid,
+                CASE
+                    WHEN KIND IN ('S','M') THEN 'PH'
+                    ELSE BIZTYPE
+                END AS messagetype,
+                msg.MSG AS msg,
+                msg.MSG AS msgsms,
+                msg.CALLPHONE AS phn,
+                msg.REQPHONE AS smssender,
+                CASE
+                    WHEN KIND IN ('S','M') THEN KIND
+                    ELSE ''
+                END AS smskind,
+                msg.REQTIME AS reservedt,
                 TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                SUBJECT AS title,
-                YELLOWID_KEY AS profile,
-                TEMPLATECODE AS tmplid
-            FROM ${msg_table}
-            WHERE RESULT = '0'
-              AND BIZTYPE = #{msg_type}
+                msg.SUBJECT AS smslmstit,
+                msg.YELLOWID_KEY AS profile,
+                msg.TEMPLATECODE AS tmplid,
+                msg.BUTTON_URL AS button,
+                con.FILEPATH1 AS filepath1,
+                con.FILEPATH2 AS filepath2,
+                con.FILEPATH3 AS filepath3
+            FROM ${msg_table} msg
+            LEFT OUTER JOIN ${con_table} con ON msg.FKCONTENT = con.SEQNO
+            WHERE msg.RESULT = '0'
+              AND msg.KIND = #{msg_type}
               AND (
-                REQTIME IS NULL
-                    OR REQTIME = '00000000000000'
-                    OR REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                msg.REQTIME IS NULL
+                    OR msg.REQTIME = '00000000000000'
+                    OR msg.REQTIME &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
                 )
-            ORDER BY SEQNO ASC
+            ORDER BY msg.SEQNO ASC
         )
         WHERE ROWNUM &lt;= 200
     </select>
@@ -41,9 +54,14 @@
 
     <update id="result_update" parameterType="com.dhn.client.bean.Msg_Log">
         UPDATE ${msg_table}
-        SET RESULT = '2',
+        SET RESULT = #{status},
             RECVTIME = #{result_dt},
-            ERRCODE = #{code}  WHERE SEQNO = #{msgid}
+            ERRCODE = CAST(#{s_code} AS INT),
+            RETRY = CAST(#{code} AS INT),
+            BATCHFLAG = CAST(#{telecom} AS INT),
+            MEDIATYPE = CAST(#{media_type} AS INT),
+            SENTMEDIA = #{real_send_type}
+        WHERE SEQNO = #{msgid}
     </update>
 
     <insert id="result_log_insert" parameterType="com.dhn.client.bean.Msg_Log">

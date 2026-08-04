@@ -4,8 +4,10 @@ import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -84,7 +86,9 @@ public class ErpSendAgent extends AbstractSendAgent {
                 return finalSendList;
             }
 
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = JsonMapper.builder()
+                    .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS)
+                    .build();
 
             for (RequestBean bean : rawList) {
                 // 1. 번호 유효성 검사
@@ -111,7 +115,7 @@ public class ErpSendAgent extends AbstractSendAgent {
                 } else if ("FT".equalsIgnoreCase(msgType)) {
 
                 } else if ("BM".equalsIgnoreCase(msgType)) {
-
+                    parseBrandMessageJson(bean, mapper);
                 }
 
                 // 3. JSON 페이로드 정제
@@ -234,5 +238,114 @@ public class ErpSendAgent extends AbstractSendAgent {
             // 통 JSON 양식이 아니거나 일반 텍스트인 경우 기존 세팅 유지
             log.warn("[ERP] 버튼/이미지 JSON 변환 스킵 또는 예외 (msgid: {}): {}", bean.getMsgid(), e.getMessage());
         }
+    }
+
+    /**
+     * ⭐️ [신규] 브랜드톡 통 JSON 해체 전용 메서드
+     * 입력(MESSAGE): {"sendType":"free","msgType":"FT","targeting":"I","text":"...","header":"...","attachment":{...}}
+     */
+    private void parseBrandMessageJson(RequestBean bean, ObjectMapper mapper) {
+        String rawMsg = bean.getMsg(); // MESSAGE 컬럼 값이 통째로 msg에 들어있음
+
+        if (rawMsg == null || rawMsg.trim().isEmpty()) {
+            return;
+        }
+        // JSON 형태가 아니면 스킵
+        if (rawMsg == null || !rawMsg.trim().startsWith("{")) {
+            return;
+        }
+
+        try {
+            JsonNode root = mapper.readTree(rawMsg);
+
+            // 1. 텍스트 추출 -> RequestBean의 msg 로 세팅
+            if (root.has("text")) {
+                String innerMsgType = root.get("msgType").asText();
+                bean.setMsg(root.get("text").asText());
+
+            }else{
+                bean.setMsg("");
+                bean.setMsgsms("");
+            }
+
+            // 2. targeting 추출 -> RequestBean의 kind 로 세팅
+            if (root.has("targeting")) {
+                if(root.get("targeting").asText().equalsIgnoreCase("I")){
+                    bean.setKind("O");
+                }else{
+                    bean.setKind(root.get("targeting").asText());
+                }
+            }
+
+            // 3. header 추출 -> RequestBean의 title (또는 header) 로 세팅
+            if (root.has("header")) {
+                bean.setHeader(root.get("header").asText()); // 보통 DHN 규격상 title 필드로 맵핑됨
+            }
+
+            // 4. attachment 통 덩어리 추출 -> RequestBean의 attachment 필드에 JSON 문자열로 그대로 세팅!
+            if (root.has("attachment")) {
+                String attachmentStr = mapper.writeValueAsString(root.get("attachment"));
+                attachmentStr = convertCamelToSnakeForUrls(attachmentStr);
+                bean.setAttachments(attachmentStr);
+            }
+
+            if (root.has("carousel")) {
+                String carouselStr = mapper.writeValueAsString(root.get("carousel"));
+                carouselStr = convertCamelToSnakeForUrls(carouselStr);
+                bean.setCarousel(carouselStr);
+            }
+
+            if (root.has("adFlag")) {
+                bean.setAdflag(root.get("adFlag").asText());
+            }
+
+            // 5. msgType 추출 -> API 규격인 B1 ~ B8 로 변환하여 messagetype 세팅!
+            if (root.has("msgType")) {
+                String innerMsgType = root.get("msgType").asText();
+                String mappedBType = mapBrandMessageType(innerMsgType);
+                bean.setMessagetype(mappedBType);
+            }
+
+        } catch (Exception e) {
+            log.error("[ERP] 브랜드톡 JSON 해체 실패 (msgid: {}): {}", bean.getMsgid(), e.getMessage());
+        }
+    }
+
+    /**
+     * ⭐️ 브랜드톡 msgType (FT, FI 등)을 API 규격(B1 ~ B8)으로 변환해주는 매퍼
+     */
+    private String mapBrandMessageType(String msgType) {
+        if (msgType == null) return "E1";
+
+        switch (msgType.toUpperCase()) {
+            case "FT": return "E1"; // 브랜드톡 기본 텍스트
+            case "FI": return "E2"; // 브랜드톡 이미지
+            case "FW": return "E3"; // 브랜드톡 와이드 이미지
+            case "FL": return "E4"; // 브랜드톡 와이드 리스트
+            case "FC": return "E5"; // 브랜드톡 캐러셀 피드
+            case "FP": return "E6"; // 브랜드톡 프리미엄 동영상
+            case "FM": return "E7"; // 브랜드톡 커머스
+            case "FA": return "E8"; // 브랜드톡 캐러셀 커머스
+            default:   return "E1";
+        }
+    }
+
+    private String convertCamelToSnakeForUrls(String jsonStr) {
+        if (jsonStr == null) return null;
+
+        return jsonStr.replace("\"urlMobile\":", "\"url_mobile\":")
+                .replace("\"urlPc\":", "\"url_pc\":")
+                .replace("\"imgUrl\":", "\"img_url\":")
+                .replace("\"imgLink\":", "\"img_link\":")
+                .replace("\"schemeIos\":", "\"scheme_ios\":")
+                .replace("\"schemeAndroid\":", "\"scheme_android\":")
+                .replace("\"regularPrice\":", "\"regular_price\":")
+                .replace("\"discountPrice\":", "\"discount_price\":")
+                .replace("\"discountRate\":", "\"discount_rate\":")
+                .replace("\"discountFixed\":", "\"discount_fixed\":")
+                .replace("\"videoUrl\":", "\"video_url\":")
+                .replace("\"thumbnailUrl\":", "\"thumbnail_url\":")
+                .replace("\"additionalContent\":", "\"additional_content\":")
+                .replace("\"imageUrl\":", "\"image_url\":");
     }
 }

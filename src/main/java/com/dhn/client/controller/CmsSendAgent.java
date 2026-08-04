@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,9 +116,10 @@ public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모
             }
 
             if (!invalidList.isEmpty()) {
+                String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
                 Msg_Log ml = new Msg_Log();
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(logTable);
+                ml.setLog_table(logTable+"_"+yyyyMM);
                 ml.setStatus("4");
                 ml.setResult_message("(AGENT) 데이터 형식 또는 정제 오류");
                 ml.setCode("7999");

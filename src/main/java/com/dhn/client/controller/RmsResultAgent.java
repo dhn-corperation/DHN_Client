@@ -62,17 +62,61 @@ public class RmsResultAgent extends AbstractResultAgent {
             _ml.setMsgid(ent.getString("msgid"));
             _ml.setDatabase(dbTarget);
 
-            // =========================================================
-            // 🚀 TODO: RMS(슈어엠) 통신사 결과코드 ➔ 내부 에러코드 맵핑 구간!
-            // =========================================================
-            String rawCode = ent.optString("s_code", "E999"); // 통신사가 준 원본 코드
+            String rawCode = ent.optString("code", "E999"); // 최종 결과코드
+            String rawSCode = ent.optString("s_code", ""); // 알림톡 1차 결과코드
+            String rawRemark1 = ent.optString("remark1", "");
+            String recvTimeRaw = ent.optString("res_dt", ent.optString("remark2", "")); // 수신시간
+            String rawKind = ent.optString("sms_kind", "");
 
-            // 나중에 맵핑 테이블(_rmsCodeMap)이 나오면 아래 주석을 풀고 적용하시면 됩니다.
-            // String mappedCode = _rmsCodeMap.getOrDefault(rawCode, "E999");
-            // _ml.setCode(mappedCode);
+            String cleanCode = rawCode.replaceAll("[^0-9]", "");
+            if(cleanCode.isEmpty()) cleanCode = "9999";
 
-            // 일단은 맵핑 전이므로 원본 코드를 그대로 세팅합니다! (xml에서 ERRCODE로 들어감)
-            _ml.setCode(rawCode);
+            String cleanSCode = rawSCode.replaceAll("[^0-9]", "");
+            String telecom = "4"; // 기본값 (ETC 등)
+            String mediatype = "";
+
+            if(cleanSCode.equals("0000")){
+                cleanCode = "7000";
+                telecom = "7000";
+            }else{
+
+                if(cleanSCode.isEmpty()){
+                    cleanSCode = cleanCode;
+                }
+
+                if (rawRemark1 != null && !rawRemark1.isEmpty()) {
+                    String r1 = rawRemark1.trim();
+
+                    if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
+                        telecom = "3"; // LGT 계열 코드 (숫자형으로 매핑)
+                        mediatype = "3";
+                    } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
+                        telecom = "1"; // SKT 계열 코드
+                        mediatype = "1";
+                    } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
+                        telecom = "2"; // KT 계열 코드
+                        mediatype = "2";
+                    } else {
+                        telecom = "4"; // SKT 또는 미지정 등 시스템별 0번 코드
+                        mediatype = "4";
+                    }
+                }
+            }
+
+            String cleanTelecom = telecom.replaceAll("[^0-9]", "");
+
+            // 최종 결과코드(code) 기준으로 상태값 판별
+            if ("7000".equals(cleanCode) || "0000".equals(cleanCode)) {
+                _ml.setStatus("2"); // 성공
+            } else {
+                _ml.setStatus("4"); // 실패
+            }
+
+            _ml.setCode(cleanCode);       // 최종코드 세팅
+            _ml.setS_code(cleanSCode);    // 카톡코드 세팅
+            _ml.setTelecom(cleanTelecom); // 통신사 세팅
+            _ml.setReal_send_type(rawKind); // 문자 타입 세팅
+            _ml.setMedia_type(mediatype); // 문자 타입 세팅
             // =========================================================
 
             // 날짜 14자리 압축 및 YYYYMM 파티셔닝

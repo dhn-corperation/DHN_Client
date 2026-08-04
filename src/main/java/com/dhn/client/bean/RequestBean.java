@@ -67,6 +67,9 @@ public class RequestBean {
     private String attitems;
     private String pushalarm;
 	private String mmsimageid;
+    private String filepath1;
+    private String filepath2;
+    private String filepath3;
     private int expectedbroadcastcnt;
 
     // ==========================================

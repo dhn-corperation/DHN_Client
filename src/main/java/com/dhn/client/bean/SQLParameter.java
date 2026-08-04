@@ -14,6 +14,7 @@ import java.util.List;
 public class SQLParameter {
 	private String msg_table;
 	private String log_table;
+	private String con_table;
 	private String sequence;
 	private String database;
 	private String kakao_use;
