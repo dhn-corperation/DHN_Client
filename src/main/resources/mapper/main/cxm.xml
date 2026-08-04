@@ -10,24 +10,38 @@
             SEQ_NO AS msgid,
             CALL_TO AS phn,
             CALL_FROM AS smssender,
-            SUBJECT AS title,
+            SUBJECT AS smslmstit,
             MSG AS msg,
+            MSG AS msgsms,
             TO_CHAR(REQ_TIME, 'YYYYMMDDHH24MISS') AS reservedt,
             TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
             SENDER_KEY AS profile,
             TMPL_CD AS tmplid,
-            BUTTON_INFO AS button_json,
-            ETC5 AS etc5 FROM ${msg_table}
+            BUTTON_INFO AS button,
+            FT_IMG_URL AS imageurl,
+            FT_IMG_PATH AS imagelink,
+            'P' AS pcom,
+            ETC5 AS etc5
+            FROM ${msg_table}
             WHERE CUR_STATE = '0'
             AND REQ_TIME &lt;= SYSDATE
             <if test="msg_type == 'AT'">
                 AND MSG_TYPE = 'T' AND BIZ_TYPE = 'AT'
             </if>
+            <if test="msg_type == 'AI'">
+                AND MSG_TYPE = 'T' AND BIZ_TYPE = 'AI'
+            </if>
             <if test="msg_type == 'FT'">
                 AND MSG_TYPE = 'T' AND BIZ_TYPE = 'FT'
             </if>
+            <if test="msg_type == 'FI'">
+                AND MSG_TYPE = 'T' AND BIZ_TYPE = 'FI'
+            </if>
             <if test="msg_type == 'LMS'">
                 AND MSG_TYPE = 'L'
+            </if>
+            <if test="msg_type == 'SMS'">
+                AND MSG_TYPE = 'S'
             </if>
             ORDER BY SEQ_NO ASC
         )
@@ -45,8 +59,13 @@
 
     <update id="result_update" parameterType="com.dhn.client.bean.Msg_Log">
         UPDATE ${msg_table}
-        SET CUR_STATE = #{status}, RSLT_TIME = TO_DATE(#{result_dt}, 'YYYYMMDDHH24MISS'),
-            RSLT_CODE = #{code}
+        SET CUR_STATE = #{status},
+            RSLT_TIME = TO_DATE(#{result_dt}, 'YYYYMMDDHH24MISS'),
+            RSLT_CODE = #{code},
+            RSLT_NET = #{telecom},
+            RE_RSLT_CODE = #{s_code},
+            RE_RSLT_NET = #{telecom},
+            RE_TYPE = #{media_type}
         WHERE SEQ_NO = #{msgid}
     </update>
 

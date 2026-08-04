@@ -60,12 +60,55 @@ public class CxmResultAgent extends AbstractResultAgent {
             _ml.setMsgid(ent.getString("msgid"));
             _ml.setDatabase(dbTarget);
 
-            // =========================================================
-            // 🚀 TODO: CXM 결과코드 ➔ 내부 매핑 구간
-            // (명세서의 0:성공 / 카카오 7000:성공 여부에 따라 분기)
-            // =========================================================
+            // API에서 던져주는 결과 필드 추출
             String rawCode = ent.optString("code", "E999");
-            _ml.setCode(rawCode);
+            String rawSCode = ent.optString("s_code", "");
+            String rawRemark1 = ent.optString("remark1", ""); // 통신사 정보
+            String recvTimeRaw = ent.optString("res_dt", ent.optString("remark2", ""));
+
+            // 코드 숫자만 남기기
+            String cleanCode = rawCode.replaceAll("[^0-9]", "");
+            if(cleanCode.isEmpty()) cleanCode = "";
+
+            String cleanSCode = rawSCode.replaceAll("[^0-9]", "");
+            if(cleanSCode.isEmpty()) cleanSCode = "";
+
+            String telecomMapped = "";
+
+            String message_type = ent.optString("message_type","");
+            String sms_kind = ent.optString("sms_kind","");
+            String rslt_code = "";
+            String pre_rslt_code = "";
+
+            if("PH".equalsIgnoreCase(message_type)){
+
+                if(!cleanSCode.trim().isEmpty()) {
+                    rslt_code = cleanSCode;
+                    pre_rslt_code = cleanCode;
+                }else{
+                    rslt_code = cleanCode;
+                }
+
+                if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
+                    String r1 = rawRemark1.trim();
+                    if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
+                        telecomMapped = "LGT";
+                    } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
+                        telecomMapped = "SKT";
+                    } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
+                        telecomMapped = "KTF";
+                    } else {
+                        telecomMapped = "ETC";
+                    }
+                }
+            } else {
+                rslt_code = cleanSCode;
+            }
+
+            _ml.setCode(rslt_code);
+            _ml.setMedia_type(sms_kind);
+            _ml.setS_code(pre_rslt_code);
+            _ml.setTelecom(telecomMapped);
 
             // 성공/실패 상태값 (CUR_STATE: 2=성공, 4=실패)
             if ("0000".equals(rawCode) || "7000".equals(rawCode) || "0".equals(rawCode)) {
