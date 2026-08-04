@@ -114,12 +114,13 @@ public class ErpResultAgent extends AbstractResultAgent {
                 }
             }
 
+            String message_type = ent.optString("message_type","");
             String rslt_type = "";
             String rslt_code = "";
             String pre_rslt_type = ""; // 재발송 전 타입은 모름
             String pre_rslt_code = "";
 
-            if("PH".equalsIgnoreCase(ent.optString("message_type",""))){
+            if("PH".equalsIgnoreCase(message_type)){
                 if("S".equalsIgnoreCase(ent.optString("sms_kind", ""))){
                     rslt_type = "SMS";
                 }else{
@@ -131,11 +132,14 @@ public class ErpResultAgent extends AbstractResultAgent {
                 if(!cleanSCode.trim().isEmpty()) {
                     pre_rslt_code = cleanSCode;
                 }
-            } else if("AT".equalsIgnoreCase(ent.optString("message_type","")) || "AI".equalsIgnoreCase(ent.optString("message_type",""))){
-                rslt_type = ent.optString("message_type");
-                rslt_code = cleanSCode;
-            } else if(ent.optString("message_type", "").toUpperCase().startsWith("B")){
-                rslt_type = ent.optString("BM");
+            } else {
+                if("AT".equalsIgnoreCase(message_type)){
+                    rslt_type = "ALT";
+                }else if ("AI".equalsIgnoreCase(message_type)){
+                    rslt_type = "ALI";
+                }else if (message_type.toUpperCase().startsWith("B")){
+                    rslt_type = "BRI";
+                }
                 rslt_code = cleanSCode;
             }
 

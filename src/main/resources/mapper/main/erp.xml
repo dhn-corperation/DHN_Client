@@ -69,7 +69,8 @@
             RSLT_DATE = TO_DATE(#{result_dt}, 'YYYYMMDDHH24MISS'),
             RSLT_CODE = #{code},
             RSLT_NET = #{telecom},
-            RSLT_TYPE = #{media_type}
+            RSLT_TYPE = #{media_type},
+            PRE_RSLT_CODE = #{s_code}
         WHERE MSG_KEY = #{msgid}
     </update>
 
