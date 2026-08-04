@@ -96,4 +96,17 @@
         <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
     </delete>
 
+    <select id="check_table" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*)
+        FROM USER_TABLES
+        WHERE TABLE_NAME = #{logTable}
+    </select>
+
+    <update id="create_table" parameterType="java.util.Map">
+        CREATE TABLE ${logTable} AS
+        SELECT *
+        FROM ${msgTable}
+        WHERE 1 = 2
+    </update>
+
 </mapper>

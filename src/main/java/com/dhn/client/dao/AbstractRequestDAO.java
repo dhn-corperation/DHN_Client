@@ -116,7 +116,18 @@ public abstract class AbstractRequestDAO {
     }
 
     public void logTableCheck(String msgTable, String logTable) throws Exception {
-        // 만약 동적 테이블 생성이나 체크가 필요할 때 사용 (필요없다면 비워둬도 무방합니다)
+        Map<String, String> param = new HashMap<>();
+        param.put("msgTable", msgTable);
+        param.put("logTable", logTable.toUpperCase()); // 오라클은 대문자로 검사
+
+        // 1. sqlSession 직접 호출로 테이블 존재 여부 확인 (.check_table)
+        int existCount = sqlSession.selectOne(getNamespace() + ".check_table", param);
+
+        // 2. 없으면 sqlSession 직접 호출로 즉시 복사/생성 (.create_table)
+        if (existCount == 0) {
+            log.warn("[DAO] 로그 테이블({}) 없음 복제 생성", logTable);
+            sqlSession.update(getNamespace() + ".create_table", param);
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)

@@ -82,4 +82,21 @@
         <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
     </delete>
 
+    <select id="check_table" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*)
+        FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = SCHEMA_NAME()
+          AND TABLE_NAME = #{logTable}
+    </select>
+
+    <update id="create_table" parameterType="java.util.Map">
+        SELECT *
+        INTO ${logTable}
+        FROM (
+             SELECT * FROM ${msgTable} WHERE 1 = 2
+             UNION ALL
+             SELECT * FROM ${msgTable} WHERE 1 = 2
+         ) AS T
+    </update>
+
 </mapper>
