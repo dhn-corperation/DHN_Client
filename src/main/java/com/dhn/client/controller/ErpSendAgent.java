@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -113,7 +114,7 @@ public class ErpSendAgent extends AbstractSendAgent {
                         bean.setSmskind("S");
                     }
                 } else if ("FT".equalsIgnoreCase(msgType)) {
-
+                    convertFriendTalk(bean, mapper);
                 } else if ("BM".equalsIgnoreCase(msgType)) {
                     parseBrandMessageJson(bean, mapper);
                 }
@@ -166,7 +167,7 @@ public class ErpSendAgent extends AbstractSendAgent {
      * 예: {"pass":{"extra":{"msg_type":"FI"}, "button":[...], "image":{"img_url":"...", "img_link":"..."}}}
      */
     private void parseCustomButtonJson(RequestBean bean, ObjectMapper mapper) {
-        String rawButton = bean.getButton1(); // DB에서 BUTTON 컬럼을 임시로 button1에 담아왔다고 가정
+        String rawButton = bean.getButton(); // DB에서 BUTTON 컬럼을 임시로 button에 담아왔다고 가정
         if (rawButton == null || rawButton.trim().isEmpty()) {
             return;
         }
@@ -260,8 +261,18 @@ public class ErpSendAgent extends AbstractSendAgent {
 
             // 1. 텍스트 추출 -> RequestBean의 msg 로 세팅
             if (root.has("text")) {
-                String innerMsgType = root.get("msgType").asText();
                 bean.setMsg(root.get("text").asText());
+                bean.setMsgsms(root.get("text").asText());
+                try {
+                    byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
+                    if (msgBytes.length > 90) {
+                        bean.setSmskind("L");
+                    } else {
+                        bean.setSmskind("S");
+                    }
+                } catch (Exception e) {
+                    bean.setSmskind("L"); // 예외 시 기본 단문 처리
+                }
 
             }else{
                 bean.setMsg("");
@@ -347,5 +358,64 @@ public class ErpSendAgent extends AbstractSendAgent {
                 .replace("\"thumbnailUrl\":", "\"thumbnail_url\":")
                 .replace("\"additionalContent\":", "\"additional_content\":")
                 .replace("\"imageUrl\":", "\"image_url\":");
+    }
+
+    private void convertFriendTalk(RequestBean bean, ObjectMapper mapper) {
+
+        try {
+            byte[] msgBytes = bean.getMsg() != null
+                    ? bean.getMsg().getBytes("EUC-KR")
+                    : new byte[0];
+
+            bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
+        } catch (Exception e) {
+            bean.setSmskind("S");
+        }
+
+        String rawButton = bean.getButton();
+
+        if (rawButton == null || rawButton.trim().isEmpty()) {
+            return;
+        }
+
+        if (!rawButton.trim().startsWith("{")) {
+            return;
+        }
+
+        try {
+
+            JsonNode root = mapper.readTree(rawButton);
+            JsonNode pass = root.path("pass");
+
+            if (pass.has("extra")) {
+                String msgType = pass.path("extra")
+                        .path("msg_type")
+                        .asText();
+
+                bean.setMessagetype(mapBrandMessageType(msgType));
+            }
+
+            ObjectNode attachment = mapper.createObjectNode();
+
+            if (pass.has("button")) {
+                attachment.set("button", pass.get("button"));
+            }
+
+            if (pass.has("image")) {
+                attachment.set("image", pass.get("image"));
+            }
+
+            if (attachment.size() > 0) {
+                bean.setAttachments(
+                        convertCamelToSnakeForUrls(
+                                mapper.writeValueAsString(attachment)
+                        )
+                );
+            }
+
+        } catch (Exception e) {
+            log.error("[ERP] 친구톡 JSON 변환 실패 (msgid: {}): {}",
+                    bean.getMsgid(), e.getMessage());
+        }
     }
 }
