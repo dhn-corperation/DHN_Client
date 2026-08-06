@@ -22,7 +22,7 @@
                 CASE
                     WHEN USED_CD IN ('00', '10', '20') THEN 'PH'
                     WHEN USED_CD = '30' THEN 'AT'
-                    WHEN USED_CD = '40' THEN 'G1'
+                    WHEN USED_CD = '40' THEN 'E1'
                 END AS messagetype,
                 CASE
                     WHEN USED_CD = '00' THEN 'S'
@@ -35,11 +35,20 @@
                 WHEN RCV_PHN_ID LIKE '010%' THEN CONCAT('82', SUBSTRING(RCV_PHN_ID, 2, 15))
                 ELSE CONCAT('82', SUBSTRING(RCV_PHN_ID, 2, 15))
                 END AS phn,
-                SND_PHN_ID AS smssender, RESERVED_DTTM AS reservedt,
+                SND_PHN_ID AS smssender,
+                RESERVED_DTTM AS reservedt,
                 DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') AS regdt,
-                TMPL_CD AS tmplid, SENDER_KEY AS profile, KISA_CODE AS kisacode, MSG_TITLE AS title,
-                ATT_IMAGE AS attimage, ATT_BUTTON AS attbutton, ATT_ITEM AS attitem, ATT_COUPON AS attcoupon,
-                CAR_HEAD AS carhead, CAR_LIST AS carlist, CAR_TAIL AS cartail
+                TMPL_CD AS tmplid,
+                SENDER_KEY AS profile,
+                KISA_CODE AS kisacode,
+                MSG_TITLE AS title,
+                ATT_IMAGE AS attimage,
+                ATT_BUTTON AS attbutton,
+                ATT_ITEM AS attitem,
+                ATT_COUPON AS attcoupon,
+                CAR_HEAD AS carhead,
+                CAR_LIST AS carlist,
+                CAR_TAIL AS cartail
                 FROM ${msg_table}
                 WHERE SMS_STATUS = '0'
                 AND (
@@ -56,7 +65,7 @@
                 CASE
                     WHEN USED_CD IN ('00', '10', '20') THEN 'PH'
                     WHEN USED_CD = '30' THEN 'AT'
-                    WHEN USED_CD = '40' THEN 'G1'
+                    WHEN USED_CD = '40' THEN 'E1'
                 END AS messagetype,
                 CASE
                     WHEN USED_CD = '00' THEN 'S'
