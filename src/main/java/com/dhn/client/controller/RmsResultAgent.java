@@ -59,14 +59,15 @@ public class RmsResultAgent extends AbstractResultAgent {
 
             Msg_Log _ml = new Msg_Log();
             _ml.setMsg_table(msgTable);
+            _ml.setLog_table(logTable);
             _ml.setMsgid(ent.getString("msgid"));
             _ml.setDatabase(dbTarget);
 
-            String rawCode = ent.optString("code", "E999"); // 최종 결과코드
+            String rawCode = ent.optString("code", "9999"); // 최종 결과코드
             String rawSCode = ent.optString("s_code", ""); // 알림톡 1차 결과코드
             String rawRemark1 = ent.optString("remark1", "");
             String recvTimeRaw = ent.optString("res_dt", ent.optString("remark2", "")); // 수신시간
-            String rawKind = ent.optString("sms_kind", "");
+            String rawKind = "";
 
             String cleanCode = rawCode.replaceAll("[^0-9]", "");
             if(cleanCode.isEmpty()) cleanCode = "9999";
@@ -76,12 +77,13 @@ public class RmsResultAgent extends AbstractResultAgent {
             String mediatype = "";
 
             if(cleanSCode.equals("0000")){
-                cleanCode = "7000";
-                telecom = "7000";
+                cleanCode = "0000";
+                telecom = "0000";
             }else{
 
                 if(cleanSCode.isEmpty()){
                     cleanSCode = cleanCode;
+                    cleanCode = "";
                 }
 
                 if (rawRemark1 != null && !rawRemark1.isEmpty()) {
@@ -89,18 +91,16 @@ public class RmsResultAgent extends AbstractResultAgent {
 
                     if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
                         telecom = "3"; // LGT 계열 코드 (숫자형으로 매핑)
-                        mediatype = "3";
                     } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
                         telecom = "1"; // SKT 계열 코드
-                        mediatype = "1";
                     } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
                         telecom = "2"; // KT 계열 코드
-                        mediatype = "2";
                     } else {
                         telecom = "4"; // SKT 또는 미지정 등 시스템별 0번 코드
-                        mediatype = "4";
                     }
                 }
+
+                rawKind = ent.optString("sms_kind", "");
             }
 
             String cleanTelecom = telecom.replaceAll("[^0-9]", "");
@@ -116,7 +116,6 @@ public class RmsResultAgent extends AbstractResultAgent {
             _ml.setS_code(cleanSCode);    // 카톡코드 세팅
             _ml.setTelecom(cleanTelecom); // 통신사 세팅
             _ml.setReal_send_type(rawKind); // 문자 타입 세팅
-            _ml.setMedia_type(mediatype); // 문자 타입 세팅
             // =========================================================
 
             // 날짜 14자리 압축 및 YYYYMM 파티셔닝
@@ -127,18 +126,6 @@ public class RmsResultAgent extends AbstractResultAgent {
             _ml.setResult_dt(cleanDt);
             _ml.setResult_message(ent.optString("message", ""));
 
-            String yyyymm = "";
-            try {
-                if (cleanDt.length() >= 6) {
-                    yyyymm = cleanDt.substring(0, 6);
-                } else {
-                    yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-                }
-            } catch (Exception e) {
-                yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-            }
-
-            _ml.setLog_table(logTable + "_" + yyyymm);
 
             try {
                 // UPDATE (ERRCODE 포함) -> INSERT LOG -> DELETE 트랜잭션 실행!

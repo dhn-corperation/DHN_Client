@@ -50,7 +50,7 @@ public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모
         if (!"Y".equalsIgnoreCase(cmsUse)) {
             return;
         }
-        String[] msgTypes = {"AT", "BM", "SM", "LM", "MM"};
+        String[] msgTypes = {"SM", "LM"};
         for (String msgType : msgTypes) {
             // ⭐️ 자물쇠를 풀고 묶는 부모의 강력한 병렬 프로세스를 호출
             super.executeProcess(this.dhnServer, this.userid, msgType);
@@ -92,22 +92,6 @@ public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모
                     continue;
                 }
 
-                // =======================================================
-                // 🚀 [추가] 실시간 전송 데이터 구분 및 메시지 타입(OT) 강제 변환
-                // =======================================================
-                // CMS 채널에서 일반 단문(SM/SMS) 발송 시 기본값이 'PH'라고 가정할 때,
-                // 실시간 스위치(isRealTimeData)가 켜진 데이터면 'OT'로 변신시킵니다!
-                if (msgType.equals("SM") || msgType.equals("LM")) {
-                    if (isRealTimeData(bean)) {
-                        bean.setMessagetype("OT"); // 실시간이면 OT로 세팅
-                        log.info("[CMS] 실시간 데이터 감지됨! msgid: {} ➔ OT 타입으로 변환", bean.getMsgid());
-                    } else {
-                        // 명시적으로 설정이 필요하다면 아래 주석 해제 (이미 DB에서 PH로 온다면 패스)
-                        // bean.setMessagetype("PH");
-                    }
-                }
-                // =======================================================
-
                 // JSON 페이로드 정제
                 boolean isGoodData = bean.processJsonPayload(mapper, invalidList);
                 if (isGoodData) {
@@ -116,10 +100,9 @@ public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모
             }
 
             if (!invalidList.isEmpty()) {
-                String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
                 Msg_Log ml = new Msg_Log();
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(logTable+"_"+yyyyMM);
+                ml.setLog_table(logTable);
                 ml.setStatus("4");
                 ml.setResult_message("(AGENT) 데이터 형식 또는 정제 오류");
                 ml.setCode("7999");

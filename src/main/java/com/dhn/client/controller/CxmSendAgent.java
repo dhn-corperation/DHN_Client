@@ -148,10 +148,9 @@ public class CxmSendAgent extends AbstractSendAgent {
             }
 
             if (!invalidList.isEmpty()) {
-                String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
                 Msg_Log ml = new Msg_Log();
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(logTable+"_"+yyyyMM);
+                ml.setLog_table(logTable);
                 ml.setStatus("4");
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);

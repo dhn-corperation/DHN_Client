@@ -48,7 +48,7 @@ public class RmsSendAgent extends AbstractSendAgent {
         if (!"Y".equalsIgnoreCase(rmsUse)) {
             return;
         }
-        String[] msgTypes = {"S", "M", "T"};
+        String[] msgTypes = {"S", "L", "M", "T"};
         for (String msgType : msgTypes) {
             super.executeProcess(this.dhnServer, this.userid, msgType);
         }
@@ -81,10 +81,11 @@ public class RmsSendAgent extends AbstractSendAgent {
                     continue;
                 }
 
-                // =========================================================
-                // 📸 ⭐️ [특이사항] MMS 이미지 선(先) 업로드 및 ID 매핑 ⭐️
-                // =========================================================
-                if ("S".equalsIgnoreCase(msgType) || "M".equalsIgnoreCase(msgType)) {
+                if("S".equalsIgnoreCase(msgType)){
+                    // SMS 별도 처리 없음
+                } else if("L".equalsIgnoreCase(msgType)){
+                    // LMS 별도 처리 없음
+                } else if ( "M".equalsIgnoreCase(msgType)) {
                     boolean hasImage = (bean.getFilepath1() != null && !bean.getFilepath1().trim().isEmpty()) ||
                             (bean.getFilepath2() != null && !bean.getFilepath2().trim().isEmpty()) ||
                             (bean.getFilepath3() != null && !bean.getFilepath3().trim().isEmpty());
@@ -93,11 +94,9 @@ public class RmsSendAgent extends AbstractSendAgent {
                         String imageId = uploadMmsImages(bean);
 
                         if(imageId != null) {
-                            bean.setMmsimageid(imageId); // ⭐️ 리퀘스트 필드에 장전 완료!
+                            bean.setMmsimageid(imageId);
                         } else {
-                            log.error("[RMS] 이미지 업로드 실패로 인한 발송 컷! MSGID: {}", bean.getMsgid());
-                            invalidList.add(bean.getMsgid());
-                            continue;
+                            bean.setSmskind("L");
                         }
                     }else{
                         bean.setSmskind("L");
@@ -128,10 +127,9 @@ public class RmsSendAgent extends AbstractSendAgent {
             // 불량 데이터 처리
             if (!invalidList.isEmpty()) {
 
-                String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
                 Msg_Log ml = new Msg_Log();
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(logTable+"_"+yyyyMM);
+                ml.setLog_table(logTable);
                 ml.setStatus("4");
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);
