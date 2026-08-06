@@ -25,7 +25,7 @@ public class CxmResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.cxm_use:N}") private String cxmUse;
     @Value("${dhnclient.cxm.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
-    @Value("${dhnclient.cxm.db-target:oracle1}") private String dbTarget;
+    @Value("${dhnclient.cxm.db-target:oracle}") private String dbTarget;
     @Value("${dhnclient.cxm.msg_table:EMFO_DATA}") private String msgTable;
     @Value("${dhnclient.cxm.log_table:EMFO_LOG}") private String logTable;
 
@@ -38,7 +38,7 @@ public class CxmResultAgent extends AbstractResultAgent {
 
     @Scheduled(fixedDelay = 100)
     public void runResultProcess() {
-        if (!"Y".equalsIgnoreCase(cxmUse)) return; // ⭐️ 스위치 방어막
+        if (!"Y".equalsIgnoreCase(cxmUse)) return;
 
         DbContextHolder.setDbTarget(dbTarget);
         try {
@@ -57,83 +57,71 @@ public class CxmResultAgent extends AbstractResultAgent {
 
             Msg_Log _ml = new Msg_Log();
             _ml.setMsg_table(msgTable);
+            _ml.setLog_table(logTable);
             _ml.setMsgid(ent.getString("msgid"));
             _ml.setDatabase(dbTarget);
 
-            // API에서 던져주는 결과 필드 추출
-            String rawCode = ent.optString("code", "E999");
-            String rawSCode = ent.optString("s_code", "");
-            String rawRemark1 = ent.optString("remark1", ""); // 통신사 정보
-            String recvTimeRaw = ent.optString("res_dt", ent.optString("remark2", ""));
+            String rawCode = ent.optString("code", "9999"); // 최종 결과코드
+            String rawSCode = ent.optString("s_code", ""); // 알림톡 1차 결과코드
+            String rawRemark1 = ent.optString("remark1", "");
+            String recvTimeRaw = ent.optString("res_dt", ent.optString("remark2", "")); // 수신시간
+            String rawKind = "";
 
-            // 코드 숫자만 남기기
             String cleanCode = rawCode.replaceAll("[^0-9]", "");
-            if(cleanCode.isEmpty()) cleanCode = "";
+            if(cleanCode.isEmpty()) cleanCode = "9999";
 
             String cleanSCode = rawSCode.replaceAll("[^0-9]", "");
-            if(cleanSCode.isEmpty()) cleanSCode = "";
+            String telecom = ""; // 기본값 (ETC 등)
 
-            String telecomMapped = "";
+            if(cleanSCode.equals("0000")){
+                cleanCode = "0000";
+            }else{
 
-            String message_type = ent.optString("message_type","");
-            String sms_kind = ent.optString("sms_kind","");
-            String rslt_code = "";
-            String pre_rslt_code = "";
-
-            if("PH".equalsIgnoreCase(message_type)){
-
-                if(!cleanSCode.trim().isEmpty()) {
-                    rslt_code = cleanSCode;
-                    pre_rslt_code = cleanCode;
-                }else{
-                    rslt_code = cleanCode;
+                if(cleanSCode.isEmpty()){
+                    cleanSCode = cleanCode;
+                    cleanCode = "";
                 }
 
-                if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
+                if (rawRemark1 != null && !rawRemark1.isEmpty()) {
                     String r1 = rawRemark1.trim();
+
                     if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
-                        telecomMapped = "LGT";
+                        telecom = "3"; // LGT 계열 코드 (숫자형으로 매핑)
                     } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
-                        telecomMapped = "SKT";
+                        telecom = "1"; // SKT 계열 코드
                     } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
-                        telecomMapped = "KTF";
+                        telecom = "2"; // KT 계열 코드
                     } else {
-                        telecomMapped = "ETC";
+                        telecom = "4"; // SKT 또는 미지정 등 시스템별 0번 코드
                     }
                 }
-            } else {
-                rslt_code = cleanSCode;
+
+                rawKind = ent.optString("sms_kind", "");
             }
 
-            _ml.setCode(rslt_code);
-            _ml.setMedia_type(sms_kind);
-            _ml.setS_code(pre_rslt_code);
-            _ml.setTelecom(telecomMapped);
+            String cleanTelecom = telecom.replaceAll("[^0-9]", "");
 
-            // 성공/실패 상태값 (CUR_STATE: 2=성공, 4=실패)
-            if ("0000".equals(rawCode) || "7000".equals(rawCode) || "0".equals(rawCode)) {
+            // 최종 결과코드(code) 기준으로 상태값 판별
+            if ("7000".equals(cleanCode) || "0000".equals(cleanCode)) {
                 _ml.setStatus("2"); // 성공
             } else {
                 _ml.setStatus("4"); // 실패
             }
+
+            _ml.setCode(cleanCode);       // 최종코드 세팅
+            _ml.setS_code(cleanSCode);    // 카톡코드 세팅
+            _ml.setTelecom(cleanTelecom); // 통신사 세팅
+            _ml.setReal_send_type(rawKind); // 문자 타입 세팅
             // =========================================================
 
-            // 날짜 14자리 컷 및 로그테이블 YYYYMM 파티셔닝
+            // 날짜 14자리 압축 및 YYYYMM 파티셔닝
             String rawDt = ent.optString("res_dt", "");
             String cleanDt = rawDt.replaceAll("[^0-9]", "");
             if (cleanDt.length() > 14) cleanDt = cleanDt.substring(0, 14);
+
             _ml.setResult_dt(cleanDt);
             _ml.setResult_message(ent.optString("message", ""));
 
-            String yyyymm = "";
-            try {
-                if (cleanDt.length() >= 6) yyyymm = cleanDt.substring(0, 6);
-                else yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-            } catch (Exception e) {
-                yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-            }
-
-            _ml.setLog_table(logTable + "_" + yyyymm);
 
             try {
                 requestService.applyResultProcess(_ml);

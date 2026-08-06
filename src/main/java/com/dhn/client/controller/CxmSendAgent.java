@@ -4,6 +4,7 @@ import com.dhn.client.bean.Msg_Log;
 import com.dhn.client.bean.RequestBean;
 import com.dhn.client.bean.SQLParameter;
 import com.dhn.client.service.RequestService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,9 +12,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -35,15 +42,12 @@ public class CxmSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.cxm.msg_table:EMFO_DATA}") private String msgTable;
     @Value("${dhnclient.cxm.log_table:EMFO_LOG}") private String logTable;
 
-    // ⭐️ 수신거부 번호 (yml에서 주입, 없으면 기본값)
-    @Value("${dhnclient.block_sender:080-1234-5678}") private String blockSender;
-
     // ⏰ CXM 채널: 알림톡(AT), 친구톡(FT), LMS 순회!
     @Scheduled(fixedDelay = 1000)
     public void SendProcess() {
         if (!"Y".equalsIgnoreCase(cxmUse)) return; // 스위치 On일 때만 동작
 
-        String[] msgTypes = {"AT", "AI", "FT", "FI", "LMS", "SMS"};
+        String[] msgTypes = {"AT", "LMS", "SMS", "MMS"};
         for (String msgType : msgTypes) {
             super.executeProcess(this.dhnServer, this.userid, msgType);
         }
@@ -74,35 +78,37 @@ public class CxmSendAgent extends AbstractSendAgent {
                     continue;
                 }
 
-                // =========================================================
-                // 🚀 [특이사항] 광고문자(LMS + ETC5='Y') 본문 강제 조립 로직
-                // =========================================================
                 if ("LMS".equalsIgnoreCase(msgType)) {
-
-                    if("Y".equalsIgnoreCase(bean.getEtc5())){
-                        String originalMsg = bean.getMsg();
-                        // 프리픽스와 서픽스 조립
-                        String adMsg = "(광고) 강원랜드\n" + originalMsg + "\n무료수신거부: " + blockSender;
-                        bean.setMsg(adMsg);
-                        bean.setMsgsms(adMsg);
-                    }
 
                     // 메시지 타입 셋팅
                     bean.setMessagetype("PH");
                     bean.setSmskind("L");
                 } else if ("SMS".equalsIgnoreCase(msgType)) {
-                    if("Y".equalsIgnoreCase(bean.getEtc5())){
-                        String originalMsg = bean.getMsg();
-                        // 프리픽스와 서픽스 조립
-                        String adMsg = "(광고) 강원랜드\n" + originalMsg + "\n무료수신거부: " + blockSender;
-                        bean.setMsg(adMsg);
-                        bean.setMsgsms(adMsg);
-                    }
 
                     // 메시지 타입 셋팅
                     bean.setMessagetype("PH");
                     bean.setSmskind("S");
-                } else if ("AT".equalsIgnoreCase(msgType) || "AI".equalsIgnoreCase(msgType)) {
+                } else if ("MMS".equalsIgnoreCase(msgType)) {
+
+                    // 메시지 타입 셋팅
+                    bean.setMessagetype("PH");
+                    bean.setSmskind("M");
+                    boolean hasImage = (bean.getFilepath1() != null && !bean.getFilepath1().trim().isEmpty()) ||
+                            (bean.getFilepath2() != null && !bean.getFilepath2().trim().isEmpty()) ||
+                            (bean.getFilepath3() != null && !bean.getFilepath3().trim().isEmpty());
+
+                    if (hasImage) {
+                        String imageId = uploadMmsImages(bean);
+
+                        if(imageId != null) {
+                            bean.setMmsimageid(imageId);
+                        } else {
+                            bean.setSmskind("L");
+                        }
+                    }else{
+                        bean.setSmskind("L");
+                    }
+                } else if ("AT".equalsIgnoreCase(msgType)) {
                     parseRmsButton(bean, mapper);
                     bean.setMessagetype("AT");
                     try {
@@ -115,31 +121,7 @@ public class CxmSendAgent extends AbstractSendAgent {
                     } catch (Exception e) {
                         bean.setSmskind("L"); // 예외 시 기본 단문 처리
                     }
-                }else if ("FT".equalsIgnoreCase(msgType) || "FI".equalsIgnoreCase(msgType)) {
-
-                    // 1. 타입에 맞게 E1, E2 세팅
-                    if ("FT".equalsIgnoreCase(msgType)) {
-                        bean.setMessagetype("E1");
-                    } else if("FI".equalsIgnoreCase(msgType)){
-                        bean.setMessagetype("E2");
-                    }
-
-                    // 2. ⭐️ [신규] 이미지 + 버튼 통합 파싱 태우기!
-                    parseCxmAttachment(bean, mapper);
-
-                    // 3. SMS/LMS 우회 발송 (대체문자) 길이 체크
-//                    try {
-//                        byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
-//                        if (msgBytes.length > 90) {
-//                            bean.setSmskind("L");
-//                        } else {
-//                            bean.setSmskind("S");
-//                        }
-//                    } catch (Exception e) {
-//                        bean.setSmskind("L"); // 예외 시 기본 단문(LMS) 처리
-//                    }
                 }
-                // =========================================================
 
                 boolean isGoodData = bean.processJsonPayload(mapper, invalidList);
                 if (isGoodData) {
@@ -298,5 +280,62 @@ public class CxmSendAgent extends AbstractSendAgent {
         } catch (Exception e) {
             log.error("[CXM] 친구톡 attachment 파싱 실패 (msgid: {}): {}", bean.getMsgid(), e.getMessage());
         }
+    }
+
+    private String uploadMmsImages(RequestBean bean) {
+        String[] paths = {bean.getFilepath1(), bean.getFilepath2(), bean.getFilepath3()};
+        String[] keys = {"image1", "image2", "image3"};
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("userid", this.userid); // Go 서버가 요구하는 userid 폼 데이터
+
+        boolean hasFile = false;
+
+        // 1. 첨부파일 1~3번을 확인하고, 실제 파일이 존재하면 바디에 장전!
+        for (int i = 0; i < 3; i++) {
+            if (paths[i] != null && !paths[i].trim().isEmpty()) {
+                File file = new File(paths[i]);
+                if (file.exists() && file.isFile()) {
+                    body.add(keys[i], new FileSystemResource(file));
+                    hasFile = true;
+                } else {
+                    log.info("[RMS] MMS DB 경로는 있으나 실제 파일이 없음 (무시됨): {}", paths[i]);
+                }
+            }
+        }
+
+        // 2. 보낼 파일이 아예 없다면 쿨하게 null 리턴
+        if (!hasFile) {
+            return null;
+        }
+
+        try {
+            // 3. Multipart 통신 헤더 세팅
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            // ⭐️ 형님의 Go 서버 MMS 업로드 API 주소 (환경에 맞게 수정해주세요!)
+            String uploadUrl = this.dhnServer + "mms/image";
+
+            // 4. API 발사!
+            ResponseEntity<String> response = restTemplate.postForEntity(uploadUrl, requestEntity, String.class);
+
+            // 5. 성공(200) 시 JSON 까서 image_group 리턴!
+            if (response.getStatusCode() == HttpStatus.OK) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.getBody());
+                if (root.has("image_group")) {
+                    return root.get("image_group").asText();
+                }
+            } else {
+                log.error("[RMS] MMS 이미지 업로드 API 에러 응답: {}", response.getBody());
+            }
+        } catch (Exception e) {
+            log.error("[RMS] MMS 이미지 업로드 통신 장애: {}", e.getMessage());
+        }
+        return null; // 실패 시 null
     }
 }
