@@ -6,17 +6,26 @@
     <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
         SELECT TOP (200)
             SEQNO AS msgid,
-            BIZTYPE AS messagetype,
+            CASE
+                WHEN KIND IN ('S','L','M') THEN 'PH'
+                ELSE BIZTYPE
+            END AS messagetype,
             MSG AS msg,
             MSG AS msg_sms,
             SUBJECT AS smslmstit,
             CALLPHONE AS phn,
             REQPHONE AS smssender,
+            CASE
+               WHEN KIND IN ('S','L','M') THEN KIND
+               ELSE ''
+            END AS smskind,
+            'P' AS pcom,
             REQTIME AS reservedt,
             FORMAT(GETDATE(), 'yyyy-MM-dd HH:mm:ss') AS regdt,
             YELLOWID_KEY AS profile,
             TEMPLATECODE AS tmplid,
-            BTN_02_URL_01 AS button1
+            BTN_02_URL_01 AS button,
+            BTN_01_URL_01 AS filepath1
         FROM ${msg_table}
         WHERE RESULT = '0'
           AND KIND = #{msg_type}
@@ -41,10 +50,8 @@
         UPDATE ${msg_table}
         SET RESULT = #{status},
             RECVTIME = #{result_dt},
-            ERRCODE = CAST(#{s_code} AS INT),
-            FKCONTENT = CAST(#{code} AS INT),
-            BATCHFLAG = CAST(#{telecom} AS INT),
-            MEDIATYPE = CAST(#{media_type} AS INT),
+            ERRCODE = CAST(#{code} AS INT),
+            MEDIATYPE = #{telecom},
             SENTMEDIA = #{real_send_type}
         WHERE SEQNO = #{msgid}
     </update>
