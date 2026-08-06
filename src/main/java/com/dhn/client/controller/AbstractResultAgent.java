@@ -16,6 +16,8 @@ public abstract class AbstractResultAgent {
     protected boolean isProc = false; // dual 관련 로직이 빠지면서 isStart도 제거했습니다!
     protected static final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
+    protected static volatile boolean isRunning = true;
+
     // 자식 클래스가 반드시 구현해야 하는 필수 설정들 (modId, dual 싹 제거됨!)
     protected abstract String getChannelName();
     protected abstract String getDbTarget();
@@ -31,9 +33,18 @@ public abstract class AbstractResultAgent {
         log.info("[{}] Result Agent 초기화 완료 (Userid: {})", getChannelName(), getUserid());
     }
 
+    public static void onShutDown() {
+        log.warn("서버 종료 요청 결과처리 프로세스 종료");
+        isRunning = false;
+    }
+
     // 공통 결과 수신 네트워크 엔진
     protected void executeResultProcess() {
         if (isProc) return;
+
+        if (!isRunning) {
+            return;
+        }
 
         ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
         if (poolExecutor.getActiveCount() >= poolExecutor.getMaximumPoolSize()) return;
