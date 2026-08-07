@@ -78,7 +78,7 @@
     <update id="invalid_update" parameterType="map">
         UPDATE ${ml.msg_table}
         SET CUR_STATE = '${ml.status}',
-        RESULT_CODE = '${ml.code}'
+        RSLT_CODE = '${ml.code}'
         WHERE SEQ_NO IN
         <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
     </update>

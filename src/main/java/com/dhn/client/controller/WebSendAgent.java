@@ -133,6 +133,8 @@ public class WebSendAgent extends AbstractSendAgent {
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);
                 requestService.updateInvalidData(invalidList, ml);
+
+                log.error("[WEB - {}] 데이터 정제 실패! 발송 제외 처리됨. ({}건)", msgType, invalidList.size());
             }
         } catch (Exception e) {
             log.error("[WEB-알림톡] 데이터 조회/정제 오류: {}", e.getMessage());

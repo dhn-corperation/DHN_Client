@@ -92,8 +92,7 @@
         UPDATE ${ml.msg_table}
         SET MSG_STATE = '${ml.status}',
         RSLT_CODE = '${ml.code}',
-        RSLT_EXPLA = '${ml.result_message}', SENT_DATE = SYSDATE,
-        RSLT_DATE = SYSDATE
+        SENT_DATE = SYSDATE
         WHERE MSG_KEY IN
         <foreach collection="list" item="msgid" open="(" separator="," close=")">
             #{msgid}

@@ -137,6 +137,7 @@ public class CxmSendAgent extends AbstractSendAgent {
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);
                 requestService.updateInvalidData(invalidList, ml);
+                log.error("[CXM - {}] 데이터 정제 실패! 발송 제외 처리됨. ({}건)", msgType, invalidList.size());
             }
         } catch (Exception e) {
             log.error("[CXM - {}] 데이터 조회/정제 오류: {}", msgType, e.getMessage());

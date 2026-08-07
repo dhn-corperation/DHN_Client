@@ -183,6 +183,12 @@
                 WHERE CMP_MSG_ID IN
                 <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
             </when>
+            <otherwise>
+                UPDATE ${ml.msg_table}
+                SET SMS_STATUS = '${ml.status}', RSLT_VAL = '${ml.code}', REG_RCV_DTTM = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                WHERE CMP_MSG_ID IN
+                <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
+            </otherwise>
         </choose>
     </update>
 
