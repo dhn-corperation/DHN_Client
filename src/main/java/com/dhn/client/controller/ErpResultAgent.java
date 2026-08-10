@@ -85,6 +85,7 @@ public class ErpResultAgent extends AbstractResultAgent {
 
             Msg_Log ml = new Msg_Log();
             ml.setMsg_table(msgTable);
+            ml.setLog_table(logTable);
             ml.setDatabase(dbTarget); // SQL 빈값 방지
             ml.setMsgid(ent.getString("msgid"));
 
@@ -156,21 +157,6 @@ public class ErpResultAgent extends AbstractResultAgent {
             ml.setResult_dt(cleanDt);
 
             ml.setResult_message(ent.optString("message", ""));
-
-            String yyyymm = "";
-            try {
-                if (cleanDt.length() >= 6) {
-                    yyyymm = cleanDt.substring(0, 6); // 14자리 중 맨 앞 6자리가 YYYYMM
-                }
-
-                if (yyyymm.isEmpty()) {
-                    yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-                }
-            } catch (Exception e) {
-                yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-            }
-
-            ml.setLog_table(logTable + "_" + yyyymm);
 
             // 4. 서비스 호출하여 DB 3단 콤보(업데이트 ➔ 로그이관 ➔ 큐삭제) 실행!
             try {

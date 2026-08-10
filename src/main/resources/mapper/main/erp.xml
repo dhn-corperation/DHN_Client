@@ -12,6 +12,7 @@
             WHEN MSG_TYPE = 'ALI' THEN 'AI'
             WHEN MSG_TYPE = 'FRT' THEN 'FT'
             WHEN MSG_TYPE = 'FRI' THEN 'FI'
+            WHEN MSG_TYPE = 'FRW' THEN 'FI'
             WHEN MSG_TYPE = 'BRI' THEN 'BM'
             WHEN MSG_TYPE IN ('SMS','LMS') THEN 'PH'
             ELSE MSG_TYPE
@@ -27,7 +28,7 @@
             SENDER_KEY AS profile,
             TEMPLATE_CODE AS tmplid,
             WIDE AS wide,
-            BUTTON AS button1
+            BUTTON AS button
             FROM ${msg_table}
             WHERE MSG_STATE = '1'
             AND (
@@ -91,8 +92,7 @@
         UPDATE ${ml.msg_table}
         SET MSG_STATE = '${ml.status}',
         RSLT_CODE = '${ml.code}',
-        RSLT_EXPLA = '${ml.result_message}', SENT_DATE = SYSDATE,
-        RSLT_DATE = SYSDATE
+        SENT_DATE = SYSDATE
         WHERE MSG_KEY IN
         <foreach collection="list" item="msgid" open="(" separator="," close=")">
             #{msgid}

@@ -20,6 +20,9 @@
             BUTTON_INFO AS button,
             FT_IMG_URL AS imageurl,
             FT_IMG_PATH AS imagelink,
+            MMS_IMG_PATH AS filepath1,
+            MMS_IMG_PATH2 AS filepath2,
+            MMS_IMG_PATH3 AS filepath3,
             'P' AS pcom,
             ETC5 AS etc5
             FROM ${msg_table}
@@ -28,17 +31,11 @@
             <if test="msg_type == 'AT'">
                 AND MSG_TYPE = 'T' AND BIZ_TYPE = 'AT'
             </if>
-            <if test="msg_type == 'AI'">
-                AND MSG_TYPE = 'T' AND BIZ_TYPE = 'AI'
-            </if>
-            <if test="msg_type == 'FT'">
-                AND MSG_TYPE = 'T' AND BIZ_TYPE = 'FT'
-            </if>
-            <if test="msg_type == 'FI'">
-                AND MSG_TYPE = 'T' AND BIZ_TYPE = 'FI'
-            </if>
             <if test="msg_type == 'LMS'">
                 AND MSG_TYPE = 'L'
+            </if>
+            <if test="msg_type == 'MMS'">
+                AND MSG_TYPE = 'M'
             </if>
             <if test="msg_type == 'SMS'">
                 AND MSG_TYPE = 'S'
@@ -61,11 +58,11 @@
         UPDATE ${msg_table}
         SET CUR_STATE = #{status},
             RSLT_TIME = TO_DATE(#{result_dt}, 'YYYYMMDDHH24MISS'),
-            RSLT_CODE = #{code},
+            RSLT_CODE = #{s_code},
             RSLT_NET = #{telecom},
-            RE_RSLT_CODE = #{s_code},
+            RE_RSLT_CODE = #{code},
             RE_RSLT_NET = #{telecom},
-            RE_TYPE = #{media_type}
+            RE_TYPE = #{real_send_type}
         WHERE SEQ_NO = #{msgid}
     </update>
 
@@ -81,7 +78,7 @@
     <update id="invalid_update" parameterType="map">
         UPDATE ${ml.msg_table}
         SET CUR_STATE = '${ml.status}',
-        RESULT_CODE = '${ml.code}'
+        RSLT_CODE = '${ml.code}'
         WHERE SEQ_NO IN
         <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
     </update>

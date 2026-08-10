@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PreDestroy;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
@@ -39,9 +38,11 @@ public abstract class AbstractSendAgent {
     }
 
     public void executeProcess(String dhnServer, String userid, String msgType) {
+
         if (!isRunning) {
             return;
         }
+
 
         // 내 채널(msgType)이 처리 중이면 패스
         if (procMap.getOrDefault(msgType, false)) return;

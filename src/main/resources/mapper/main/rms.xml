@@ -9,7 +9,7 @@
             SELECT
                 msg.SEQNO AS msgid,
                 CASE
-                    WHEN KIND IN ('S','M') THEN 'PH'
+                    WHEN KIND IN ('S','L','M') THEN 'PH'
                     ELSE BIZTYPE
                 END AS messagetype,
                 msg.MSG AS msg,
@@ -17,7 +17,7 @@
                 msg.CALLPHONE AS phn,
                 msg.REQPHONE AS smssender,
                 CASE
-                    WHEN KIND IN ('S','M') THEN KIND
+                    WHEN KIND IN ('S','L','M') THEN KIND
                     ELSE ''
                 END AS smskind,
                 msg.REQTIME AS reservedt,
@@ -59,7 +59,6 @@
             ERRCODE = CAST(#{s_code} AS INT),
             RETRY = CAST(#{code} AS INT),
             BATCHFLAG = CAST(#{telecom} AS INT),
-            MEDIATYPE = CAST(#{media_type} AS INT),
             SENTMEDIA = #{real_send_type}
         WHERE SEQNO = #{msgid}
     </update>
