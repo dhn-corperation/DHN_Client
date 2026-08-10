@@ -29,7 +29,7 @@
             WHERE CUR_STATE = '0'
             AND REQ_TIME &lt;= SYSDATE
             <if test="msg_type == 'AT'">
-                AND MSG_TYPE = 'T' AND BIZ_TYPE = 'AT'
+                AND MSG_TYPE = 'T'
             </if>
             <if test="msg_type == 'LMS'">
                 AND MSG_TYPE = 'L'

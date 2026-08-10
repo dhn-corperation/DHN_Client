@@ -110,17 +110,37 @@ public class CxmSendAgent extends AbstractSendAgent {
                         bean.setSmskind("L");
                     }
                 } else if ("AT".equalsIgnoreCase(msgType)) {
-                    parseRmsButton(bean, mapper);
-                    bean.setMessagetype("AT");
-                    try {
-                        byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
-                        if (msgBytes.length > 90) {
+                    if (bean.getTmplid() == null || bean.getTmplid().trim().isEmpty()) {
+                        bean.setMessagetype("PH");
+                        bean.setSmskind("M");
+                        boolean hasImage = (bean.getFilepath1() != null && !bean.getFilepath1().trim().isEmpty()) ||
+                                (bean.getFilepath2() != null && !bean.getFilepath2().trim().isEmpty()) ||
+                                (bean.getFilepath3() != null && !bean.getFilepath3().trim().isEmpty());
+
+                        if (hasImage) {
+                            String imageId = uploadMmsImages(bean);
+
+                            if(imageId != null) {
+                                bean.setMmsimageid(imageId);
+                            } else {
+                                bean.setSmskind("L");
+                            }
+                        }else{
                             bean.setSmskind("L");
-                        } else {
-                            bean.setSmskind("S");
                         }
-                    } catch (Exception e) {
-                        bean.setSmskind("L"); // 예외 시 기본 단문 처리
+                    }else{
+                        parseCxmButton(bean, mapper);
+                        bean.setMessagetype("AT");
+                        try {
+                            byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
+                            if (msgBytes.length > 90) {
+                                bean.setSmskind("L");
+                            } else {
+                                bean.setSmskind("S");
+                            }
+                        } catch (Exception e) {
+                            bean.setSmskind("L"); // 예외 시 기본 단문 처리
+                        }
                     }
                 }
 
@@ -166,7 +186,7 @@ public class CxmSendAgent extends AbstractSendAgent {
         }
     }
 
-    private void parseRmsButton(RequestBean bean, ObjectMapper mapper) {
+    private void parseCxmButton(RequestBean bean, ObjectMapper mapper) {
         String rawButton = bean.getButton(); // 쿼리에서 BUTTON_URL AS button 으로 가져온 값
 
         if (rawButton == null || rawButton.trim().isEmpty()) {

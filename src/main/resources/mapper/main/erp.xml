@@ -6,32 +6,31 @@
     <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
         SELECT * FROM (
             SELECT
-            MSG_KEY AS msgid,
-            CASE
-            WHEN MSG_TYPE = 'ALT' THEN 'AT'
-            WHEN MSG_TYPE = 'ALI' THEN 'AI'
-            WHEN MSG_TYPE = 'FRT' THEN 'FT'
-            WHEN MSG_TYPE = 'FRI' THEN 'FI'
-            WHEN MSG_TYPE = 'FRW' THEN 'FI'
-            WHEN MSG_TYPE = 'BRI' THEN 'BM'
-            WHEN MSG_TYPE IN ('SMS','LMS','MMS') THEN 'PH'
-            ELSE MSG_TYPE
-            END AS messagetype,
-            MESSAGE AS msg,
-            MESSAGE AS msgsms,
-            'P' AS pcom,
-            SUBJECT AS smslmstit,
-            CALL_TO AS phn,
-            CALL_FROM AS smssender,
-            TO_CHAR(RES_DATE, 'YYYYMMDDHH24MISS') AS reservedt,
-            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-            SENDER_KEY AS profile,
-            TEMPLATE_CODE AS tmplid,
-            WIDE AS wide,
-            BUTTON AS button,
-            FILE_NAME1 AS filepath1,
-            FILE_NAME2 AS filepath2,
-            FILE_NAME3 AS filepath3
+                MSG_KEY AS msgid,
+                CASE
+                    WHEN MSG_TYPE = 'ALT' THEN 'AT'
+                    WHEN MSG_TYPE = 'ALI' THEN 'AI'
+                    WHEN MSG_TYPE = 'FRT' THEN 'FT'
+                    WHEN MSG_TYPE IN ('FRI','FRW') THEN 'FI'
+                    WHEN MSG_TYPE = 'BRI' THEN 'BM'
+                    WHEN MSG_TYPE IN ('SMS','LMS','MMS') THEN 'PH'
+                    ELSE MSG_TYPE
+                END AS messagetype,
+                MESSAGE AS msg,
+                MESSAGE AS msgsms,
+                'P' AS pcom,
+                SUBJECT AS smslmstit,
+                CALL_TO AS phn,
+                CALL_FROM AS smssender,
+                TO_CHAR(RES_DATE, 'YYYYMMDDHH24MISS') AS reservedt,
+                TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+                SENDER_KEY AS profile,
+                TEMPLATE_CODE AS tmplid,
+                WIDE AS wide,
+                BUTTON AS button,
+                FILE_NAME1 AS filepath1,
+                FILE_NAME2 AS filepath2,
+                FILE_NAME3 AS filepath3
             FROM ${msg_table}
             WHERE MSG_STATE = '1'
             AND (
