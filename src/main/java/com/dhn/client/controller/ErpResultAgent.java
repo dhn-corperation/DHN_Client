@@ -144,7 +144,7 @@ public class ErpResultAgent extends AbstractResultAgent {
                     rslt_type = "ALT";
                 }else if ("AI".equalsIgnoreCase(message_type)){
                     rslt_type = "ALI";
-                }else if (message_type.toUpperCase().startsWith("B")){
+                }else if (message_type.toUpperCase().startsWith("B") || message_type.toUpperCase().startsWith("E")){
                     rslt_type = "BRI";
                 }
                 rslt_code = cleanSCode;
