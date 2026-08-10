@@ -108,7 +108,7 @@ public class RmsResultAgent extends AbstractResultAgent {
             String cleanTelecom = telecom.replaceAll("[^0-9]", "");
 
             // 최종 결과코드(code) 기준으로 상태값 판별
-            if ("7000".equals(cleanCode) || "0000".equals(cleanCode)) {
+            if ("7000".equals(cleanSCode) || "0000".equals(cleanSCode) || "0000".equals(cleanCode)) {
                 _ml.setStatus("2"); // 성공
             } else {
                 _ml.setStatus("4"); // 실패

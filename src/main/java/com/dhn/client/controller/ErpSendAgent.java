@@ -13,9 +13,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -59,7 +65,7 @@ public class ErpSendAgent extends AbstractSendAgent {
             return;
         }
         // ERP에서 사용할 발송 타입들 (필요에 따라 수정)
-        String[] msgTypes = {"AT", "FT", "LMS", "SMS", "BM"};
+        String[] msgTypes = {"AT", "FT", "LMS", "SMS", "MMS", "BM"};
         for (String msgType : msgTypes) {
             // ⭐️ 자물쇠를 풀고 묶는 부모의 강력한 병렬 프로세스를 호출
             super.executeProcess(this.dhnServer, this.userid, msgType);
@@ -109,6 +115,23 @@ public class ErpSendAgent extends AbstractSendAgent {
                     bean.setSmskind("S");
                 } else if("LMS".equalsIgnoreCase(msgType)){
                     bean.setSmskind("L");
+                } else if("MMS".equalsIgnoreCase(msgType)){
+                    bean.setSmskind("M");
+                    boolean hasImage = (bean.getFilepath1() != null && !bean.getFilepath1().trim().isEmpty()) ||
+                            (bean.getFilepath2() != null && !bean.getFilepath2().trim().isEmpty()) ||
+                            (bean.getFilepath3() != null && !bean.getFilepath3().trim().isEmpty());
+
+                    if (hasImage) {
+                        String imageId = uploadMmsImages(bean);
+
+                        if(imageId != null) {
+                            bean.setMmsimageid(imageId);
+                        } else {
+                            bean.setSmskind("L");
+                        }
+                    }else{
+                        bean.setSmskind("L");
+                    }
                 } else if("AT".equalsIgnoreCase(msgType)){
 
                     parseCustomButtonJson(bean, mapper);
@@ -430,5 +453,62 @@ public class ErpSendAgent extends AbstractSendAgent {
             log.error("[ERP] 친구톡 JSON 변환 실패 (msgid: {}): {}",
                     bean.getMsgid(), e.getMessage());
         }
+    }
+
+    private String uploadMmsImages(RequestBean bean) {
+        String[] paths = {bean.getFilepath1(), bean.getFilepath2(), bean.getFilepath3()};
+        String[] keys = {"image1", "image2", "image3"};
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("userid", this.userid); // Go 서버가 요구하는 userid 폼 데이터
+
+        boolean hasFile = false;
+
+        // 1. 첨부파일 1~3번을 확인하고, 실제 파일이 존재하면 바디에 장전!
+        for (int i = 0; i < 3; i++) {
+            if (paths[i] != null && !paths[i].trim().isEmpty()) {
+                File file = new File(paths[i]);
+                if (file.exists() && file.isFile()) {
+                    body.add(keys[i], new FileSystemResource(file));
+                    hasFile = true;
+                } else {
+                    log.info("[RMS] MMS DB 경로는 있으나 실제 파일이 없음 (무시됨): {}", paths[i]);
+                }
+            }
+        }
+
+        // 2. 보낼 파일이 아예 없다면 쿨하게 null 리턴
+        if (!hasFile) {
+            return null;
+        }
+
+        try {
+            // 3. Multipart 통신 헤더 세팅
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            // ⭐️ 형님의 Go 서버 MMS 업로드 API 주소 (환경에 맞게 수정해주세요!)
+            String uploadUrl = this.dhnServer + "mms/image";
+
+            // 4. API 발사!
+            ResponseEntity<String> response = restTemplate.postForEntity(uploadUrl, requestEntity, String.class);
+
+            // 5. 성공(200) 시 JSON 까서 image_group 리턴!
+            if (response.getStatusCode() == HttpStatus.OK) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.getBody());
+                if (root.has("image_group")) {
+                    return root.get("image_group").asText();
+                }
+            } else {
+                log.error("[RMS] MMS 이미지 업로드 API 에러 응답: {}", response.getBody());
+            }
+        } catch (Exception e) {
+            log.error("[RMS] MMS 이미지 업로드 통신 장애: {}", e.getMessage());
+        }
+        return null; // 실패 시 null
     }
 }

@@ -34,7 +34,11 @@
                     WHEN RCV_PHN_ID LIKE '010%' THEN '82' || SUBSTR(RCV_PHN_ID, 2, 15)
                     ELSE '82' || SUBSTR(RCV_PHN_ID, 2, 15)
                 END AS phn,
-                SND_PHN_ID AS smssender, RESERVED_DTTM AS reservedt,
+                SND_PHN_ID AS smssender,
+                CASE
+                    WHEN RESERVED_FG  = 'R' THEN RESERVED_DTTM
+                    ELSE '00000000000000'
+                END AS reservedt,
                 TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
                 MSG_TITLE AS title
             FROM ${msg_table}

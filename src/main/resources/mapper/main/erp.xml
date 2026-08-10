@@ -14,7 +14,7 @@
             WHEN MSG_TYPE = 'FRI' THEN 'FI'
             WHEN MSG_TYPE = 'FRW' THEN 'FI'
             WHEN MSG_TYPE = 'BRI' THEN 'BM'
-            WHEN MSG_TYPE IN ('SMS','LMS') THEN 'PH'
+            WHEN MSG_TYPE IN ('SMS','LMS','MMS') THEN 'PH'
             ELSE MSG_TYPE
             END AS messagetype,
             MESSAGE AS msg,
@@ -28,7 +28,10 @@
             SENDER_KEY AS profile,
             TEMPLATE_CODE AS tmplid,
             WIDE AS wide,
-            BUTTON AS button
+            BUTTON AS button,
+            FILE_NAME1 AS filepath1,
+            FILE_NAME2 AS filepath2,
+            FILE_NAME3 AS filepath3
             FROM ${msg_table}
             WHERE MSG_STATE = '1'
             AND (
@@ -46,6 +49,9 @@
             </if>
             <if test="msg_type == 'LMS'">
                 AND MSG_TYPE = 'LMS'
+            </if>
+            <if test="msg_type == 'MMS'">
+                AND MSG_TYPE = 'MMS'
             </if>
             <if test="msg_type == 'BM'">
                 AND MSG_TYPE = 'BRI'
