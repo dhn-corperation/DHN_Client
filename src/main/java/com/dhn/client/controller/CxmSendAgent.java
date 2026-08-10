@@ -41,6 +41,7 @@ public class CxmSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.cxm.db-target:oracle}") private String dbTarget;
     @Value("${dhnclient.cxm.msg_table:EMFO_DATA}") private String msgTable;
     @Value("${dhnclient.cxm.log_table:EMFO_LOG}") private String logTable;
+    @Value("${dhnclient.cxm.log_back:N}") private String cxmLogBack;
 
     // ⏰ CXM 채널: 알림톡(AT), 친구톡(FT), LMS 순회!
     @Scheduled(fixedDelay = 1000)
@@ -130,9 +131,16 @@ public class CxmSendAgent extends AbstractSendAgent {
             }
 
             if (!invalidList.isEmpty()) {
+                String invalLogTable = logTable;
+
                 Msg_Log ml = new Msg_Log();
+
+                if("Y".equalsIgnoreCase(cxmLogBack)){
+                    String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+                    invalLogTable += "_" + yyyyMM;
+                }
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(logTable);
+                ml.setLog_table(invalLogTable);
                 ml.setStatus("4");
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);

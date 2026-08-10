@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +47,10 @@ public class ErpSendAgent extends AbstractSendAgent {
 
     @Value("${dhnclient.erp_use:N}")
     private String erpUse;
+
+
+    @Value("${dhnclient.erp.log_back:N}")
+    private String erpLogBack;
 
     // ⏰ 1초마다 돌면서 msgType 별로 부모의 스레드풀에 작업을 던집니다!
     @Scheduled(fixedDelay = 1000)
@@ -128,9 +134,16 @@ public class ErpSendAgent extends AbstractSendAgent {
 
             // 불량 데이터 처리
             if (!invalidList.isEmpty()) {
+                String invalLogTable = logTable;
+
                 Msg_Log ml = new Msg_Log();
+
+                if("Y".equalsIgnoreCase(erpLogBack)){
+                    String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+                    invalLogTable += "_" + yyyyMM;
+                }
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(logTable);
+                ml.setLog_table(invalLogTable);
                 ml.setStatus("4");
                 ml.setResult_message("(AGENT) 데이터 형식 또는 정제 오류");
                 ml.setCode("7999");

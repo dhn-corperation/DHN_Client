@@ -41,6 +41,7 @@ public class RmsSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.rms.log_table:SUREDATA_LOG}") private String logTable;
     @Value("${dhnclient.rms.con_table:MMSCONTENTS}") private String conTable;
     @Value("${dhnclient.rms_use:N}") private String rmsUse;
+    @Value("${dhnclient.rms.log_back:N}") private String rmsLogBack;
 
     // ⏰ RMS 채널은 알림톡(at), MMS(mms) 순회!
     @Scheduled(fixedDelay = 1000)
@@ -102,17 +103,44 @@ public class RmsSendAgent extends AbstractSendAgent {
                         bean.setSmskind("L");
                     }
                 } else if ("T".equalsIgnoreCase(msgType)) {
-                    parseRmsButton(bean, mapper);
+                    boolean hasImage = (bean.getFilepath1() != null && !bean.getFilepath1().trim().isEmpty()) ||
+                            (bean.getFilepath2() != null && !bean.getFilepath2().trim().isEmpty()) ||
+                            (bean.getFilepath3() != null && !bean.getFilepath3().trim().isEmpty());
 
-                    try {
-                        byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
-                        if (msgBytes.length > 90) {
-                            bean.setSmskind("L");
+                    if (hasImage) {
+                        String imageId = uploadMmsImages(bean);
+
+                        if(imageId != null) {
+                            bean.setMmsimageid(imageId);
+                            bean.setMessagetype("PH");
+                            bean.setSmskind("M");
                         } else {
-                            bean.setSmskind("S");
+                            parseRmsButton(bean, mapper);
+
+                            try {
+                                byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
+                                if (msgBytes.length > 90) {
+                                    bean.setSmskind("L");
+                                } else {
+                                    bean.setSmskind("S");
+                                }
+                            } catch (Exception e) {
+                                bean.setSmskind("L"); // 예외 시 기본 단문 처리
+                            }
                         }
-                    } catch (Exception e) {
-                        bean.setSmskind("L"); // 예외 시 기본 단문 처리
+                    }else{
+                        parseRmsButton(bean, mapper);
+
+                        try {
+                            byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
+                            if (msgBytes.length > 90) {
+                                bean.setSmskind("L");
+                            } else {
+                                bean.setSmskind("S");
+                            }
+                        } catch (Exception e) {
+                            bean.setSmskind("L"); // 예외 시 기본 단문 처리
+                        }
                     }
                 }
                 // =========================================================
@@ -126,10 +154,17 @@ public class RmsSendAgent extends AbstractSendAgent {
 
             // 불량 데이터 처리
             if (!invalidList.isEmpty()) {
+                String invalLogTable = logTable;
 
                 Msg_Log ml = new Msg_Log();
+
+                if("Y".equalsIgnoreCase(rmsLogBack)){
+                    String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+                    invalLogTable += "_" + yyyyMM;
+                }
+
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(logTable);
+                ml.setLog_table(invalLogTable);
                 ml.setStatus("4");
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);

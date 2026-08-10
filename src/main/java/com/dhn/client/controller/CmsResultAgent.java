@@ -13,6 +13,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +32,7 @@ public class CmsResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.cms.db-target:oracle}") private String dbTarget;
     @Value("${dhnclient.cms.msg_table:TBL_SUBMIT_QUEUE}") private String msgTable;
     @Value("${dhnclient.cms.log_table:TBL_MSG_HIST}") private String logTable;
+    @Value("${dhnclient.cms.log_back:N}") private String cmsLogBack;
 
     @PostConstruct
     public void init() {
@@ -59,9 +62,11 @@ public class CmsResultAgent extends AbstractResultAgent {
         for (int i = 0; i < json.length(); i++) {
             JSONObject ent = json.getJSONObject(i);
 
+            String resultLogTable = logTable;
+
+
             Msg_Log _ml = new Msg_Log();
             _ml.setMsg_table(msgTable);
-            _ml.setLog_table(logTable);
             _ml.setMsgid(ent.getString("msgid"));
             _ml.setDatabase(dbTarget);
 
@@ -70,10 +75,10 @@ public class CmsResultAgent extends AbstractResultAgent {
             String telecom = "4";
 
             if (ent.getString("message_type").equalsIgnoreCase("AT")) {
-                code =ent.optString("code", "E999");
+                code =ent.optString("code", "9999");
                 rawDt = ent.optString("res_dt", "");
             } else {
-                code =ent.optString("code", "E999");
+                code =ent.optString("code", "9999");
                 rawDt = ent.optString("remark2", "");
 
                 String rawRemark1 = ent.optString("remark1", "");
@@ -103,6 +108,24 @@ public class CmsResultAgent extends AbstractResultAgent {
             }
 
             _ml.setResult_dt(cleanDt);
+
+            if("Y".equalsIgnoreCase(cmsLogBack)){
+                String yyyymm = "";
+                try {
+                    if (cleanDt.length() >= 6) {
+                        yyyymm = cleanDt.substring(0, 6); // 14자리 중 맨 앞 6자리가 YYYYMM
+                    }
+
+                    if (yyyymm.isEmpty()) {
+                        yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+                    }
+                } catch (Exception e) {
+                    yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+                }
+                resultLogTable += "_" + yyyymm;
+            }
+
+            _ml.setLog_table(resultLogTable);
 
             try {
                 // 트랜잭션 (Update -> Insert Select -> Delete) 슛!

@@ -44,6 +44,9 @@ public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모
     @Value("${dhnclient.cms_use:N}")
     private String cmsUse;
 
+    @Value("${dhnclient.cms.log_back:N}")
+    private String cmsLogBack;
+
     // ⏰ 0.1초마다 돌면서 msgType 별로 부모의 스레드풀에 작업을 던집니다!
     @Scheduled(fixedDelay = 1000)
     public void SendProcess() {
@@ -100,9 +103,16 @@ public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모
             }
 
             if (!invalidList.isEmpty()) {
+                String invalLogTable = logTable;
+
                 Msg_Log ml = new Msg_Log();
+
+                if("Y".equalsIgnoreCase(cmsLogBack)){
+                    String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+                    invalLogTable += "_" + yyyyMM;
+                }
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(logTable);
+                ml.setLog_table(invalLogTable);
                 ml.setStatus("4");
                 ml.setResult_message("(AGENT) 데이터 형식 또는 정제 오류");
                 ml.setCode("7999");

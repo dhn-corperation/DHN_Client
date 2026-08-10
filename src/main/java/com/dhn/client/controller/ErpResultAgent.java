@@ -43,6 +43,9 @@ public class ErpResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.erp_use:N}")
     private String erpUse;
 
+    @Value("${dhnclient.erp.log_back:N}")
+    private String erpLogBack;
+
     @PostConstruct
     public void init() {
         if ("Y".equalsIgnoreCase(erpUse)) {
@@ -83,14 +86,15 @@ public class ErpResultAgent extends AbstractResultAgent {
         for (int i = 0; i < json.length(); i++) {
             JSONObject ent = json.getJSONObject(i);
 
+            String resultLogTable = logTable;
+
             Msg_Log ml = new Msg_Log();
             ml.setMsg_table(msgTable);
-            ml.setLog_table(logTable);
             ml.setDatabase(dbTarget); // SQL 빈값 방지
             ml.setMsgid(ent.getString("msgid"));
 
             // API에서 던져주는 결과 필드 추출
-            String rawCode = ent.optString("code", "E999");
+            String rawCode = ent.optString("code", "9999");
             String rawSCode = ent.optString("s_code", "");
             String rawRemark1 = ent.optString("remark1", ""); // 통신사 정보
             String recvTimeRaw = ent.optString("res_dt", ent.optString("remark2", ""));
@@ -157,6 +161,24 @@ public class ErpResultAgent extends AbstractResultAgent {
             ml.setResult_dt(cleanDt);
 
             ml.setResult_message(ent.optString("message", ""));
+
+            if("Y".equalsIgnoreCase(erpLogBack)){
+                String yyyymm = "";
+                try {
+                    if (cleanDt.length() >= 6) {
+                        yyyymm = cleanDt.substring(0, 6); // 14자리 중 맨 앞 6자리가 YYYYMM
+                    }
+
+                    if (yyyymm.isEmpty()) {
+                        yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+                    }
+                } catch (Exception e) {
+                    yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
+                }
+                resultLogTable += "_" + yyyymm;
+            }
+
+            ml.setLog_table(resultLogTable);
 
             // 4. 서비스 호출하여 DB 3단 콤보(업데이트 ➔ 로그이관 ➔ 큐삭제) 실행!
             try {
