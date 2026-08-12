@@ -101,6 +101,10 @@ public class WebSendAgent extends AbstractSendAgent {
                     }
                 } else if ("T".equalsIgnoreCase(msgType)) {
 
+                    if (bean.getMessagetype() == null || bean.getMessagetype().trim().isEmpty()) {
+                        bean.setMessagetype("AT");
+                    }
+
                     if("AT".equalsIgnoreCase(bean.getMessagetype())){
                         parseRmsButton(bean, mapper);
                     }else if ("FT".equalsIgnoreCase(bean.getMessagetype())){

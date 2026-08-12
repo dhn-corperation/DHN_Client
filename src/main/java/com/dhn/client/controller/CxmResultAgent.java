@@ -104,7 +104,7 @@ public class CxmResultAgent extends AbstractResultAgent {
             String cleanTelecom = telecom.replaceAll("[^0-9]", "");
 
             // 최종 결과코드(code) 기준으로 상태값 판별
-            if ("7000".equals(cleanCode) || "0000".equals(cleanCode)) {
+            if ("7000".equals(cleanCode) || "0000".equals(cleanCode) || "0000".equals(cleanSCode)) {
                 _ml.setStatus("2"); // 성공
             } else {
                 _ml.setStatus("4"); // 실패

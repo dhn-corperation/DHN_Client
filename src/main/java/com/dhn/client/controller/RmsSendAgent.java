@@ -129,6 +129,11 @@ public class RmsSendAgent extends AbstractSendAgent {
                             }
                         }
                     }else{
+
+                        if (bean.getMessagetype() == null || bean.getMessagetype().trim().isEmpty()) {
+                            bean.setMessagetype("AT");
+                        }
+
                         parseRmsButton(bean, mapper);
 
                         try {
