@@ -26,7 +26,7 @@
             TEMPLATECODE AS tmplid,
             BTN_02_URL_01 AS button,
             BTN_01_URL_01 AS filepath1
-        FROM ${msg_table}
+        FROM ${msg_table} WITH(NOLOCK)
         WHERE RESULT = '0'
           AND KIND = #{msg_type}
           AND (

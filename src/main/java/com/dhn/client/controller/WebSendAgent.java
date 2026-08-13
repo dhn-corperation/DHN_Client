@@ -48,7 +48,7 @@ public class WebSendAgent extends AbstractSendAgent {
         if (!"Y".equalsIgnoreCase(webUse)) return;
 
         // DB의 KIND 컬럼이 'T' (카카오비즈메시지/알림톡)인 것을 타겟팅
-        String[] msgTypes = {"S", "L", "M", "T"};
+        String[] msgTypes = {"S", "M", "T"};
         for (String msgType : msgTypes) {
             super.executeProcess(this.dhnServer, this.userid, msgType);
         }
