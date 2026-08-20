@@ -157,16 +157,9 @@ public class ErpSendAgent extends AbstractSendAgent {
 
             // 불량 데이터 처리
             if (!invalidList.isEmpty()) {
-                String invalLogTable = logTable;
-
                 Msg_Log ml = new Msg_Log();
-
-                if("Y".equalsIgnoreCase(erpLogBack)){
-                    String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
-                    invalLogTable += "_" + yyyyMM;
-                }
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(invalLogTable);
+                ml.setLog_table(logTable);
                 ml.setStatus("4");
                 ml.setResult_message("(AGENT) 데이터 형식 또는 정제 오류");
                 ml.setCode("7999");

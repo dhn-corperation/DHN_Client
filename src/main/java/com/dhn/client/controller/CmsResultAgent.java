@@ -62,11 +62,9 @@ public class CmsResultAgent extends AbstractResultAgent {
         for (int i = 0; i < json.length(); i++) {
             JSONObject ent = json.getJSONObject(i);
 
-            String resultLogTable = logTable;
-
-
             Msg_Log _ml = new Msg_Log();
             _ml.setMsg_table(msgTable);
+            _ml.setLog_table(logTable);
             _ml.setMsgid(ent.getString("msgid"));
             _ml.setDatabase(dbTarget);
 
@@ -108,24 +106,6 @@ public class CmsResultAgent extends AbstractResultAgent {
             }
 
             _ml.setResult_dt(cleanDt);
-
-            if("Y".equalsIgnoreCase(cmsLogBack)){
-                String yyyymm = "";
-                try {
-                    if (cleanDt.length() >= 6) {
-                        yyyymm = cleanDt.substring(0, 6); // 14자리 중 맨 앞 6자리가 YYYYMM
-                    }
-
-                    if (yyyymm.isEmpty()) {
-                        yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-                    }
-                } catch (Exception e) {
-                    yyyymm = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM"));
-                }
-                resultLogTable += "_" + yyyymm;
-            }
-
-            _ml.setLog_table(resultLogTable);
 
             try {
                 // 트랜잭션 (Update -> Insert Select -> Delete) 슛!

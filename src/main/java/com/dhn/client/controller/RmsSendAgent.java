@@ -159,17 +159,9 @@ public class RmsSendAgent extends AbstractSendAgent {
 
             // 불량 데이터 처리
             if (!invalidList.isEmpty()) {
-                String invalLogTable = logTable;
-
                 Msg_Log ml = new Msg_Log();
-
-                if("Y".equalsIgnoreCase(rmsLogBack)){
-                    String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
-                    invalLogTable += "_" + yyyyMM;
-                }
-
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(invalLogTable);
+                ml.setLog_table(logTable);
                 ml.setStatus("4");
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);

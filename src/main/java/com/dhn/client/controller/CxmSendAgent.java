@@ -151,16 +151,11 @@ public class CxmSendAgent extends AbstractSendAgent {
             }
 
             if (!invalidList.isEmpty()) {
-                String invalLogTable = logTable;
 
                 Msg_Log ml = new Msg_Log();
 
-                if("Y".equalsIgnoreCase(cxmLogBack)){
-                    String yyyyMM = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
-                    invalLogTable += "_" + yyyyMM;
-                }
                 ml.setMsg_table(msgTable);
-                ml.setLog_table(invalLogTable);
+                ml.setLog_table(logTable);
                 ml.setStatus("4");
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);
