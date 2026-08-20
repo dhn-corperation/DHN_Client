@@ -41,7 +41,6 @@ public class CxmSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.cxm.db-target:mssql}") private String dbTarget;
     @Value("${dhnclient.cxm.msg_table:EMFO_DATA}") private String msgTable;
     @Value("${dhnclient.cxm.log_table:EMFO_LOG}") private String logTable;
-    @Value("${dhnclient.cxm.log_back:N}") private String cxmLogBack;
 
     // ⏰ CXM 채널: 알림톡(AT), 친구톡(FT), LMS 순회!
     @Scheduled(fixedDelay = 1000)

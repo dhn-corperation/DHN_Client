@@ -28,7 +28,6 @@ public class CxmResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.cxm.db-target:mssql}") private String dbTarget;
     @Value("${dhnclient.cxm.msg_table:EMFO_DATA}") private String msgTable;
     @Value("${dhnclient.cxm.log_table:EMFO_LOG}") private String logTable;
-    @Value("${dhnclient.cxm.log_back:N}") private String cxmLogBack;
 
     @PostConstruct
     public void init() {

@@ -32,7 +32,6 @@ public class CmsResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.cms.db-target:mssql}") private String dbTarget;
     @Value("${dhnclient.cms.msg_table:TBL_SUBMIT_QUEUE}") private String msgTable;
     @Value("${dhnclient.cms.log_table:TBL_MSG_HIST}") private String logTable;
-    @Value("${dhnclient.cms.log_back:N}") private String cmsLogBack;
 
     @PostConstruct
     public void init() {

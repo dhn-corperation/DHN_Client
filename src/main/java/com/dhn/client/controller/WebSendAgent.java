@@ -40,7 +40,6 @@ public class WebSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.web.db-target:mssql}") private String dbTarget;
     @Value("${dhnclient.web.msg_table:SUREDATA}") private String msgTable;
     @Value("${dhnclient.web.log_table:SUREDATA_LOG}") private String logTable;
-    @Value("${dhnclient.web.log_back:N}") private String webLogBack;
 
     // ⏰ 알림톡(T) 타입 타겟으로 스케줄러 구동
     @Scheduled(fixedDelay = 1000)

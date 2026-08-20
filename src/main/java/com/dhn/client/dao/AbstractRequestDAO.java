@@ -115,21 +115,6 @@ public abstract class AbstractRequestDAO {
         return false;
     }
 
-    public void logTableCheck(String msgTable, String logTable) throws Exception {
-        Map<String, String> param = new HashMap<>();
-        param.put("msgTable", msgTable);
-        param.put("logTable", logTable.toUpperCase()); // 오라클은 대문자로 검사
-
-        // 1. sqlSession 직접 호출로 테이블 존재 여부 확인 (.check_table)
-        int existCount = sqlSession.selectOne(getNamespace() + ".check_table", param);
-
-        // 2. 없으면 sqlSession 직접 호출로 즉시 복사/생성 (.create_table)
-        if (existCount == 0) {
-            log.warn("[DAO] 로그 테이블({}) 없음 복제 생성", logTable);
-            sqlSession.update(getNamespace() + ".create_table", param);
-        }
-    }
-
     @Transactional(rollbackFor = Exception.class)
     public void applyResultProcess(Msg_Log ml) throws Exception {
         // 1. 큐 테이블에 결과값 적용 (UPDATE)

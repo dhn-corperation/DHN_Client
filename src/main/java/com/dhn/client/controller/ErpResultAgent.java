@@ -43,9 +43,6 @@ public class ErpResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.erp_use:N}")
     private String erpUse;
 
-    @Value("${dhnclient.erp.log_back:N}")
-    private String erpLogBack;
-
     @PostConstruct
     public void init() {
         if ("Y".equalsIgnoreCase(erpUse)) {

@@ -54,10 +54,6 @@ public class ErpSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.erp_use:N}")
     private String erpUse;
 
-
-    @Value("${dhnclient.erp.log_back:N}")
-    private String erpLogBack;
-
     // ⏰ 1초마다 돌면서 msgType 별로 부모의 스레드풀에 작업을 던집니다!
     @Scheduled(fixedDelay = 1000)
     public void SendProcess() {

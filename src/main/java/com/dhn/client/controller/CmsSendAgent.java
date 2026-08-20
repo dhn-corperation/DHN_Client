@@ -44,9 +44,6 @@ public class CmsSendAgent extends AbstractSendAgent { // ⭐️ 범인 2: 부모
     @Value("${dhnclient.cms_use:N}")
     private String cmsUse;
 
-    @Value("${dhnclient.cms.log_back:N}")
-    private String cmsLogBack;
-
     // ⏰ 0.1초마다 돌면서 msgType 별로 부모의 스레드풀에 작업을 던집니다!
     @Scheduled(fixedDelay = 1000)
     public void SendProcess() {

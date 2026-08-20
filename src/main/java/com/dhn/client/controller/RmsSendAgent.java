@@ -41,7 +41,6 @@ public class RmsSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.rms.log_table:SUREDATA_LOG}") private String logTable;
     @Value("${dhnclient.rms.con_table:MMSCONTENTS}") private String conTable;
     @Value("${dhnclient.rms_use:N}") private String rmsUse;
-    @Value("${dhnclient.rms.log_back:N}") private String rmsLogBack;
 
     // ⏰ RMS 채널은 알림톡(at), MMS(mms) 순회!
     @Scheduled(fixedDelay = 1000)

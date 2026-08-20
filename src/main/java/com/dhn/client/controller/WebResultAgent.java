@@ -28,7 +28,6 @@ public class WebResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.web.db-target:mssql}") private String dbTarget;
     @Value("${dhnclient.web.msg_table:SUREDATA}") private String msgTable;
     @Value("${dhnclient.web.log_table:SUREDATA_LOG}") private String logTable;
-    @Value("${dhnclient.web.log_back:N}") private String webLogBack;
 
     @PostConstruct
     public void init() {

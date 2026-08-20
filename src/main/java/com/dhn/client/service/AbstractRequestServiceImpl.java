@@ -27,11 +27,6 @@ public abstract class AbstractRequestServiceImpl implements RequestService {
     }
 
     @Override
-    public void logTableCheck(String msgTable, String logTable) throws Exception {
-        getDao().logTableCheck(msgTable, logTable);
-    }
-
-    @Override
     public void applyResultProcess(Msg_Log ml) throws Exception {
         getDao().applyResultProcess(ml);
     }
