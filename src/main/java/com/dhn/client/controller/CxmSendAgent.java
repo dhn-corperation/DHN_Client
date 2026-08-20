@@ -38,7 +38,7 @@ public class CxmSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.cxm_use:N}") private String cxmUse;
     @Value("${dhnclient.cxm.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
-    @Value("${dhnclient.cxm.db-target:oracle}") private String dbTarget;
+    @Value("${dhnclient.cxm.db-target:mssql}") private String dbTarget;
     @Value("${dhnclient.cxm.msg_table:EMFO_DATA}") private String msgTable;
     @Value("${dhnclient.cxm.log_table:EMFO_LOG}") private String logTable;
     @Value("${dhnclient.cxm.log_back:N}") private String cxmLogBack;

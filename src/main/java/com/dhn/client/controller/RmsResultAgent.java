@@ -25,7 +25,7 @@ public class RmsResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.rms_use:N}") private String rmsUse;
     @Value("${dhnclient.rms.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
-    @Value("${dhnclient.rms.db-target:oracle}") private String dbTarget;
+    @Value("${dhnclient.rms.db-target:mssql}") private String dbTarget;
     @Value("${dhnclient.rms.msg_table:SUREDATA}") private String msgTable;
     @Value("${dhnclient.rms.log_table:SUREDATA_LOG}") private String logTable;
     @Value("${dhnclient.rms.log_back:N}") private String rmsLogBack;

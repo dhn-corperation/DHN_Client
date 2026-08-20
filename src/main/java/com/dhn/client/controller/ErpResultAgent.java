@@ -31,7 +31,7 @@ public class ErpResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.server:}")
     private String dhnServer;
 
-    @Value("${dhnclient.erp.db-target:oracle}")
+    @Value("${dhnclient.erp.db-target:mssql}")
     private String dbTarget;
 
     @Value("${dhnclient.erp.msg_table:TBL_ERP_QUEUE}")

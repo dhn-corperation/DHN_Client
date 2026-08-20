@@ -42,7 +42,7 @@ public class ErpSendAgent extends AbstractSendAgent {
     private String dhnServer;
 
     // ⭐️ 단일 DB로 가더라도 부모 규격을 위해 변수는 유지!
-    @Value("${dhnclient.erp.db-target:oracle}")
+    @Value("${dhnclient.erp.db-target:mssql}")
     private String dbTarget;
 
     @Value("${dhnclient.erp.msg_table:MTMSG_DATA}")

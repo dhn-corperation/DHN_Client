@@ -29,7 +29,7 @@ public class CmsResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.cms_use:N}") private String cmsUse;
     @Value("${dhnclient.cms.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
-    @Value("${dhnclient.cms.db-target:oracle}") private String dbTarget;
+    @Value("${dhnclient.cms.db-target:mssql}") private String dbTarget;
     @Value("${dhnclient.cms.msg_table:TBL_SUBMIT_QUEUE}") private String msgTable;
     @Value("${dhnclient.cms.log_table:TBL_MSG_HIST}") private String logTable;
     @Value("${dhnclient.cms.log_back:N}") private String cmsLogBack;
