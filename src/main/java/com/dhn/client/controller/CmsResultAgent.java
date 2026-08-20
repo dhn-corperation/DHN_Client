@@ -30,8 +30,8 @@ public class CmsResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.cms.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
     @Value("${dhnclient.cms.db-target:mssql}") private String dbTarget;
-    @Value("${dhnclient.cms.msg_table:TBL_SUBMIT_QUEUE}") private String msgTable;
-    @Value("${dhnclient.cms.log_table:TBL_MSG_HIST}") private String logTable;
+    @Value("${dhnclient.cms.msg_table:MTMSG_DATA}") private String msgTable;
+    @Value("${dhnclient.cms.log_table:MTMSG_LOG}") private String logTable;
 
     @PostConstruct
     public void init() {
@@ -61,56 +61,80 @@ public class CmsResultAgent extends AbstractResultAgent {
         for (int i = 0; i < json.length(); i++) {
             JSONObject ent = json.getJSONObject(i);
 
-            Msg_Log _ml = new Msg_Log();
-            _ml.setMsg_table(msgTable);
-            _ml.setLog_table(logTable);
-            _ml.setMsgid(ent.getString("msgid"));
-            _ml.setDatabase(dbTarget);
+            Msg_Log ml = new Msg_Log();
+            ml.setMsg_table(msgTable);
+            ml.setLog_table(logTable);
+            ml.setDatabase(dbTarget); // SQL 빈값 방지
+            ml.setMsgid(ent.getString("msgid"));
 
-            String code = "0000";
-            String rawDt = "";
-            String telecom = "4";
+            // API에서 던져주는 결과 필드 추출
+            String rawCode = ent.optString("code", "9999");
+            String rawSCode = ent.optString("s_code", "");
+            String rawRemark1 = ent.optString("remark1", ""); // 통신사 정보
+            String recvTimeRaw = ent.optString("remark2", ent.optString("res_dt", ""));
 
-            if (ent.getString("message_type").equalsIgnoreCase("AT")) {
-                code =ent.optString("code", "9999");
-                rawDt = ent.optString("res_dt", "");
-            } else {
-                code =ent.optString("code", "9999");
-                rawDt = ent.optString("remark2", "");
+            // 코드 숫자만 남기기
+            String cleanCode = rawCode.replaceAll("[^0-9]", "");
+            if(cleanCode.isEmpty()) cleanCode = "";
 
-                String rawRemark1 = ent.optString("remark1", "");
+            String cleanSCode = rawSCode.replaceAll("[^0-9]", "");
+            if(cleanSCode.isEmpty()) cleanSCode = "";
 
-                if (rawRemark1 != null && !rawRemark1.isEmpty()) {
+            String telecomMapped = "";
+
+            String message_type = ent.optString("message_type","");
+            String rslt_type = "";
+            String rslt_code = "";
+            String pre_rslt_type = ""; // 재발송 전 타입은 모름
+            String pre_rslt_code = "";
+
+            if("PH".equalsIgnoreCase(message_type)){
+                if("S".equalsIgnoreCase(ent.optString("sms_kind", ""))){
+                    rslt_type = "SMS";
+                }else{
+                    rslt_type = "LMS";
+                }
+
+                rslt_code = cleanCode;
+
+                if(!cleanSCode.trim().isEmpty()) {
+                    pre_rslt_code = cleanSCode;
+                }
+
+                if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
                     String r1 = rawRemark1.trim();
-
                     if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
-                        telecom = "3";
+                        telecomMapped = "LGT";
                     } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
-                        telecom = "1";
+                        telecomMapped = "SKT";
                     } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
-                        telecom = "2";
+                        telecomMapped = "KTF";
                     } else {
-                        telecom = "4";
+                        telecomMapped = "ETC";
                     }
                 }
+            } else {
+                if("AT".equalsIgnoreCase(message_type)){
+                    rslt_type = "ALT";
+                }else if ("AI".equalsIgnoreCase(message_type)){
+                    rslt_type = "ALI";
+                }else if (message_type.toUpperCase().startsWith("B") || message_type.toUpperCase().startsWith("E")){
+                    rslt_type = "BRI";
+                }
+                rslt_code = cleanSCode;
             }
 
-            _ml.setCode(code);
-            _ml.setTelecom(telecom);
-
-            String cleanDt = rawDt.replaceAll("[^0-9]", ""); // 하이픈, 띄어쓰기, 콜론 싹 다 제거!
-
-            if (cleanDt.length() > 14) {
-                cleanDt = cleanDt.substring(0, 14);
-            }
-
-            _ml.setResult_dt(cleanDt);
+            ml.setCode(rslt_code);
+            ml.setMedia_type(rslt_type);
+            ml.setS_code(pre_rslt_code);
+            ml.setStatus("6"); // 결과 상태값
+            ml.setTelecom(telecomMapped);
+            ml.setResult_dt(recvTimeRaw);
 
             try {
-                // 트랜잭션 (Update -> Insert Select -> Delete) 슛!
-                requestService.applyResultProcess(_ml);
+                requestService.applyResultProcess(ml);
             } catch (Exception e) {
-                log.error("[CMS] 결과 처리 업데이트 오류 [ {} ] - {}", _ml.getMsgid(), e.getMessage());
+                log.error("[CMS] 결과 처리 업데이트 오류 [ {} ] - {}", ml.getMsgid(), e.getMessage());
             }
         }
         log.info("[CMS] 결과 처리 완료 [ {} ] 건", json.length());

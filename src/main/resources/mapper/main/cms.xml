@@ -3,116 +3,259 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.dhn.client.cms.mapper.SendRequest">
-
-    <sql id="msg_type_condition">
-        <choose>
-            <when test="msg_type == 'AT'"> AND USED_CD = '30' </when>
-            <when test="msg_type == 'BM'"> AND USED_CD = '40' </when>
-            <when test="msg_type == 'SM'"> AND USED_CD = '00' </when>
-            <when test="msg_type == 'LM'"> AND USED_CD = '10' </when>
-            <when test="msg_type == 'MM'"> AND USED_CD = '20' </when>
-        </choose>
-    </sql>
-
     <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
-        SELECT * FROM (
-            SELECT
-                CMP_MSG_ID AS msgid,
-                CASE
-                    WHEN USED_CD IN ('00', '10', '20') THEN 'PH'
-                    WHEN USED_CD = '30' THEN 'AT'
-                    WHEN USED_CD = '40' THEN 'G1'
-                    END AS messagetype,
-                CASE
-                    WHEN USED_CD = '00' THEN 'S'
-                    WHEN USED_CD = '10' THEN 'L'
-                    WHEN USED_CD = '20' THEN 'M'
-                END AS smskind,
-                SND_MSG AS msgsms,
-                CASE
-                    WHEN RCV_PHN_ID LIKE '82%' THEN RCV_PHN_ID
-                    WHEN RCV_PHN_ID LIKE '010%' THEN '82' || SUBSTR(RCV_PHN_ID, 2, 15)
-                    ELSE '82' || SUBSTR(RCV_PHN_ID, 2, 15)
-                END AS phn,
-                SND_PHN_ID AS smssender,
-                CASE
-                    WHEN RESERVED_FG  = 'R' THEN RESERVED_DTTM
-                    ELSE '00000000000000'
-                END AS reservedt,
-                TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
-                MSG_TITLE AS title
-            FROM ${msg_table}
-            WHERE SMS_STATUS = '0'
-                AND (
-                    RESERVED_FG = 'I'
-                    OR (RESERVED_FG = 'R' AND RESERVED_DTTM &lt;= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))
-                )
-            <include refid="msg_type_condition"/>
-            ORDER BY CMP_MSG_ID ASC
+
+        SELECT TOP (200)
+            MSG_KEY AS msgid,
+            CASE
+                WHEN MSG_TYPE = 'ALT' THEN 'AT'
+                WHEN MSG_TYPE = 'ALI' THEN 'AI'
+                WHEN MSG_TYPE = 'FRT' THEN 'FT'
+                WHEN MSG_TYPE IN ('FRI','FRW') THEN 'FI'
+                WHEN MSG_TYPE = 'BRI' THEN 'BM'
+                WHEN MSG_TYPE IN ('SMS','LMS','MMS') THEN 'PH'
+            ELSE MSG_TYPE
+            END AS messagetype,
+            MESSAGE AS msg,
+            MESSAGE AS msgsms,
+            'P' AS pcom,
+            SUBJECT AS smslmstit,
+            CALL_TO AS phn,
+            CALL_FROM AS smssender,
+            FORMAT(RES_DATE, 'yyyyMMddHHmmss') AS reservedt,
+            FORMAT(GETDATE(), 'yyyy-MM-dd HH:mm:ss') AS regdt,
+            SENDER_KEY AS profile,
+            TEMPLATE_CODE AS tmplid,
+            BUTTON AS button,
+            FILE_NAME1 AS filepath1,
+            FILE_NAME2 AS filepath2,
+            FILE_NAME3 AS filepath3
+        FROM ${msg_table}
+        WHERE MSG_STATE = '1'
+            AND (
+                RES_DATE IS NULL OR RES_DATE &lt;= GETDATE()
             )
-        WHERE ROWNUM &lt;= 200
+            <if test="msg_type == 'AT'">
+                AND MSG_TYPE IN ('ALT', 'ALI')
+            </if>
+            <if test="msg_type == 'FT'">
+                AND MSG_TYPE IN ('FRT', 'FRI', 'FRW')
+            </if>
+            <if test="msg_type == 'SMS'">
+                AND MSG_TYPE = 'SMS'
+            </if>
+            <if test="msg_type == 'LMS'">
+                AND MSG_TYPE = 'LMS'
+            </if>
+            <if test="msg_type == 'MMS'">
+                AND MSG_TYPE = 'MMS'
+            </if>
+            <if test="msg_type == 'BM'">
+                AND MSG_TYPE = 'BRI'
+            </if>
+        ORDER BY MSG_KEY ASC
     </select>
 
     <update id="sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET SMS_STATUS = '1',
-            REG_SND_DTTM = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-        WHERE CMP_MSG_ID IN
+        SET MSG_STATE = '5',
+            SENT_DATE = GETDATE()
+        WHERE MSG_KEY IN
         <foreach collection="msgIds" item="msgid" open="(" separator="," close=")">
             #{msgid}
         </foreach>
     </update>
 
-    <update id="invalid_update" parameterType="map">
-        UPDATE ${ml.msg_table}
-            SET SMS_STATUS = #{ml.status}, RSLT_VAL = #{ml.code}, REG_RCV_DTTM = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
-        WHERE CMP_MSG_ID IN
-        <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
-    </update>
-
-    <insert id="invalid_log_insert" parameterType="map">
-        INSERT INTO ${ml.log_table}
-        SELECT * FROM ${ml.msg_table}
-        WHERE CMP_MSG_ID IN
-        <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
-    </insert>
-
-    <delete id="invalid_delete" parameterType="map">
-        DELETE FROM ${ml.msg_table}
-        WHERE CMP_MSG_ID IN
-        <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
-    </delete>
-
     <update id="result_update" parameterType="com.dhn.client.bean.Msg_Log">
         UPDATE ${msg_table}
-        SET SMS_STATUS = '2',
-            RSLT_VAL = #{code},
-            REG_RCV_DTTM = #{result_dt},
-            TELCO_ID = #{telecom}
-        WHERE CMP_MSG_ID = #{msgid}
+        SET MSG_STATE = #{status},
+            RSLT_DATE = #{result_dt},
+            REPORT_DATE = GETDATE(),
+            RSLT_CODE = #{code},
+            RSLT_NET = #{telecom},
+            RSLT_TYPE = #{media_type},
+            PRE_RSLT_CODE = #{s_code}
+        WHERE MSG_KEY = #{msgid}
     </update>
 
     <insert id="result_log_insert" parameterType="com.dhn.client.bean.Msg_Log">
         INSERT INTO ${log_table}
-        SELECT * FROM ${msg_table}
-        WHERE CMP_MSG_ID = #{msgid}
+        (
+            MSG_KEY,
+            MSG_STATE,
+            INPUT_DATE,
+            RES_DATE,
+            SENT_DATE,
+            RSLT_DATE,
+            REPORT_DATE,
+            RSLT_CODE,
+            RSLT_NET,
+            RSLT_TYPE,
+            PRE_RSLT_CODE,
+            PRE_RSLT_NET,
+            PRE_RSLT_TYPE,
+            CALL_TO,
+            CALL_FROM,
+            MSG_TYPE,
+            SUBJECT,
+            MESSAGE,
+            BUTTON,
+            FILE_NAME1,
+            FILE_NAME2,
+            FILE_NAME3,
+            SENDER_KEY,
+            TEMPLATE_CODE,
+            ADV,
+            FALLBACK_YN,
+            FALLBACK_TYPE,
+            FALLBACK_MSG,
+            CLIENT_SEQ,
+            ETC_CHAR1,
+            ETC_CHAR2,
+            ETC_CHAR3,
+            ETC_CHAR4,
+            TRANS_RESULT
+        )
+        SELECT
+            MSG_KEY,
+            MSG_STATE,
+            INPUT_DATE,
+            RES_DATE,
+            SENT_DATE,
+            RSLT_DATE,
+            REPORT_DATE,
+            RSLT_CODE,
+            RSLT_NET,
+            RSLT_TYPE,
+            PRE_RSLT_CODE,
+            PRE_RSLT_NET,
+            PRE_RSLT_TYPE,
+            CALL_TO,
+            CALL_FROM,
+            MSG_TYPE,
+            SUBJECT,
+            MESSAGE,
+            BUTTON,
+            FILE_NAME1,
+            FILE_NAME2,
+            FILE_NAME3,
+            SENDER_KEY,
+            TEMPLATE_CODE,
+            ADV,
+            FALLBACK_YN,
+            FALLBACK_TYPE,
+            FALLBACK_MSG,
+            CLIENT_SEQ,
+            ETC_CHAR1,
+            ETC_CHAR2,
+            ETC_CHAR3,
+            ETC_CHAR4,
+            TRANS_RESULT
+        FROM ${msg_table}
+        WHERE MSG_KEY = #{msgid}
     </insert>
 
     <delete id="result_delete" parameterType="com.dhn.client.bean.Msg_Log">
         DELETE FROM ${msg_table}
-        WHERE CMP_MSG_ID = #{msgid}
+        WHERE MSG_KEY = #{msgid}
     </delete>
 
-    <select id="check_table" parameterType="java.util.Map" resultType="int">
-        SELECT COUNT(*)
-        FROM USER_TABLES
-        WHERE TABLE_NAME = UPPER(#{logTable})
-    </select>
-
-    <update id="create_table" parameterType="java.util.Map">
-        CREATE TABLE ${logTable} AS
-        SELECT *
-        FROM ${msgTable}
-        WHERE 1 = 2
+    <update id="invalid_update" parameterType="map">
+        UPDATE ${ml.msg_table}
+        SET MSG_STATE = #{ml.status},
+            RSLT_CODE = #{ml.code},
+            SENT_DATE = GETDATE()
+        WHERE MSG_KEY IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
     </update>
+
+    <insert id="invalid_log_insert" parameterType="map">
+        INSERT INTO ${ml.log_table}
+        (
+            MSG_KEY,
+            MSG_STATE,
+            INPUT_DATE,
+            RES_DATE,
+            SENT_DATE,
+            RSLT_DATE,
+            REPORT_DATE,
+            RSLT_CODE,
+            RSLT_NET,
+            RSLT_TYPE,
+            PRE_RSLT_CODE,
+            PRE_RSLT_NET,
+            PRE_RSLT_TYPE,
+            CALL_TO,
+            CALL_FROM,
+            MSG_TYPE,
+            SUBJECT,
+            MESSAGE,
+            BUTTON,
+            FILE_NAME1,
+            FILE_NAME2,
+            FILE_NAME3,
+            SENDER_KEY,
+            TEMPLATE_CODE,
+            ADV,
+            FALLBACK_YN,
+            FALLBACK_TYPE,
+            FALLBACK_MSG,
+            CLIENT_SEQ,
+            ETC_CHAR1,
+            ETC_CHAR2,
+            ETC_CHAR3,
+            ETC_CHAR4,
+            TRANS_RESULT
+        )
+        SELECT
+            MSG_KEY,
+            MSG_STATE,
+            INPUT_DATE,
+            RES_DATE,
+            SENT_DATE,
+            RSLT_DATE,
+            REPORT_DATE,
+            RSLT_CODE,
+            RSLT_NET,
+            RSLT_TYPE,
+            PRE_RSLT_CODE,
+            PRE_RSLT_NET,
+            PRE_RSLT_TYPE,
+            CALL_TO,
+            CALL_FROM,
+            MSG_TYPE,
+            SUBJECT,
+            MESSAGE,
+            BUTTON,
+            FILE_NAME1,
+            FILE_NAME2,
+            FILE_NAME3,
+            SENDER_KEY,
+            TEMPLATE_CODE,
+            ADV,
+            FALLBACK_YN,
+            FALLBACK_TYPE,
+            FALLBACK_MSG,
+            CLIENT_SEQ,
+            ETC_CHAR1,
+            ETC_CHAR2,
+            ETC_CHAR3,
+            ETC_CHAR4,
+            TRANS_RESULT
+        FROM ${ml.msg_table}
+        WHERE MSG_KEY IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">
+              #{msgid}
+        </foreach>
+    </insert>
+
+    <delete id="invalid_delete" parameterType="map">
+        DELETE FROM ${ml.msg_table}
+        WHERE MSG_KEY IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
+    </delete>
 </mapper>
