@@ -26,8 +26,8 @@ public class RmsResultAgent extends AbstractResultAgent {
     @Value("${dhnclient.rms.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
     @Value("${dhnclient.rms.db-target:mssql}") private String dbTarget;
-    @Value("${dhnclient.rms.msg_table:SUREDATA}") private String msgTable;
-    @Value("${dhnclient.rms.log_table:SUREDATA_LOG}") private String logTable;
+    @Value("${dhnclient.rms.msg_table:MTMSG_DATA}") private String msgTable;
+    @Value("${dhnclient.rms.log_table:MTMSG_LOG}") private String logTable;
 
     @PostConstruct
     public void init() {
@@ -67,7 +67,11 @@ public class RmsResultAgent extends AbstractResultAgent {
             String rawCode = ent.optString("code", "9999");
             String rawSCode = ent.optString("s_code", "");
             String rawRemark1 = ent.optString("remark1", ""); // 통신사 정보
-            String recvTimeRaw = ent.optString("remark2", ent.optString("res_dt", ""));
+            String recvTimeRaw = ent.optString("remark2", "");
+
+            if (recvTimeRaw.trim().isEmpty()) {
+                recvTimeRaw = ent.optString("res_dt", "");
+            }
 
             // 코드 숫자만 남기기
             String cleanCode = rawCode.replaceAll("[^0-9]", "");

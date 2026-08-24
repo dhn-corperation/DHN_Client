@@ -5,50 +5,60 @@
 <mapper namespace="com.dhn.client.cxm.mapper.SendRequest">
 
     <select id="select" parameterType="com.dhn.client.bean.SQLParameter" resultType="com.dhn.client.bean.RequestBean">
-        SELECT * FROM (
-            SELECT
-            SEQ_NO AS msgid,
+        SELECT TOP (200)
+            MSG_KEY AS msgid,
+            CASE
+                WHEN MSG_TYPE = 'ALT' THEN 'AT'
+                WHEN MSG_TYPE = 'ALI' THEN 'AI'
+                WHEN MSG_TYPE = 'FRT' THEN 'FT'
+                WHEN MSG_TYPE IN ('FRI','FRW') THEN 'FI'
+                WHEN MSG_TYPE = 'BRI' THEN 'E1'
+                WHEN MSG_TYPE IN ('SMS','LMS','MMS') THEN 'PH'
+                ELSE MSG_TYPE
+            END AS messagetype,
+            MESSAGE AS msg,
+            MESSAGE AS msgsms,
+            'P' AS pcom,
+            SUBJECT AS smslmstit,
             CALL_TO AS phn,
             CALL_FROM AS smssender,
-            SUBJECT AS smslmstit,
-            MSG AS msg,
-            MSG AS msgsms,
-            TO_CHAR(REQ_TIME, 'YYYYMMDDHH24MISS') AS reservedt,
-            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS regdt,
+            FORMAT(RES_DATE, 'yyyyMMddHHmmss') AS reservedt,
+            FORMAT(GETDATE(), 'yyyy-MM-dd HH:mm:ss') AS regdt,
             SENDER_KEY AS profile,
-            TMPL_CD AS tmplid,
-            BUTTON_INFO AS button,
-            FT_IMG_URL AS imageurl,
-            FT_IMG_PATH AS imagelink,
-            MMS_IMG_PATH AS filepath1,
-            MMS_IMG_PATH2 AS filepath2,
-            MMS_IMG_PATH3 AS filepath3,
-            'P' AS pcom,
-            ETC5 AS etc5
-            FROM ${msg_table}
-            WHERE CUR_STATE = '0'
-            AND REQ_TIME &lt;= SYSDATE
+            TEMPLATE_CODE AS tmplid,
+            BUTTON AS button,
+            FILE_NAME1 AS filepath1,
+            FILE_NAME2 AS filepath2,
+            FILE_NAME3 AS filepath3
+        FROM ${msg_table}
+        WHERE MSG_STATE = '1'
+            AND RES_DATE &lt;= GETDATE()
             <if test="msg_type == 'AT'">
-                AND MSG_TYPE = 'T'
+                AND MSG_TYPE IN ('ALT', 'ALI')
             </if>
-            <if test="msg_type == 'LMS'">
-                AND MSG_TYPE = 'L'
-            </if>
-            <if test="msg_type == 'MMS'">
-                AND MSG_TYPE = 'M'
+            <if test="msg_type == 'FT'">
+                AND MSG_TYPE IN ('FRT', 'FRI', 'FRW')
             </if>
             <if test="msg_type == 'SMS'">
-                AND MSG_TYPE = 'S'
+                AND MSG_TYPE = 'SMS'
             </if>
-            ORDER BY SEQ_NO ASC
-        )
-        WHERE ROWNUM &lt;= 200
+            <if test="msg_type == 'LMS'">
+                AND MSG_TYPE = 'LMS'
+            </if>
+            <if test="msg_type == 'MMS'">
+                AND MSG_TYPE = 'MMS'
+            </if>
+            <if test="msg_type == 'BM'">
+                AND MSG_TYPE = 'BRI'
+            </if>
+        ORDER BY MSG_KEY ASC
     </select>
 
     <update id="sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET CUR_STATE = '1', SENT_TIME = SYSDATE
-        WHERE SEQ_NO IN
+        SET MSG_STATE = '5',
+            SENT_DATE = GETDATE()
+        WHERE MSG_KEY IN
         <foreach collection="msgIds" item="msgid" open="(" separator="," close=")">
             #{msgid}
         </foreach>
@@ -56,57 +66,53 @@
 
     <update id="result_update" parameterType="com.dhn.client.bean.Msg_Log">
         UPDATE ${msg_table}
-        SET CUR_STATE = #{status},
-            RSLT_TIME = TO_DATE(#{result_dt}, 'YYYYMMDDHH24MISS'),
-            RSLT_CODE = #{s_code},
+        SET MSG_STATE = #{status},
+            RSLT_DATE = #{result_dt},
+            REPORT_DATE = GETDATE(),
+            RSLT_CODE = #{code},
             RSLT_NET = #{telecom},
-            RE_RSLT_CODE = #{code},
-            RE_RSLT_NET = #{telecom},
-            RE_TYPE = #{real_send_type}
-        WHERE SEQ_NO = #{msgid}
+            RSLT_TYPE = #{media_type},
+            PRE_RSLT_CODE = #{s_code}
+        WHERE MSG_KEY = #{msgid}
     </update>
 
     <insert id="result_log_insert" parameterType="com.dhn.client.bean.Msg_Log">
         INSERT INTO ${log_table}
-        SELECT * FROM ${msg_table} WHERE SEQ_NO = #{msgid}
+        SELECT
+            *
+        FROM ${msg_table}
+        WHERE MSG_KEY = #{msgid}
     </insert>
 
     <delete id="result_delete" parameterType="com.dhn.client.bean.Msg_Log">
-        DELETE FROM ${msg_table} WHERE SEQ_NO = #{msgid}
+        DELETE FROM ${msg_table}
+        WHERE MSG_KEY = #{msgid}
     </delete>
 
     <update id="invalid_update" parameterType="map">
         UPDATE ${ml.msg_table}
-        SET CUR_STATE = '${ml.status}',
-        RSLT_CODE = '${ml.code}'
-        WHERE SEQ_NO IN
-        <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
+        SET MSG_STATE = #{ml.status},
+        RSLT_CODE = #{ml.code},
+        SENT_DATE = GETDATE()
+        WHERE MSG_KEY IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
     </update>
 
     <insert id="invalid_log_insert" parameterType="map">
         INSERT INTO ${ml.log_table}
         SELECT * FROM ${ml.msg_table}
-        WHERE SEQ_NO IN
+        WHERE SEQNO IN
         <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
     </insert>
 
     <delete id="invalid_delete" parameterType="map">
         DELETE FROM ${ml.msg_table}
-        WHERE SEQ_NO IN
-        <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
+        WHERE MSG_KEY IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
     </delete>
-
-    <select id="check_table" parameterType="java.util.Map" resultType="int">
-        SELECT COUNT(*)
-        FROM USER_TABLES
-        WHERE TABLE_NAME = UPPER(#{logTable})
-    </select>
-
-    <update id="create_table" parameterType="java.util.Map">
-        CREATE TABLE ${logTable} AS
-        SELECT *
-        FROM ${msgTable}
-        WHERE 1 = 2
-    </update>
 
 </mapper>

@@ -178,6 +178,54 @@ public class CmsSendAgent extends AbstractSendAgent {
         }
     }
 
+    private void parseButton(RequestBean bean, ObjectMapper mapper) {
+        String rawButton = bean.getButton();
+
+        if (rawButton == null || rawButton.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            JsonNode root = mapper.readTree(rawButton);
+
+            if (!root.isArray()) {
+                log.error("[CMS] BUTTON JSON 배열 형식 오류 (msgid: {})", bean.getMsgid());
+                return;
+            }
+
+            ArrayNode btnArray = (ArrayNode) root;
+
+            for (int i = 0; i < btnArray.size() && i < 5; i++) {
+                String buttonJson = mapper.writeValueAsString(btnArray.get(i));
+
+                switch (i) {
+                    case 0:
+                        bean.setButton1(buttonJson);
+                        break;
+                    case 1:
+                        bean.setButton2(buttonJson);
+                        break;
+                    case 2:
+                        bean.setButton3(buttonJson);
+                        break;
+                    case 3:
+                        bean.setButton4(buttonJson);
+                        break;
+                    case 4:
+                        bean.setButton5(buttonJson);
+                        break;
+                }
+            }
+
+            if (btnArray.size() > 5) {
+                log.warn("[CMS] BUTTON 최대 5개 초과 (msgid: {}, count: {})",bean.getMsgid(), btnArray.size());
+            }
+
+        } catch (Exception e) {
+            log.error("[CMS] 버튼 JSON 파싱 실패 (msgid: {}): {}",bean.getMsgid(), e.getMessage());
+        }
+    }
+
     private String uploadMmsImages(RequestBean bean) {
         String[] dbPaths = {
                 bean.getFilepath1(),
@@ -253,54 +301,6 @@ public class CmsSendAgent extends AbstractSendAgent {
         return Paths.get(mmsPath, fileName).toString();
     }
 
-    private void parseButton(RequestBean bean, ObjectMapper mapper) {
-        String rawButton = bean.getButton();
-
-        if (rawButton == null || rawButton.trim().isEmpty()) {
-            return;
-        }
-
-        try {
-            JsonNode root = mapper.readTree(rawButton);
-
-            if (!root.isArray()) {
-                log.error("[CMS] BUTTON JSON 배열 형식 오류 (msgid: {})", bean.getMsgid());
-                return;
-            }
-
-            ArrayNode btnArray = (ArrayNode) root;
-
-            for (int i = 0; i < btnArray.size() && i < 5; i++) {
-                String buttonJson = mapper.writeValueAsString(btnArray.get(i));
-
-                switch (i) {
-                    case 0:
-                        bean.setButton1(buttonJson);
-                        break;
-                    case 1:
-                        bean.setButton2(buttonJson);
-                        break;
-                    case 2:
-                        bean.setButton3(buttonJson);
-                        break;
-                    case 3:
-                        bean.setButton4(buttonJson);
-                        break;
-                    case 4:
-                        bean.setButton5(buttonJson);
-                        break;
-                }
-            }
-
-            if (btnArray.size() > 5) {
-                log.warn("[CMS] BUTTON 최대 5개 초과 (msgid: {}, count: {})",bean.getMsgid(), btnArray.size());
-            }
-
-        } catch (Exception e) {
-            log.error("[CMS] 버튼 JSON 파싱 실패 (msgid: {}): {}",bean.getMsgid(), e.getMessage());
-        }
-    }
-
     private void parseBrandButtonJson(RequestBean bean, ObjectMapper mapper) {
         String rawButton = bean.getButton();
 
@@ -312,7 +312,7 @@ public class CmsSendAgent extends AbstractSendAgent {
             JsonNode buttonNode = mapper.readTree(rawButton);
 
             if (!buttonNode.isArray()) {
-                log.error("[RMS] 브랜드메시지 BUTTON JSON 배열 형식 오류 (msgid: {})", bean.getMsgid());
+                log.error("[CMS] 브랜드메시지 BUTTON JSON 배열 형식 오류 (msgid: {})", bean.getMsgid());
                 return;
             }
 
@@ -322,7 +322,7 @@ public class CmsSendAgent extends AbstractSendAgent {
             bean.setAttachments(mapper.writeValueAsString(attachmentNode));
 
         } catch (Exception e) {
-            log.error("[RMS] 브랜드메시지 버튼 JSON 파싱 실패 (msgid: {}): {}", bean.getMsgid(), e.getMessage());
+            log.error("[CMS] 브랜드메시지 버튼 JSON 파싱 실패 (msgid: {}): {}", bean.getMsgid(), e.getMessage());
         }
     }
 }

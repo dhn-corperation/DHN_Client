@@ -21,8 +21,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,8 +38,9 @@ public class CxmSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.cxm.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
     @Value("${dhnclient.cxm.db-target:mssql}") private String dbTarget;
-    @Value("${dhnclient.cxm.msg_table:EMFO_DATA}") private String msgTable;
-    @Value("${dhnclient.cxm.log_table:EMFO_LOG}") private String logTable;
+    @Value("${dhnclient.cxm.msg_table:MTMSG_DATA}") private String msgTable;
+    @Value("${dhnclient.cxm.log_table:MTMSG_LOG}") private String logTable;
+    @Value("${dhnclient.cxm.mms_path:}") private String mmsPath;
 
     // ⏰ CXM 채널: 알림톡(AT), 친구톡(FT), LMS 순회!
     @Scheduled(fixedDelay = 1000)
@@ -128,7 +128,7 @@ public class CxmSendAgent extends AbstractSendAgent {
                             bean.setSmskind("L");
                         }
                     }else{
-                        parseCxmButton(bean, mapper);
+                        parseButton(bean, mapper);
                         bean.setMessagetype("AT");
                         try {
                             byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
@@ -180,133 +180,62 @@ public class CxmSendAgent extends AbstractSendAgent {
         }
     }
 
-    private void parseCxmButton(RequestBean bean, ObjectMapper mapper) {
-        String rawButton = bean.getButton(); // 쿼리에서 BUTTON_URL AS button 으로 가져온 값
+    private void parseButton(RequestBean bean, ObjectMapper mapper) {
+        String rawButton = bean.getButton();
 
         if (rawButton == null || rawButton.trim().isEmpty()) {
             return;
         }
 
         try {
-            // 1. 파이프(|) 기호로 여러 개의 버튼을 배열로 분리 (정규식 예약어라 \\| 사용)
-            String[] btnArray = rawButton.split("\\|");
+            JsonNode root = mapper.readTree(rawButton);
 
-            // 최대 5개까지만 처리
-            for (int i = 0; i < btnArray.length; i++) {
-                if (i >= 5) break;
-
-                // 2. 캐럿(^) 기호로 버튼 내부 속성을 분리 (배열 길이 유지를 위해 -1 옵션 추가)
-                String[] btnInfo = btnArray[i].split("\\^", -1);
-
-                // 최소한 이름과 타입은 있어야 함
-                if (btnInfo.length >= 2) {
-                    // 3. Jackson ObjectNode를 이용해 깔끔한 JSON 객체 생성
-                    ObjectNode btnNode = mapper.createObjectNode();
-                    btnNode.put("name", btnInfo[0].trim()); // 버튼명
-                    btnNode.put("type", btnInfo[1].trim()); // 버튼타입 (WL, AL 등)
-
-                    // 4. 모바일 URL이 존재하면 세팅
-                    if (btnInfo.length >= 3 && !btnInfo[2].trim().isEmpty()) {
-                        btnNode.put("url_mobile", btnInfo[2].trim());
-                    }
-
-                    // 5. PC URL이 존재하면 세팅
-                    if (btnInfo.length >= 4 && !btnInfo[3].trim().isEmpty()) {
-                        btnNode.put("url_pc", btnInfo[3].trim());
-                    }
-
-                    // 6. 완성된 JSON 객체를 문자열로 변환
-                    String singleBtnJson = mapper.writeValueAsString(btnNode);
-
-                    // 7. 순서대로 button1 ~ button5 필드에 장전!
-                    switch (i) {
-                        case 0: bean.setButton1(singleBtnJson); break;
-                        case 1: bean.setButton2(singleBtnJson); break;
-                        case 2: bean.setButton3(singleBtnJson); break;
-                        case 3: bean.setButton4(singleBtnJson); break;
-                        case 4: bean.setButton5(singleBtnJson); break;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error("[RMS] 버튼 파싱 실패 (msgid: {}): {}", bean.getMsgid(), e.getMessage());
-        }
-    }
-
-    private void parseCxmAttachment(RequestBean bean, ObjectMapper mapper) {
-        try {
-            ObjectNode attachmentNode = mapper.createObjectNode();
-
-            // ==========================================
-            // 1. 이미지 처리 (FI 일 때 주로 들어옴)
-            // ==========================================
-            // 🚨 주의: DB INSERT문 기준 FT_IMG_PATH(imagelink)가 이미지 소스, FT_IMG_URL(imageurl)이 클릭 랜딩 링크입니다!
-            String imgPath = bean.getImagelink(); // 카카오 이미지 URL (mud-kage...)
-            String imgUrl = bean.getImageurl();   // 랜딩 URL (high1.com...)
-
-            if (imgPath != null && !imgPath.trim().isEmpty()) {
-                ObjectNode imageNode = mapper.createObjectNode();
-                imageNode.put("img_url", imgPath.trim());
-
-                if (imgUrl != null && !imgUrl.trim().isEmpty()) {
-                    imageNode.put("img_link", imgUrl.trim());
-                } else {
-                    imageNode.put("img_link", ""); // 이미지가 있으면 보통 링크도 필수이므로 빈값이라도 방어
-                }
-
-                // attachment 노드 안에 "image" 객체 꽂기
-                attachmentNode.set("image", imageNode);
+            if (!root.isArray()) {
+                log.error("[CXM] BUTTON JSON 배열 형식 오류 (msgid: {})", bean.getMsgid());
+                return;
             }
 
-            // ==========================================
-            // 2. 버튼 처리 (FT, FI 공통) - 파이프(|) 와 캐럿(^) 분리
-            // ==========================================
-            String rawButton = bean.getButton();
-            if (rawButton != null && !rawButton.trim().isEmpty()) {
-                ArrayNode buttonArray = mapper.createArrayNode();
-                String[] btnArray = rawButton.split("\\|");
+            ArrayNode btnArray = (ArrayNode) root;
 
-                for (String btnStr : btnArray) {
-                    String[] btnInfo = btnStr.split("\\^", -1);
-                    if (btnInfo.length >= 2) {
-                        ObjectNode btnNode = mapper.createObjectNode();
-                        btnNode.put("name", btnInfo[0].trim());
-                        btnNode.put("type", btnInfo[1].trim());
+            for (int i = 0; i < btnArray.size() && i < 5; i++) {
+                String buttonJson = mapper.writeValueAsString(btnArray.get(i));
 
-                        if (btnInfo.length >= 3 && !btnInfo[2].trim().isEmpty()) {
-                            btnNode.put("url_mobile", btnInfo[2].trim());
-                        }
-                        if (btnInfo.length >= 4 && !btnInfo[3].trim().isEmpty()) {
-                            btnNode.put("url_pc", btnInfo[3].trim());
-                        }
-                        // Array에 버튼 객체 추가
-                        buttonArray.add(btnNode);
-                    }
-                }
-
-                // 버튼이 1개라도 파싱되었다면 attachment 노드 안에 "button" 배열 꽂기
-                if (buttonArray.size() > 0) {
-                    attachmentNode.set("button", buttonArray);
+                switch (i) {
+                    case 0:
+                        bean.setButton1(buttonJson);
+                        break;
+                    case 1:
+                        bean.setButton2(buttonJson);
+                        break;
+                    case 2:
+                        bean.setButton3(buttonJson);
+                        break;
+                    case 3:
+                        bean.setButton4(buttonJson);
+                        break;
+                    case 4:
+                        bean.setButton5(buttonJson);
+                        break;
                 }
             }
 
-            // ==========================================
-            // 3. 최종 완성된 JSON을 Bean에 세팅
-            // ==========================================
-            if (!attachmentNode.isEmpty()) {
-                String finalAttachmentJson = mapper.writeValueAsString(attachmentNode);
-                bean.setAttachments(finalAttachmentJson); // ⭐️ (주의) 형님 Bean에 setAttachment 인지 setAttachments 인지 확인 필요!
-
-//                log.info("[CXM] 친구톡 첨부 생성 완료 (MSGID: {}): {}", bean.getMsgid(), finalAttachmentJson);
+            if (btnArray.size() > 5) {
+                log.warn("[CXM] BUTTON 최대 5개 초과 (msgid: {}, count: {})",bean.getMsgid(), btnArray.size());
             }
 
         } catch (Exception e) {
-            log.error("[CXM] 친구톡 attachment 파싱 실패 (msgid: {}): {}", bean.getMsgid(), e.getMessage());
+            log.error("[CXM] 버튼 JSON 파싱 실패 (msgid: {}): {}",bean.getMsgid(), e.getMessage());
         }
     }
+
+
 
     private String uploadMmsImages(RequestBean bean) {
-        String[] paths = {bean.getFilepath1(), bean.getFilepath2(), bean.getFilepath3()};
+        String[] dbPaths = {
+                bean.getFilepath1(),
+                bean.getFilepath2(),
+                bean.getFilepath3()
+        };
         String[] keys = {"image1", "image2", "image3"};
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -314,26 +243,26 @@ public class CxmSendAgent extends AbstractSendAgent {
 
         boolean hasFile = false;
 
-        // 1. 첨부파일 1~3번을 확인하고, 실제 파일이 존재하면 바디에 장전!
         for (int i = 0; i < 3; i++) {
-            if (paths[i] != null && !paths[i].trim().isEmpty()) {
-                File file = new File(paths[i]);
+            String path = getMmsFilePath(dbPaths[i]);
+
+            if (path != null && !path.trim().isEmpty()) {
+                File file = new File(path);
+
                 if (file.exists() && file.isFile()) {
                     body.add(keys[i], new FileSystemResource(file));
                     hasFile = true;
                 } else {
-                    log.info("[RMS] MMS DB 경로는 있으나 실제 파일이 없음 (무시됨): {}", paths[i]);
+                    log.info("[CXM] MMS 이미지 파일 없음: {}", path);
                 }
             }
         }
 
-        // 2. 보낼 파일이 아예 없다면 쿨하게 null 리턴
         if (!hasFile) {
             return null;
         }
 
         try {
-            // 3. Multipart 통신 헤더 세팅
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
@@ -354,11 +283,50 @@ public class CxmSendAgent extends AbstractSendAgent {
                     return root.get("image_group").asText();
                 }
             } else {
-                log.error("[RMS] MMS 이미지 업로드 API 에러 응답: {}", response.getBody());
+                log.error("[CXM] MMS 이미지 업로드 API 에러 응답: {}", response.getBody());
             }
         } catch (Exception e) {
-            log.error("[RMS] MMS 이미지 업로드 통신 장애: {}", e.getMessage());
+            log.error("[CXM] MMS 이미지 업로드 통신 장애: {}", e.getMessage());
         }
-        return null; // 실패 시 null
+        return null;
+    }
+
+    private String getMmsFilePath(String dbPath) {
+        if (dbPath == null || dbPath.trim().isEmpty()) {
+            return null;
+        }
+
+        if (mmsPath == null || mmsPath.trim().isEmpty()) {
+            return dbPath;
+        }
+
+        String fileName = Paths.get(dbPath).getFileName().toString();
+
+        return Paths.get(mmsPath, fileName).toString();
+    }
+
+    private void parseBrandButtonJson(RequestBean bean, ObjectMapper mapper) {
+        String rawButton = bean.getButton();
+
+        if (rawButton == null || rawButton.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            JsonNode buttonNode = mapper.readTree(rawButton);
+
+            if (!buttonNode.isArray()) {
+                log.error("[CXM] 브랜드메시지 BUTTON JSON 배열 형식 오류 (msgid: {})", bean.getMsgid());
+                return;
+            }
+
+            ObjectNode attachmentNode = mapper.createObjectNode();
+            attachmentNode.set("button", buttonNode);
+
+            bean.setAttachments(mapper.writeValueAsString(attachmentNode));
+
+        } catch (Exception e) {
+            log.error("[CXM] 브랜드메시지 버튼 JSON 파싱 실패 (msgid: {}): {}", bean.getMsgid(), e.getMessage());
+        }
     }
 }
