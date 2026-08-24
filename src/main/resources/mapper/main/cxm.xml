@@ -103,8 +103,10 @@
     <insert id="invalid_log_insert" parameterType="map">
         INSERT INTO ${ml.log_table}
         SELECT * FROM ${ml.msg_table}
-        WHERE SEQNO IN
-        <foreach collection="list" item="msgid" open="(" separator="," close=")">#{msgid}</foreach>
+        WHERE MSG_KEY IN
+        <foreach collection="list" item="msgid" open="(" separator="," close=")">
+            #{msgid}
+        </foreach>
     </insert>
 
     <delete id="invalid_delete" parameterType="map">
