@@ -125,7 +125,7 @@ public class CmsSendAgent extends AbstractSendAgent {
                         byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
                         bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
                     } catch (Exception e) {
-                        bean.setSmskind("S");
+                        bean.setSmskind("L");
                     }
                 } else if ("BM".equalsIgnoreCase(msgType)) {
                     bean.setMessagetype("E1");
@@ -134,7 +134,7 @@ public class CmsSendAgent extends AbstractSendAgent {
                         byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
                         bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
                     } catch (Exception e) {
-                        bean.setSmskind("S");
+                        bean.setSmskind("L");
                     }
                 }
 

@@ -126,11 +126,7 @@ public class RmsSendAgent extends AbstractSendAgent {
 
                             try {
                                 byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
-                                if (msgBytes.length > 90) {
-                                    bean.setSmskind("L");
-                                } else {
-                                    bean.setSmskind("S");
-                                }
+                                bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
                             } catch (Exception e) {
                                 bean.setSmskind("L"); // 예외 시 기본 단문 처리
                             }
@@ -145,11 +141,7 @@ public class RmsSendAgent extends AbstractSendAgent {
 
                         try {
                             byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
-                            if (msgBytes.length > 90) {
-                                bean.setSmskind("L");
-                            } else {
-                                bean.setSmskind("S");
-                            }
+                            bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
                         } catch (Exception e) {
                             bean.setSmskind("L"); // 예외 시 기본 단문 처리
                         }
@@ -162,7 +154,7 @@ public class RmsSendAgent extends AbstractSendAgent {
                         byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
                         bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
                     } catch (Exception e) {
-                        bean.setSmskind("S");
+                        bean.setSmskind("L");
                     }
                 }
                 // =========================================================
