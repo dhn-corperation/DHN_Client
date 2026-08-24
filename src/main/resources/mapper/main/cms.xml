@@ -12,9 +12,9 @@
                 WHEN MSG_TYPE = 'ALI' THEN 'AI'
                 WHEN MSG_TYPE = 'FRT' THEN 'FT'
                 WHEN MSG_TYPE IN ('FRI','FRW') THEN 'FI'
-                WHEN MSG_TYPE = 'BRI' THEN 'BM'
+                WHEN MSG_TYPE = 'BRI' THEN 'E1'
                 WHEN MSG_TYPE IN ('SMS','LMS','MMS') THEN 'PH'
-            ELSE MSG_TYPE
+                ELSE MSG_TYPE
             END AS messagetype,
             MESSAGE AS msg,
             MESSAGE AS msgsms,
@@ -32,9 +32,7 @@
             FILE_NAME3 AS filepath3
         FROM ${msg_table}
         WHERE MSG_STATE = '1'
-            AND (
-                RES_DATE IS NULL OR RES_DATE &lt;= GETDATE()
-            )
+            AND RES_DATE &lt;= GETDATE()
             <if test="msg_type == 'AT'">
                 AND MSG_TYPE IN ('ALT', 'ALI')
             </if>
@@ -80,78 +78,7 @@
 
     <insert id="result_log_insert" parameterType="com.dhn.client.bean.Msg_Log">
         INSERT INTO ${log_table}
-        (
-            MSG_KEY,
-            MSG_STATE,
-            INPUT_DATE,
-            RES_DATE,
-            SENT_DATE,
-            RSLT_DATE,
-            REPORT_DATE,
-            RSLT_CODE,
-            RSLT_NET,
-            RSLT_TYPE,
-            PRE_RSLT_CODE,
-            PRE_RSLT_NET,
-            PRE_RSLT_TYPE,
-            CALL_TO,
-            CALL_FROM,
-            MSG_TYPE,
-            SUBJECT,
-            MESSAGE,
-            BUTTON,
-            FILE_NAME1,
-            FILE_NAME2,
-            FILE_NAME3,
-            SENDER_KEY,
-            TEMPLATE_CODE,
-            ADV,
-            FALLBACK_YN,
-            FALLBACK_TYPE,
-            FALLBACK_MSG,
-            CLIENT_SEQ,
-            ETC_CHAR1,
-            ETC_CHAR2,
-            ETC_CHAR3,
-            ETC_CHAR4,
-            TRANS_RESULT
-        )
-        SELECT
-            MSG_KEY,
-            MSG_STATE,
-            INPUT_DATE,
-            RES_DATE,
-            SENT_DATE,
-            RSLT_DATE,
-            REPORT_DATE,
-            RSLT_CODE,
-            RSLT_NET,
-            RSLT_TYPE,
-            PRE_RSLT_CODE,
-            PRE_RSLT_NET,
-            PRE_RSLT_TYPE,
-            CALL_TO,
-            CALL_FROM,
-            MSG_TYPE,
-            SUBJECT,
-            MESSAGE,
-            BUTTON,
-            FILE_NAME1,
-            FILE_NAME2,
-            FILE_NAME3,
-            SENDER_KEY,
-            TEMPLATE_CODE,
-            ADV,
-            FALLBACK_YN,
-            FALLBACK_TYPE,
-            FALLBACK_MSG,
-            CLIENT_SEQ,
-            ETC_CHAR1,
-            ETC_CHAR2,
-            ETC_CHAR3,
-            ETC_CHAR4,
-            TRANS_RESULT
-        FROM ${msg_table}
+        SELECT * FROM ${msg_table}
         WHERE MSG_KEY = #{msgid}
     </insert>
 
@@ -173,78 +100,7 @@
 
     <insert id="invalid_log_insert" parameterType="map">
         INSERT INTO ${ml.log_table}
-        (
-            MSG_KEY,
-            MSG_STATE,
-            INPUT_DATE,
-            RES_DATE,
-            SENT_DATE,
-            RSLT_DATE,
-            REPORT_DATE,
-            RSLT_CODE,
-            RSLT_NET,
-            RSLT_TYPE,
-            PRE_RSLT_CODE,
-            PRE_RSLT_NET,
-            PRE_RSLT_TYPE,
-            CALL_TO,
-            CALL_FROM,
-            MSG_TYPE,
-            SUBJECT,
-            MESSAGE,
-            BUTTON,
-            FILE_NAME1,
-            FILE_NAME2,
-            FILE_NAME3,
-            SENDER_KEY,
-            TEMPLATE_CODE,
-            ADV,
-            FALLBACK_YN,
-            FALLBACK_TYPE,
-            FALLBACK_MSG,
-            CLIENT_SEQ,
-            ETC_CHAR1,
-            ETC_CHAR2,
-            ETC_CHAR3,
-            ETC_CHAR4,
-            TRANS_RESULT
-        )
-        SELECT
-            MSG_KEY,
-            MSG_STATE,
-            INPUT_DATE,
-            RES_DATE,
-            SENT_DATE,
-            RSLT_DATE,
-            REPORT_DATE,
-            RSLT_CODE,
-            RSLT_NET,
-            RSLT_TYPE,
-            PRE_RSLT_CODE,
-            PRE_RSLT_NET,
-            PRE_RSLT_TYPE,
-            CALL_TO,
-            CALL_FROM,
-            MSG_TYPE,
-            SUBJECT,
-            MESSAGE,
-            BUTTON,
-            FILE_NAME1,
-            FILE_NAME2,
-            FILE_NAME3,
-            SENDER_KEY,
-            TEMPLATE_CODE,
-            ADV,
-            FALLBACK_YN,
-            FALLBACK_TYPE,
-            FALLBACK_MSG,
-            CLIENT_SEQ,
-            ETC_CHAR1,
-            ETC_CHAR2,
-            ETC_CHAR3,
-            ETC_CHAR4,
-            TRANS_RESULT
-        FROM ${ml.msg_table}
+        SELECT * FROM ${ml.msg_table}
         WHERE MSG_KEY IN
         <foreach collection="list" item="msgid" open="(" separator="," close=")">
               #{msgid}

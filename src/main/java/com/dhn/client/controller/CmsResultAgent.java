@@ -13,10 +13,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 @Slf4j
@@ -98,7 +94,8 @@ public class CmsResultAgent extends AbstractResultAgent {
                 rslt_code = cleanCode;
 
                 if(!cleanSCode.trim().isEmpty()) {
-                    pre_rslt_code = cleanSCode;
+                    pre_rslt_code = cleanCode;
+                    rslt_code = cleanSCode;
                 }
 
                 if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
