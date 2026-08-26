@@ -50,32 +50,19 @@ public class ErpResultAgent extends AbstractResultAgent {
         }
     }
 
-    // ⏰ 1초마다 돌면서 외부 API에 결과가 있는지 물어보는 스케줄러
     @Scheduled(fixedDelay = 1000)
     public void runResultProcess() {
         if (!"Y".equalsIgnoreCase(erpUse)) {
             return;
         }
-        // ⭐️ 부모의 결과 수신 병렬 프로세스 실행
         super.executeResultProcess();
     }
-
-    // ==========================================
-    // ⭐️ 부모(AbstractResultAgent)의 추상 메서드 구현 영역
-    // ==========================================
-
     @Override protected String getChannelName() { return "ERP"; }
     @Override protected String getDbTarget() { return this.dbTarget; }
     @Override protected String getUserid() { return this.userid; }
     @Override protected String getDhnServer() { return this.dhnServer; }
     @Override protected String getMsgTable() { return this.msgTable; }
     @Override protected String getLogTable() { return this.logTable; }
-    // 만약 부모에 getDbTarget()이 있다면 아래 주석을 풀어주세요!
-    // @Override protected String getDbTarget() { return this.dbTarget; }
-
-    /**
-     * ⭐️ 외부 API에서 받은 결과 JSON 배열을 까서 DB에 반영하는 핵심 로직
-     */
     @Override
     protected void resultProc(JSONArray json) {
         log.info("[ERP] 결과 처리 시작 [ {} ] 건", json.length());
@@ -93,7 +80,11 @@ public class ErpResultAgent extends AbstractResultAgent {
             String rawCode = ent.optString("code", "9999");
             String rawSCode = ent.optString("s_code", "");
             String rawRemark1 = ent.optString("remark1", ""); // 통신사 정보
-            String recvTimeRaw = ent.optString("res_dt", ent.optString("remark2", ""));
+            String recvTimeRaw = ent.optString("remark2", "");
+
+            if (recvTimeRaw.trim().isEmpty()) {
+                recvTimeRaw = ent.optString("res_dt", "");
+            }
 
             // 코드 숫자만 남기기
             String cleanCode = rawCode.replaceAll("[^0-9]", "");
@@ -120,7 +111,8 @@ public class ErpResultAgent extends AbstractResultAgent {
                 rslt_code = cleanCode;
 
                 if(!cleanSCode.trim().isEmpty()) {
-                    pre_rslt_code = cleanSCode;
+                    pre_rslt_code = cleanCode;
+                    rslt_code = cleanSCode;
                 }
 
                 if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
@@ -151,14 +143,8 @@ public class ErpResultAgent extends AbstractResultAgent {
             ml.setS_code(pre_rslt_code);
             ml.setStatus("6"); // 결과 상태값
             ml.setTelecom(telecomMapped);
-            // 3. 날짜 정제 (최대 14자리 YYYYMMDDHHmmss)
-            String cleanDt = recvTimeRaw.replaceAll("[^0-9]", "");
-            if (cleanDt.length() > 14) cleanDt = cleanDt.substring(0, 14);
-            ml.setResult_dt(cleanDt);
+            ml.setResult_dt(recvTimeRaw);
 
-            ml.setResult_message(ent.optString("message", ""));
-
-            // 4. 서비스 호출하여 DB 3단 콤보(업데이트 ➔ 로그이관 ➔ 큐삭제) 실행!
             try {
                 requestService.applyResultProcess(ml);
             } catch (Exception e) {
