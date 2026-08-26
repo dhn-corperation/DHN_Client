@@ -17,4 +17,6 @@ public class Msg_Log {
 	private String media_type;
 	private String database;
 	private String bcast_cnt;
+	private String pre_media_type;
+	private String pre_telecom;
 }

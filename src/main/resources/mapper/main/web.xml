@@ -71,7 +71,9 @@
             RSLT_CODE = #{code},
             RSLT_NET = #{telecom},
             RSLT_TYPE = #{media_type},
-            PRE_RSLT_CODE = #{s_code}
+            PRE_RSLT_CODE = #{s_code},
+            PRE_RSLT_NET = #{pre_telecom},
+            PRE_RSLT_TYPE = #{pre_media_type}
         WHERE MSG_KEY = #{msgid}
     </update>
 

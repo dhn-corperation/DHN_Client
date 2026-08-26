@@ -77,6 +77,7 @@ public class WebResultAgent extends AbstractResultAgent {
             if(cleanSCode.isEmpty()) cleanSCode = "";
 
             String telecomMapped = "";
+            String pre_telecomMapped = "";
 
             String message_type = ent.optString("message_type","");
             String rslt_type = "";
@@ -85,31 +86,51 @@ public class WebResultAgent extends AbstractResultAgent {
             String pre_rslt_code = "";
 
             if("PH".equalsIgnoreCase(message_type)){
-                if("S".equalsIgnoreCase(ent.optString("sms_kind", ""))){
-                    rslt_type = "SMS";
-                }else{
-                    rslt_type = "LMS";
-                }
 
                 rslt_code = cleanCode;
 
                 if(!cleanSCode.trim().isEmpty()) {
                     pre_rslt_code = cleanCode;
                     rslt_code = cleanSCode;
-                }
+                    if("S".equalsIgnoreCase(ent.optString("sms_kind", ""))){
+                        pre_rslt_type = "SMS";
+                    }else{
+                        pre_rslt_type = "LMS";
+                    }
 
-                if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
-                    String r1 = rawRemark1.trim();
-                    if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
-                        telecomMapped = "LGT";
-                    } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
-                        telecomMapped = "SKT";
-                    } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
-                        telecomMapped = "KTF";
-                    } else {
-                        telecomMapped = "ETC";
+                    if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
+                        String r1 = rawRemark1.trim();
+                        if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
+                            pre_telecomMapped = "LGT";
+                        } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
+                            pre_telecomMapped = "SKT";
+                        } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
+                            pre_telecomMapped = "KTF";
+                        } else {
+                            pre_telecomMapped = "ETC";
+                        }
+                    }
+                } else {
+                    if("S".equalsIgnoreCase(ent.optString("sms_kind", ""))){
+                        rslt_type = "SMS";
+                    }else{
+                        rslt_type = "LMS";
+                    }
+
+                    if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
+                        String r1 = rawRemark1.trim();
+                        if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
+                            telecomMapped = "LGT";
+                        } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
+                            telecomMapped = "SKT";
+                        } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
+                            telecomMapped = "KTF";
+                        } else {
+                            telecomMapped = "ETC";
+                        }
                     }
                 }
+
             } else {
                 if("AT".equalsIgnoreCase(message_type)){
                     rslt_type = "ALT";
@@ -123,9 +144,11 @@ public class WebResultAgent extends AbstractResultAgent {
 
             ml.setCode(rslt_code);
             ml.setMedia_type(rslt_type);
+            ml.setPre_media_type(pre_rslt_type);
             ml.setS_code(pre_rslt_code);
             ml.setStatus("6");
             ml.setTelecom(telecomMapped);
+            ml.setPre_telecom(pre_telecomMapped);
             ml.setResult_dt(recvTimeRaw);
 
             try {
