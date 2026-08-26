@@ -10,6 +10,5 @@ public interface RequestService {
     void updateSendComplete(SQLParameter param) throws Exception;
     void updateInvalidData(List<String> invalidList, Msg_Log ml) throws Exception;
 
-    // 결과 처리 프로세스 (Update -> Insert -> Delete)
     void applyResultProcess(Msg_Log ml) throws Exception;
 }

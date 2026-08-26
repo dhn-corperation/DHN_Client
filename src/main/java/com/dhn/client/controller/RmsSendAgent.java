@@ -30,10 +30,9 @@ import java.util.List;
 public class RmsSendAgent extends AbstractSendAgent {
 
     @Autowired
-    @Qualifier("rmsService") // ⭐️ RMS 전용 서비스 빈!
+    @Qualifier("rmsService")
     private RequestService requestService;
 
-    // yml 설정값 바인딩
     @Value("${dhnclient.rms.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
     @Value("${dhnclient.rms.db-target:mssql}") private String dbTarget;
@@ -42,7 +41,6 @@ public class RmsSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.rms_use:N}") private String rmsUse;
     @Value("${dhnclient.rms.mms_path:}") private String mmsPath;
 
-    // ⏰ RMS 채널은 알림톡(at), MMS(mms) 순회!
     @Scheduled(fixedDelay = 1000)
     public void SendProcess() {
         if (!"Y".equalsIgnoreCase(rmsUse)) {
@@ -128,7 +126,7 @@ public class RmsSendAgent extends AbstractSendAgent {
                                 byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
                                 bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
                             } catch (Exception e) {
-                                bean.setSmskind("L"); // 예외 시 기본 단문 처리
+                                bean.setSmskind("L");
                             }
                         }
                     }else{
@@ -143,7 +141,7 @@ public class RmsSendAgent extends AbstractSendAgent {
                             byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
                             bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
                         } catch (Exception e) {
-                            bean.setSmskind("L"); // 예외 시 기본 단문 처리
+                            bean.setSmskind("L");
                         }
                     }
                 } else if ("BM".equalsIgnoreCase(msgType)) {
@@ -157,16 +155,12 @@ public class RmsSendAgent extends AbstractSendAgent {
                         bean.setSmskind("L");
                     }
                 }
-                // =========================================================
-
-                // 공통 JSON 정제
                 boolean isGoodData = bean.processJsonPayload(mapper, invalidList);
                 if (isGoodData) {
                     finalSendList.add(bean);
                 }
             }
 
-            // 불량 데이터 처리
             if (!invalidList.isEmpty()) {
                 Msg_Log ml = new Msg_Log();
                 ml.setMsg_table(msgTable);
@@ -254,7 +248,7 @@ public class RmsSendAgent extends AbstractSendAgent {
         String[] keys = {"image1", "image2", "image3"};
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("userid", this.userid); // Go 서버가 요구하는 userid 폼 데이터
+        body.add("userid", this.userid);
 
         boolean hasFile = false;
 
@@ -300,7 +294,7 @@ public class RmsSendAgent extends AbstractSendAgent {
         } catch (Exception e) {
             log.error("[RMS] MMS 이미지 업로드 통신 장애: {}", e.getMessage());
         }
-        return null; // 실패 시 null
+        return null;
     }
 
     private String getMmsFilePath(String dbPath) {

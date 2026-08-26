@@ -33,7 +33,6 @@ public class CxmSendAgent extends AbstractSendAgent {
     @Qualifier("cxmService")
     private RequestService requestService;
 
-    // ⭐️ CXM 마스터 스위치 및 yml 세팅
     @Value("${dhnclient.cxm_use:N}") private String cxmUse;
     @Value("${dhnclient.cxm.userid:}") private String userid;
     @Value("${dhnclient.server:}") private String dhnServer;
@@ -42,10 +41,9 @@ public class CxmSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.cxm.log_table:MTMSG_LOG}") private String logTable;
     @Value("${dhnclient.cxm.mms_path:}") private String mmsPath;
 
-    // ⏰ CXM 채널: 알림톡(AT), 친구톡(FT), LMS 순회!
     @Scheduled(fixedDelay = 1000)
     public void SendProcess() {
-        if (!"Y".equalsIgnoreCase(cxmUse)) return; // 스위치 On일 때만 동작
+        if (!"Y".equalsIgnoreCase(cxmUse)) return;
 
         String[] msgTypes = {"AT", "LMS", "SMS", "MMS"};
         for (String msgType : msgTypes) {
@@ -80,17 +78,14 @@ public class CxmSendAgent extends AbstractSendAgent {
 
                 if ("LMS".equalsIgnoreCase(msgType)) {
 
-                    // 메시지 타입 셋팅
                     bean.setMessagetype("PH");
                     bean.setSmskind("L");
                 } else if ("SMS".equalsIgnoreCase(msgType)) {
 
-                    // 메시지 타입 셋팅
                     bean.setMessagetype("PH");
                     bean.setSmskind("S");
                 } else if ("MMS".equalsIgnoreCase(msgType)) {
 
-                    // 메시지 타입 셋팅
                     bean.setMessagetype("PH");
                     bean.setSmskind("M");
                     boolean hasImage = (bean.getFilepath1() != null && !bean.getFilepath1().trim().isEmpty()) ||
@@ -138,7 +133,7 @@ public class CxmSendAgent extends AbstractSendAgent {
                                 bean.setSmskind("S");
                             }
                         } catch (Exception e) {
-                            bean.setSmskind("L"); // 예외 시 기본 단문 처리
+                            bean.setSmskind("L");
                         }
                     }
                 }
@@ -239,7 +234,7 @@ public class CxmSendAgent extends AbstractSendAgent {
         String[] keys = {"image1", "image2", "image3"};
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("userid", this.userid); // Go 서버가 요구하는 userid 폼 데이터
+        body.add("userid", this.userid);
 
         boolean hasFile = false;
 
@@ -269,13 +264,10 @@ public class CxmSendAgent extends AbstractSendAgent {
 
             RestTemplate restTemplate = new RestTemplate();
 
-            // ⭐️ 형님의 Go 서버 MMS 업로드 API 주소 (환경에 맞게 수정해주세요!)
             String uploadUrl = this.dhnServer + "mms/image";
 
-            // 4. API 발사!
             ResponseEntity<String> response = restTemplate.postForEntity(uploadUrl, requestEntity, String.class);
 
-            // 5. 성공(200) 시 JSON 까서 image_group 리턴!
             if (response.getStatusCode() == HttpStatus.OK) {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response.getBody());

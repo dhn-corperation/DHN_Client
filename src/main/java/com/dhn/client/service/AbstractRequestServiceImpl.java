@@ -11,7 +11,6 @@ public abstract class AbstractRequestServiceImpl implements RequestService {
     protected abstract AbstractRequestDAO getDao();
 
     @Override
-    // ⭐️ 해결: RequestBean_bk 에서 RequestBean 으로 수정 완료!
     public List<RequestBean> selectRequests(SQLParameter param) throws Exception {
         return getDao().selectRequests(param);
     }

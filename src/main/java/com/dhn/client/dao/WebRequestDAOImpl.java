@@ -12,7 +12,6 @@ public class WebRequestDAOImpl extends AbstractRequestDAO {
 
     @Override
     protected String getNamespace() {
-        // ⭐️ web.xml 에 정의된 namespace 와 정확히 일치시켜 줍니다.
         return "com.dhn.client.web.mapper.SendRequest";
     }
 

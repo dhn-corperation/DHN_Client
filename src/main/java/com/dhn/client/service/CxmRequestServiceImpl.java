@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class CxmRequestServiceImpl extends AbstractRequestServiceImpl {
 
     @Autowired
-    @Qualifier("cxmDao") // DAO단에서 @Repository("cmsDao") 로 등록하신 이름
+    @Qualifier("cxmDao")
     private AbstractRequestDAO cxmDao;
 
     @Override

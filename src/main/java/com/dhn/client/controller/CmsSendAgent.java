@@ -80,7 +80,7 @@ public class CmsSendAgent extends AbstractSendAgent {
             SQLParameter param = new SQLParameter();
             param.setMsg_table(msgTable);
             param.setMsg_type(msgType);
-            param.setDatabase(dbTarget); // SQL 빈값 방지
+            param.setDatabase(dbTarget);
 
             List<RequestBean> rawList = requestService.selectRequests(param);
 
@@ -235,7 +235,7 @@ public class CmsSendAgent extends AbstractSendAgent {
         String[] keys = {"image1", "image2", "image3"};
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("userid", this.userid); // Go 서버가 요구하는 userid 폼 데이터
+        body.add("userid", this.userid);
 
         boolean hasFile = false;
 
@@ -265,13 +265,10 @@ public class CmsSendAgent extends AbstractSendAgent {
 
             RestTemplate restTemplate = new RestTemplate();
 
-            // ⭐️ 형님의 Go 서버 MMS 업로드 API 주소 (환경에 맞게 수정해주세요!)
             String uploadUrl = this.dhnServer + "mms/image";
 
-            // 4. API 발사!
             ResponseEntity<String> response = restTemplate.postForEntity(uploadUrl, requestEntity, String.class);
 
-            // 5. 성공(200) 시 JSON 까서 image_group 리턴!
             if (response.getStatusCode() == HttpStatus.OK) {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response.getBody());
@@ -284,7 +281,7 @@ public class CmsSendAgent extends AbstractSendAgent {
         } catch (Exception e) {
             log.error("[CMS] MMS 이미지 업로드 통신 장애: {}", e.getMessage());
         }
-        return null; // 실패 시 null
+        return null;
     }
 
     private String getMmsFilePath(String dbPath) {

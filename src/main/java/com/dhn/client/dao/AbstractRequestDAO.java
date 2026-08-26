@@ -20,43 +20,33 @@ public abstract class AbstractRequestDAO {
     @Autowired
     protected SqlSession sqlSession;
 
-    // 🔥 핵심: 자식 DAO가 각자의 Mybatis XML 네임스페이스를 넘겨주도록 강제!
     protected abstract String getNamespace();
 
-    // ⭐️ 1. BM 걷어내고 메서드명 일치 + XML id도 깔끔하게 .count 로 매칭
     public int selectRequestCount(SQLParameter param) throws Exception {
         return sqlSession.selectOne(getNamespace() + ".count", param);
     }
 
-    // ⭐️ 2. BM 걷어내기
     public void updateGroupNo(SQLParameter param) throws Exception {
         sqlSession.update(getNamespace() + ".group_update", param);
     }
 
-    // ⭐️ 3. BM 걷어내기 + 제네릭 말고 명확하게 RequestBean 으로 고정
     public List<RequestBean> selectRequests(SQLParameter param) throws Exception {
         return sqlSession.selectList(getNamespace() + ".select", param);
     }
 
-    // ⭐️ 4. 누락되었던 성공 업데이트 로직 추가! (XML의 sent_complete 호출)
     public void updateSendComplete(SQLParameter param) throws Exception {
         sqlSession.update(getNamespace() + ".sent_complete", param);
     }
 
-    // ⭐️ 5. BM 걷어내기
     public void updateSendInit(SQLParameter param) throws Exception {
         sqlSession.update(getNamespace() + ".sent_init", param);
     }
 
-    // ==========================================
-    // 🛡️ 데드락 방어 & Retry 로직 (100% 재사용)
-    // ==========================================
     public void updateInvalidData(List<String> invalidList, Msg_Log ml) throws Exception {
         int retry = 0;
         int maxRetry = 5;
         while (true) {
             try {
-                // 부모 클래스 타입으로 캐스팅하여 자체 트랜잭션 호출
                 ((AbstractRequestDAO) AopContext.currentProxy()).doUpdateInvalidDataTx(invalidList, ml);
                 return;
             } catch (Exception e) {
@@ -77,7 +67,6 @@ public abstract class AbstractRequestDAO {
         param.put("list", invalidList);
         param.put("ml", ml);
 
-        // XML id 깔끔하게 매칭 (invalid_update, invalid_log_insert, invalid_delete)
         sqlSession.update(getNamespace() + ".invalid_update", param);
         sqlSession.insert(getNamespace() + ".invalid_log_insert", param);
         sqlSession.delete(getNamespace() + ".invalid_delete", param);
@@ -117,13 +106,10 @@ public abstract class AbstractRequestDAO {
 
     @Transactional(rollbackFor = Exception.class)
     public void applyResultProcess(Msg_Log ml) throws Exception {
-        // 1. 큐 테이블에 결과값 적용 (UPDATE)
         sqlSession.update(getNamespace() + ".result_update", ml);
 
-        // 2. 결과가 적용된 데이터를 로그 테이블로 복사 (INSERT SELECT)
         sqlSession.insert(getNamespace() + ".result_log_insert", ml);
 
-        // 3. 발송 큐 테이블에서 해당 데이터 완전 삭제 (DELETE)
         sqlSession.delete(getNamespace() + ".result_delete", ml);
     }
 }

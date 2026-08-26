@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PreDestroy;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -14,20 +13,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Slf4j
 public abstract class AbstractResultAgent {
 
-    protected boolean isProc = false; // dual 관련 로직이 빠지면서 isStart도 제거했습니다!
+    protected boolean isProc = false;
     protected static final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     protected static volatile boolean isRunning = true;
 
-    // 자식 클래스가 반드시 구현해야 하는 필수 설정들 (modId, dual 싹 제거됨!)
     protected abstract String getChannelName();
     protected abstract String getDbTarget();
     protected abstract String getDhnServer();
     protected abstract String getUserid();
-    protected abstract String getMsgTable();
-    protected abstract String getLogTable();
 
-    // 결과 처리 로직 자체를 자식이 알아서 구현하도록 강제함
     protected abstract void resultProc(JSONArray json);
 
     protected void initAgent() {
@@ -39,7 +34,6 @@ public abstract class AbstractResultAgent {
         isRunning = false;
     }
 
-    // 공통 결과 수신 네트워크 엔진
     protected void executeResultProcess() {
         if (isProc) return;
 

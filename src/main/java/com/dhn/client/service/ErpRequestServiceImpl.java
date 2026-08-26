@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class ErpRequestServiceImpl extends AbstractRequestServiceImpl  {
 
     @Autowired
-    @Qualifier("erpDao") // DAO단에서 @Repository("cmsDao") 로 등록하신 이름
+    @Qualifier("erpDao")
     private AbstractRequestDAO erpDao;
 
     @Override

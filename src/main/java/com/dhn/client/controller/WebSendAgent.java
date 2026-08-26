@@ -22,8 +22,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,12 +41,10 @@ public class WebSendAgent extends AbstractSendAgent {
     @Value("${dhnclient.web.log_table:MTMSG_LOG}") private String logTable;
     @Value("${dhnclient.web.mms_path:}") private String mmsPath;
 
-    // ⏰ 알림톡(T) 타입 타겟으로 스케줄러 구동
     @Scheduled(fixedDelay = 1000)
     public void SendProcess() {
         if (!"Y".equalsIgnoreCase(webUse)) return;
 
-        // DB의 KIND 컬럼이 'T' (카카오비즈메시지/알림톡)인 것을 타겟팅
         String[] msgTypes = {"AT", "LMS", "SMS", "MMS", "BM"};
         for (String msgType : msgTypes) {
             super.executeProcess(this.dhnServer, this.userid, msgType);
@@ -225,7 +221,7 @@ public class WebSendAgent extends AbstractSendAgent {
         String[] keys = {"image1", "image2", "image3"};
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("userid", this.userid); // Go 서버가 요구하는 userid 폼 데이터
+        body.add("userid", this.userid);
 
         boolean hasFile = false;
 
@@ -271,7 +267,7 @@ public class WebSendAgent extends AbstractSendAgent {
         } catch (Exception e) {
             log.error("[WEB] MMS 이미지 업로드 통신 장애: {}", e.getMessage());
         }
-        return null; // 실패 시 null
+        return null;
     }
 
     private String getMmsFilePath(String dbPath) {

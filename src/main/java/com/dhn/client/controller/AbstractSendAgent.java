@@ -1,7 +1,6 @@
 package com.dhn.client.controller;
 
 import com.dhn.client.bean.RequestBean;
-import com.dhn.client.config.DbContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -23,10 +22,8 @@ public abstract class AbstractSendAgent {
 
     protected static volatile boolean isRunning = true;
 
-    // ⭐️ 5개 채널(msgType)이 서로 막히지 않게 개별 자물쇠(Map) 생성!
     protected final Map<String, Boolean> procMap = new ConcurrentHashMap<>();
 
-    // 자식이 구현해야 할 추상 메서드들
     protected abstract String getChannelName();
     protected abstract String getDbTarget();
     protected abstract List<RequestBean> fetchWaitingData(String msgType);
@@ -43,10 +40,8 @@ public abstract class AbstractSendAgent {
             return;
         }
 
-
-        // 내 채널(msgType)이 처리 중이면 패스
         if (procMap.getOrDefault(msgType, false)) return;
-        procMap.put(msgType, true); // 내 자물쇠 잠금
+        procMap.put(msgType, true);
 
         ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executorService;
         if (poolExecutor.getActiveCount() >= poolExecutor.getMaximumPoolSize()) {
@@ -54,40 +49,14 @@ public abstract class AbstractSendAgent {
             return;
         }
 
-//        final String targetDb = getDbTarget();
-//
-//        executorService.submit(() -> {
-//            DbContextHolder.setDbTarget(targetDb);
-//            try {
-//                // 1. 대기 상태 데이터 셀렉 & 정제 (자식이 구현)
-//                List<RequestBean> sendList = fetchWaitingData(msgType);
-//
-//                if (sendList == null || sendList.isEmpty()) {
-//                    return;
-//                }
-//
-//                // 2. API 전송 후 상태값 변경
-//                sendToApiAndUpdateStatus(sendList, dhnServer, userid, msgType);
-//
-//            } catch (Exception e) {
-//                log.error("[{}-{}] 발송 프로세스 오류: {}", getChannelName(), msgType, e.getMessage());
-//            } finally {
-//                DbContextHolder.clear();
-//                // ⭐️ 로직이 끝나면 반드시 내 채널의 자물쇠를 풀어준다!
-//                procMap.put(msgType, false);
-//            }
-//        });
-
         executorService.submit(() -> {
             try {
-                // 1. 대기 상태 데이터 셀렉 & 정제 (자식이 구현)
                 List<RequestBean> sendList = fetchWaitingData(msgType);
 
                 if (sendList == null || sendList.isEmpty()) {
                     return;
                 }
 
-                // 2. API 전송 후 상태값 변경
                 sendToApiAndUpdateStatus(sendList, dhnServer, userid, msgType);
 
             } catch (Exception e) {

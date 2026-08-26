@@ -60,20 +60,18 @@ public class RmsResultAgent extends AbstractResultAgent {
             Msg_Log ml = new Msg_Log();
             ml.setMsg_table(msgTable);
             ml.setLog_table(logTable);
-            ml.setDatabase(dbTarget); // SQL 빈값 방지
+            ml.setDatabase(dbTarget);
             ml.setMsgid(ent.getString("msgid"));
 
-            // API에서 던져주는 결과 필드 추출
             String rawCode = ent.optString("code", "9999");
             String rawSCode = ent.optString("s_code", "");
-            String rawRemark1 = ent.optString("remark1", ""); // 통신사 정보
+            String rawRemark1 = ent.optString("remark1", "");
             String recvTimeRaw = ent.optString("remark2", "");
 
             if (recvTimeRaw.trim().isEmpty()) {
                 recvTimeRaw = ent.optString("res_dt", "");
             }
 
-            // 코드 숫자만 남기기
             String cleanCode = rawCode.replaceAll("[^0-9]", "");
             if(cleanCode.isEmpty()) cleanCode = "";
 
@@ -85,7 +83,7 @@ public class RmsResultAgent extends AbstractResultAgent {
             String message_type = ent.optString("message_type","");
             String rslt_type = "";
             String rslt_code = "";
-            String pre_rslt_type = ""; // 재발송 전 타입은 모름
+            String pre_rslt_type = "";
             String pre_rslt_code = "";
 
             if("PH".equalsIgnoreCase(message_type)){
@@ -128,7 +126,7 @@ public class RmsResultAgent extends AbstractResultAgent {
             ml.setCode(rslt_code);
             ml.setMedia_type(rslt_type);
             ml.setS_code(pre_rslt_code);
-            ml.setStatus("6"); // 결과 상태값
+            ml.setStatus("6");
             ml.setTelecom(telecomMapped);
             ml.setResult_dt(recvTimeRaw);
 
@@ -145,6 +143,4 @@ public class RmsResultAgent extends AbstractResultAgent {
     @Override protected String getDbTarget() { return this.dbTarget; }
     @Override protected String getDhnServer() { return this.dhnServer; }
     @Override protected String getUserid() { return this.userid; }
-    @Override protected String getMsgTable() { return this.msgTable; }
-    @Override protected String getLogTable() { return this.logTable; }
 }
