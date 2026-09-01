@@ -30,7 +30,7 @@
             FILE_NAME1 AS filepath1,
             FILE_NAME2 AS filepath2,
             FILE_NAME3 AS filepath3
-        FROM ${msg_table}
+        FROM ${msg_table} WITH (NOLOCK)
         WHERE MSG_STATE = '1'
             AND RES_DATE &lt;= GETDATE()
             <if test="msg_type == 'AT'">

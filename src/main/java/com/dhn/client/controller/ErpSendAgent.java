@@ -22,6 +22,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +51,9 @@ public class ErpSendAgent extends AbstractSendAgent {
 
     @Value("${dhnclient.erp_use:N}")
     private String erpUse;
+
+    @Value("${dhnclient.erp.mms_path:}")
+    private String mmsPath;
 
     @Scheduled(fixedDelay = 1000)
     public void SendProcess() {
@@ -402,7 +406,11 @@ public class ErpSendAgent extends AbstractSendAgent {
     }
 
     private String uploadMmsImages(RequestBean bean) {
-        String[] paths = {bean.getFilepath1(), bean.getFilepath2(), bean.getFilepath3()};
+        String[] dbPaths = {
+                bean.getFilepath1(),
+                bean.getFilepath2(),
+                bean.getFilepath3()
+        };
         String[] keys = {"image1", "image2", "image3"};
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -411,13 +419,16 @@ public class ErpSendAgent extends AbstractSendAgent {
         boolean hasFile = false;
 
         for (int i = 0; i < 3; i++) {
-            if (paths[i] != null && !paths[i].trim().isEmpty()) {
-                File file = new File(paths[i]);
+            String path = getMmsFilePath(dbPaths[i]);
+
+            if (path != null && !path.trim().isEmpty()) {
+                File file = new File(path);
+
                 if (file.exists() && file.isFile()) {
                     body.add(keys[i], new FileSystemResource(file));
                     hasFile = true;
                 } else {
-                    log.info("[RMS] MMS DB 경로는 있으나 실제 파일이 없음 (무시됨): {}", paths[i]);
+                    log.info("[ERP] MMS 이미지 파일 없음: {}", path);
                 }
             }
         }
@@ -444,11 +455,25 @@ public class ErpSendAgent extends AbstractSendAgent {
                     return root.get("image_group").asText();
                 }
             } else {
-                log.error("[RMS] MMS 이미지 업로드 API 에러 응답: {}", response.getBody());
+                log.error("[ERP] MMS 이미지 업로드 API 에러 응답: {}", response.getBody());
             }
         } catch (Exception e) {
-            log.error("[RMS] MMS 이미지 업로드 통신 장애: {}", e.getMessage());
+            log.error("[ERP] MMS 이미지 업로드 통신 장애: {}", e.getMessage());
         }
         return null;
+    }
+
+    private String getMmsFilePath(String dbPath) {
+        if (dbPath == null || dbPath.trim().isEmpty()) {
+            return null;
+        }
+
+        if (mmsPath == null || mmsPath.trim().isEmpty()) {
+            return dbPath;
+        }
+
+        String fileName = Paths.get(dbPath).getFileName().toString();
+
+        return Paths.get(mmsPath, fileName).toString();
     }
 }
