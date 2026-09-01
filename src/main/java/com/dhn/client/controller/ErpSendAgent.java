@@ -143,7 +143,7 @@ public class ErpSendAgent extends AbstractSendAgent {
                 Msg_Log ml = new Msg_Log();
                 ml.setMsg_table(msgTable);
                 ml.setLog_table(logTable);
-                ml.setStatus("4");
+                ml.setStatus("6");
                 ml.setResult_message("(AGENT) 데이터 형식 또는 정제 오류");
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);
