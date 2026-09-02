@@ -36,7 +36,7 @@ public class CmsResultAgent extends AbstractResultAgent {
         }
     }
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 1000)
     public void runResultProcess() {
         if (!"Y".equalsIgnoreCase(cmsUse)) {
             return;

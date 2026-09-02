@@ -36,7 +36,7 @@ public class CxmResultAgent extends AbstractResultAgent {
         }
     }
 
-    @Scheduled(fixedDelay = 100)
+    @Scheduled(fixedDelay = 1000)
     public void runResultProcess() {
         if (!"Y".equalsIgnoreCase(cxmUse)) return;
 
