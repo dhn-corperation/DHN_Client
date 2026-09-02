@@ -96,8 +96,10 @@ public class RmsResultAgent extends AbstractResultAgent {
                     rslt_code = cleanSCode;
                     if("S".equalsIgnoreCase(ent.optString("sms_kind", ""))){
                         pre_rslt_type = "SMS";
-                    }else{
+                    }else if("L".equalsIgnoreCase(ent.optString("sms_kind", ""))){
                         pre_rslt_type = "LMS";
+                    }else if("M".equalsIgnoreCase(ent.optString("sms_kind", ""))){
+                        pre_rslt_type = "MMS";
                     }
 
                     if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
@@ -115,8 +117,10 @@ public class RmsResultAgent extends AbstractResultAgent {
                 } else {
                     if("S".equalsIgnoreCase(ent.optString("sms_kind", ""))){
                         rslt_type = "SMS";
-                    }else{
+                    }else if("L".equalsIgnoreCase(ent.optString("sms_kind", ""))){
                         rslt_type = "LMS";
+                    }else if("M".equalsIgnoreCase(ent.optString("sms_kind", ""))){
+                        rslt_type = "MMS";
                     }
 
                     if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
