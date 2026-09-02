@@ -88,7 +88,6 @@ public abstract class AbstractSendAgent {
 
             RestTemplate rt = new RestTemplate(factory);
 
-            // ⭐️ "req" -> "send" 로 API 엔드포인트 통일!
             ResponseEntity<String> response = rt.postForEntity(dhnServer + "req", entity, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
@@ -98,7 +97,6 @@ public abstract class AbstractSendAgent {
                         .map(RequestBean::getMsgid)
                         .collect(Collectors.toList());
 
-                // 3. 자식의 업데이트 메서드 호출
                 updateStatusToSent(msgIds);
             } else {
                 log.error("[{}-{}] API 전송 에러 응답: {}", getChannelName(), msgType, response.getBody());
