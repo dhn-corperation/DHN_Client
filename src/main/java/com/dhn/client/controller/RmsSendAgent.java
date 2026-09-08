@@ -165,7 +165,7 @@ public class RmsSendAgent extends AbstractSendAgent {
                 Msg_Log ml = new Msg_Log();
                 ml.setMsg_table(msgTable);
                 ml.setLog_table(logTable);
-                ml.setStatus("6");
+                ml.setStatus("4");
                 ml.setCode("7999");
                 ml.setDatabase(dbTarget);
                 requestService.updateInvalidData(invalidList, ml);

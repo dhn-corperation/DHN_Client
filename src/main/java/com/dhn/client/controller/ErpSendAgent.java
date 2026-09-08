@@ -101,11 +101,11 @@ public class ErpSendAgent extends AbstractSendAgent {
 
 
                 if ("SMS".equalsIgnoreCase(msgType)) {
-                    bean.setSmskind("S");
+//                    bean.setSmskind("S");
                 } else if("LMS".equalsIgnoreCase(msgType)){
-                    bean.setSmskind("L");
+//                    bean.setSmskind("L");
                 } else if("MMS".equalsIgnoreCase(msgType)){
-                    bean.setSmskind("M");
+//                    bean.setSmskind("M");
                     boolean hasImage = (bean.getFilepath1() != null && !bean.getFilepath1().trim().isEmpty()) ||
                             (bean.getFilepath2() != null && !bean.getFilepath2().trim().isEmpty()) ||
                             (bean.getFilepath3() != null && !bean.getFilepath3().trim().isEmpty());
@@ -122,15 +122,7 @@ public class ErpSendAgent extends AbstractSendAgent {
                         bean.setSmskind("L");
                     }
                 } else if("AT".equalsIgnoreCase(msgType)){
-
                     parseCustomButtonJson(bean, mapper);
-
-                    try {
-                        byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
-                        bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
-                    } catch (Exception e) {
-                        bean.setSmskind("S");
-                    }
                 } else if ("FT".equalsIgnoreCase(msgType)) {
                     convertFriendTalk(bean, mapper);
                 } else if ("BM".equalsIgnoreCase(msgType)) {
@@ -255,21 +247,9 @@ public class ErpSendAgent extends AbstractSendAgent {
 
             if (root.has("text")) {
                 bean.setMsg(root.get("text").asText());
-                bean.setMsgsms(root.get("text").asText());
-                try {
-                    byte[] msgBytes = bean.getMsg() != null ? bean.getMsg().getBytes("EUC-KR") : new byte[0];
-                    if (msgBytes.length > 90) {
-                        bean.setSmskind("L");
-                    } else {
-                        bean.setSmskind("S");
-                    }
-                } catch (Exception e) {
-                    bean.setSmskind("L");
-                }
 
             }else{
                 bean.setMsg("");
-                bean.setMsgsms("");
             }
 
             if (root.has("targeting")) {
@@ -347,16 +327,6 @@ public class ErpSendAgent extends AbstractSendAgent {
     }
 
     private void convertFriendTalk(RequestBean bean, ObjectMapper mapper) {
-
-        try {
-            byte[] msgBytes = bean.getMsg() != null
-                    ? bean.getMsg().getBytes("EUC-KR")
-                    : new byte[0];
-
-            bean.setSmskind(msgBytes.length > 90 ? "L" : "S");
-        } catch (Exception e) {
-            bean.setSmskind("S");
-        }
 
         String rawButton = bean.getButton();
 
