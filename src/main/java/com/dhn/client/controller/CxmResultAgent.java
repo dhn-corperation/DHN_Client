@@ -146,11 +146,16 @@ public class CxmResultAgent extends AbstractResultAgent {
                 rslt_code = cleanSCode;
             }
 
+            if ("0000".equals(cleanCode) || "0000".equals(cleanSCode)) {
+                ml.setStatus("2"); // 성공
+            } else {
+                ml.setStatus("4"); // 실패
+            }
+
             ml.setCode(rslt_code);
             ml.setMedia_type(rslt_type);
             ml.setPre_media_type(pre_rslt_type);
             ml.setS_code(pre_rslt_code);
-            ml.setStatus("6");
             ml.setTelecom(telecomMapped);
             ml.setPre_telecom(pre_telecomMapped);
             ml.setResult_dt(recvTimeRaw);

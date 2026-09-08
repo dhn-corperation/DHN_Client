@@ -30,7 +30,7 @@
             FILE_NAME2 AS filepath2,
             FILE_NAME3 AS filepath3
         FROM ${msg_table} WITH (NOLOCK)
-        WHERE MSG_STATE = '1'
+        WHERE MSG_STATE = '0'
             AND RES_DATE &lt;= GETDATE()
             <if test="msg_type == 'AT'">
                 AND MSG_TYPE IN ('ALT', 'ALI')
@@ -55,7 +55,7 @@
 
     <update id="sent_complete" parameterType="com.dhn.client.bean.SQLParameter">
         UPDATE ${msg_table}
-        SET MSG_STATE = '5',
+        SET MSG_STATE = '1',
             SENT_DATE = GETDATE()
         WHERE MSG_KEY IN
         <foreach collection="msgIds" item="msgid" open="(" separator="," close=")">
