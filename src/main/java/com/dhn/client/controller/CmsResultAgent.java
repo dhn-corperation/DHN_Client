@@ -94,57 +94,37 @@ public class CmsResultAgent extends AbstractResultAgent {
                 if(!cleanSCode.trim().isEmpty()) {
                     pre_rslt_code = cleanCode;
                     rslt_code = cleanSCode;
-                    if("S".equalsIgnoreCase(ent.optString("sms_kind", ""))){
-                        pre_rslt_type = "SMS";
-                    }else if("L".equalsIgnoreCase(ent.optString("sms_kind", ""))){
-                        pre_rslt_type = "LMS";
-                    }else if("M".equalsIgnoreCase(ent.optString("sms_kind", ""))){
-                        pre_rslt_type = "MMS";
-                    }
+                    pre_rslt_type = ent.optString("sms_kind", "");
 
                     if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
                         String r1 = rawRemark1.trim();
                         if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
-                            pre_telecomMapped = "LGT";
+                            pre_telecomMapped = "3";
                         } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
-                            pre_telecomMapped = "SKT";
+                            pre_telecomMapped = "1";
                         } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
-                            pre_telecomMapped = "KTF";
+                            pre_telecomMapped = "2";
                         } else {
-                            pre_telecomMapped = "ETC";
+                            pre_telecomMapped = "4";
                         }
                     }
                 } else {
-                    if("S".equalsIgnoreCase(ent.optString("sms_kind", ""))){
-                        rslt_type = "SMS";
-                    }else if("L".equalsIgnoreCase(ent.optString("sms_kind", ""))){
-                        rslt_type = "LMS";
-                    }else if("M".equalsIgnoreCase(ent.optString("sms_kind", ""))){
-                        rslt_type = "MMS";
-                    }
 
                     if (rawRemark1 != null && !rawRemark1.trim().isEmpty()) {
                         String r1 = rawRemark1.trim();
                         if (r1.equalsIgnoreCase("LGT") || r1.equals("019") || r1.equals("3")) {
-                            telecomMapped = "LGT";
+                            telecomMapped = "3";
                         } else if (r1.equalsIgnoreCase("SKT") || r1.equals("011") || r1.equals("1")) {
-                            telecomMapped = "SKT";
+                            telecomMapped = "1";
                         } else if (r1.equalsIgnoreCase("KTF") || r1.equalsIgnoreCase("KT") || r1.equals("016") || r1.equals("2")) {
-                            telecomMapped = "KTF";
+                            telecomMapped = "2";
                         } else {
-                            telecomMapped = "ETC";
+                            telecomMapped = "4";
                         }
                     }
                 }
 
             } else {
-                if("AT".equalsIgnoreCase(message_type)){
-                    rslt_type = "ALT";
-                }else if ("AI".equalsIgnoreCase(message_type)){
-                    rslt_type = "ALI";
-                }else if (message_type.toUpperCase().startsWith("B") || message_type.toUpperCase().startsWith("E")){
-                    rslt_type = "BRI";
-                }
                 rslt_code = cleanSCode;
             }
 
