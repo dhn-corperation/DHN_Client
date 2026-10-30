@@ -101,6 +101,14 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 		_rsltCode.put("97","7");
 		_rsltCode.put("98","8");
 		_rsltCode.put("99","9");
+		_rsltCode.put("1","d");
+		_rsltCode.put("80","d");
+		_rsltCode.put("81","d");
+		_rsltCode.put("84","d");
+		_rsltCode.put("86","2");
+		_rsltCode.put("87","G");
+		_rsltCode.put("88","J");
+		_rsltCode.put("89","d");
 
 		_kaoCode.put("0000", "7000");
 		_kaoCode.put("1001", "7101");
@@ -219,10 +227,16 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 					_ml.setMsg_err_code(_kaoCode.getOrDefault(ent.getString("s_code"),"7300")); // 알림톡 실패 코드
 
 					if(!ent.getString("code").equals("0000")) {
-						rscode = _rsltCode.get(ent.getString("code").substring(2));
+						String errCode = ent.getString("code");
+						if (errCode != null && errCode.length() > 2) {
+							rscode = _rsltCode.getOrDefault(errCode.substring(2), "d");
+						} else {
+							rscode = "d";
+						}
 					}else {
-						rscode = _rsltCode.get("06");
+						rscode = _rsltCode.getOrDefault("06", "0");
 					}
+
 					_ml.setAgan_sms_type(ent.getString("sms_kind")); // 재발송된 문자 타입
 
 					if(ent.getString("remark1").equalsIgnoreCase("SKT")) {// 재발송된 문자 통신사값
@@ -245,9 +259,14 @@ public class ResultReq implements ApplicationListener<ContextRefreshedEvent>{
 				}else { // 일반 문자
 
 					if(!ent.getString("code").equals("0000")) {
-						_ml.setMsg_err_code(_rsltCode.get(ent.getString("code").substring(2))); // 문자 코드
+						String errCode = ent.getString("code");
+						if (errCode != null && errCode.length() > 2) {
+							rscode = _rsltCode.getOrDefault(errCode.substring(2), "d");
+						} else {
+							rscode = "d";
+						}
 					}else {
-						_ml.setMsg_err_code(_rsltCode.get("06")); // 문자 코드
+						rscode = _rsltCode.getOrDefault("06", "0");
 					}
 					_ml.setAgan_sms_type(ent.getString("sms_kind")); // 문자 타입
 					if(ent.getString("code").equals("0000")) {
